@@ -1,4 +1,4 @@
-/*
+﻿/*
 
 References:
 
@@ -91,237 +91,266 @@ struct NtpPacketWithExtension {
 
 #pragma pack(pop) // this restores padding to normal. 
 
+
 class NtpClient {
 public:
-    explicit NtpClient(const std::string& server_ip = "127.0.0.1", int port = 6969) {
-
-        this->server_ip = server_ip;
-        this->port = port;
-
+    explicit NtpClient(const std::string& server_ip = "127.0.0.1", int port = 6969)
+        : server_ip(server_ip), port(port) {
         initWinsock();
         createSocket();
         setupServerAddress();
     }
 
-    //deconstructor at close for socket hanldineg
     ~NtpClient() {
-        if (this->sock != INVALID_SOCKET) {
-            closesocket(this->sock);
+        if (sock != INVALID_SOCKET) {
+            closesocket(sock);
         }
         WSACleanup();
     }
 
-    std::time_t getTime() {
+    // A sample method to demonstrate sending an extension and getting a response
+    void sendAndReceiveExtension() {
+        prepareRequestPacket("Hello NTP!"); // Prepare a request with extension data
         sendRequest();
         receiveResponse();
-        printRawBuffer();
-        return parseTime();
+        printResponse();
     }
 
-    void print_debug_info() {
-        //debug info
-        std::cout << "== DEBUG INFO == \n";
-        std::cout << "\tSERVER: " << this->server_ip << "\n\t" << "PORT: " << this->port << "\n";
+    std::time_t getServerTime() const {
+        // Return 0 if the timestamp is not set (i.e., no response received yet)
+        if (packet_buffer.packet.txTimeSec == 0) {
+            return 0;
+        }
+        return static_cast<std::time_t>(packet_buffer.packet.txTimeSec - NTP_TIMESTAMP_DELTA);
     }
+
+    std::string getExtensionData() const {
+        // The extension length must be at least 4 bytes (for type and length fields)
+        if (packet_buffer.ext.length < 4) {
+            return ""; // No valid data, return empty string
+        }
+
+        // Calculate the actual size of the data payload
+        size_t data_payload_size = packet_buffer.ext.length - 4;
+
+        // Create and return a string from the raw byte data
+        return std::string(
+            reinterpret_cast<const char*>(packet_buffer.ext.data),
+            data_payload_size
+        );
+    }
+
 
 private:
+    // --- Member Variables ---
     SOCKET sock = INVALID_SOCKET;
     std::string server_ip;
     int port;
     sockaddr_in server_addr;
-    //char buffer[48]{};
-    NtpPacket packet{}; //{} init's with all 0's
-    NtpExtensionField ext{};
-    NtpPacketWithExtension packetWithExtension{}; //used as size placeholder. packet and ext are where the data actualyl is. Prolly worth fixing later
+
+    // GOOD: One struct to hold all packet data for both sending and receiving.
+    NtpPacketWithExtension packet_buffer{};
 
     static constexpr uint64_t NTP_TIMESTAMP_DELTA = 2208988800ULL;
 
+    // --- Core Networking (Unchanged) ---
     void initWinsock() {
         WSADATA wsaData;
-        if (WSAStartup(MAKEWORD(2, 2), &wsaData)) {
+        // Request Winsock version 2.2
+        if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
             throw std::runtime_error("WSAStartup failed.");
         }
     }
 
+    /**
+     * @brief Creates the client's UDP socket.
+     */
     void createSocket() {
+        // Create a socket for UDP over IPv4
         this->sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+        // Check for errors
         if (this->sock == INVALID_SOCKET) {
-            WSACleanup();
-            throw std::runtime_error("Socket creation failed.");
+            WSACleanup(); // Clean up Winsock resources
+            throw std::runtime_error("Socket creation failed with error: " + std::to_string(WSAGetLastError()));
         }
     }
 
+    /**
+     * @brief Fills the sockaddr_in struct with the server's IP and port.
+     */
     void setupServerAddress() {
+        // Zero out the structure to prevent any garbage data
         memset(&this->server_addr, 0, sizeof(this->server_addr));
+
+        // Set the address family to IPv4
         this->server_addr.sin_family = AF_INET;
-        this->server_addr.sin_port = htons(port);
-        inet_pton(AF_INET, server_ip.c_str(), &this->server_addr.sin_addr);
+
+        // Set the port, converting it to network byte order
+        this->server_addr.sin_port = htons(this->port);
+
+        // Convert the IP address string to the binary format required by the struct
+        int result = inet_pton(AF_INET, this->server_ip.c_str(), &this->server_addr.sin_addr);
+        if (result <= 0) {
+            if (result == 0) {
+                throw std::runtime_error("Invalid IP address string provided.");
+            }
+            else {
+                throw std::runtime_error("inet_pton failed with error: " + std::to_string(WSAGetLastError()));
+            }
+        }
+    }
+
+    // --- Packet Preparation and Sending ---
+    void prepareRequestPacket(const std::string& data) {
+        // 1. Clear the buffer
+        memset(&packet_buffer, 0, sizeof(packet_buffer));
+
+        // 2. Fill the main NTP packet fields
+        packet_buffer.packet.li_vn_mode = 0b00100011; // VN=4, Mode=3 (client)
+        // ... set other necessary NTP fields ...
+
+        // 3. Fill the extension field
+        packet_buffer.ext.type = 0xABCD; // Your custom type
+        size_t data_size = data.length();
+        size_t bytes_to_copy = (std::min)(data_size, sizeof(packet_buffer.ext.data));
+        memcpy(packet_buffer.ext.data, data.c_str(), bytes_to_copy);
+
+        // The length includes its own header (4 bytes) plus the data payload
+        packet_buffer.ext.length = 4 + bytes_to_copy;
     }
 
     void sendRequest() {
+        // IMPORTANT: Convert to network byte order right before sending
+        convertToNetworkOrder(packet_buffer);
+
         int sent = sendto(
-            this->sock,
-            reinterpret_cast<char*>(&this->packet),
-            sizeof(this->packet),
+            sock,
+            reinterpret_cast<char*>(&packet_buffer),
+            sizeof(packet_buffer), // Send the entire structure
             0,
-            (sockaddr*)&this->server_addr,
-            sizeof(this->server_addr)
+            (sockaddr*)&server_addr,
+            sizeof(server_addr)
         );
+
+        // Optional: Convert back to host order if you need to reuse the struct
+        convertToHostOrder(packet_buffer);
+
         if (sent == SOCKET_ERROR) {
             throw std::runtime_error("sendto failed.");
         }
     }
 
+    // --- Receiving and Parsing ---
     void receiveResponse() {
-    //    sockaddr_in from{};
-    //    int from_len = sizeof(from);
-
-    //    int received = recvfrom(
-    //        this->sock,
-    //        reinterpret_cast<char*>(&this->packet),
-    //        sizeof(this->packet),
-    //        0,
-    //        (sockaddr*)&from,
-    //        &from_len
-    //    );
-
-    //}
         sockaddr_in from{};
         int from_len = sizeof(from);
 
-
-        //note, this expects it to be 60 bytes every time. If it's not, it will either hang or fail
         int received = recvfrom(
-            this->sock,
-            reinterpret_cast<char*>(&this->packet),
-            //60, // buffer size, sizeof(this->packetWithExtension) is 48, not full thing
-            sizeof(this->packetWithExtension),
+            sock,
+            reinterpret_cast<char*>(&packet_buffer),
+            sizeof(packet_buffer), // Receive into the entire structure
             0,
             (sockaddr*)&from,
             &from_len
         );
 
         if (received == SOCKET_ERROR) {
-            throw std::runtime_error("recvfrom failed.");
+            throw std::runtime_error("recvfrom failed with error: " + std::to_string(WSAGetLastError()));
         }
 
-        // Check if there's an extension field in the received data
-        if (received >= sizeof(NtpPacket)) {
-            const uint8_t* rawData = reinterpret_cast<const uint8_t*>(&this->packet);
+        // IMPORTANT: Convert from network byte order right after receiving
+        convertToHostOrder(packet_buffer);
+    }
 
-            parse_extension_field(rawData);
+    void printResponse() {
+        std::cout << "== NTP Response Received ==\n";
 
-            //// Assuming the extension starts right after the regular NTP packet structure
-            //size_t extensionStart = sizeof(NtpPacket);
+        // Now you can just access the members directly!
+        std::cout << "Stratum: " << static_cast<int>(packet_buffer.packet.stratum) << "\n";
 
-            //if (received > extensionStart) {
-            //    std::cout << "Extension Field Discovered\n";
-            //    std::cout << "Parsing Extension Field\n";
+        uint32_t seconds = packet_buffer.packet.txTimeSec;
+        std::cout << "Timestamp (seconds since 1900): " << seconds << "\n";
 
-            //    //parse_extension_field
-
-            //// If data is beyond the normal NTP packet size, parse the extension into the struct
-            //    NtpExtensionField extension;
-            //    memcpy(&extension, rawData + extensionStart, sizeof(NtpExtensionField));
-            //    this->ext = extension;  // Store extension field
-            //}
-
-
-            //std::cout << "Extension Length: " << this->ext.length << "\n";
-            //std::cout << "Extension Type: " << this->ext.type << "\n";
-            //std::cout << "Extension Data: " << this->ext.data << "\n";
+        // Check if the extension field has a valid length
+        if (packet_buffer.ext.length >= 4) {
+            std::cout << "Extension Type: 0x" << std::hex << packet_buffer.ext.type << std::dec << "\n";
+            std::cout << "Extension Length: " << packet_buffer.ext.length << "\n";
+            // Print data safely, ensuring null termination for cout
+            std::string data_str(
+                reinterpret_cast<char*>(packet_buffer.ext.data),
+                packet_buffer.ext.length - 4
+            );
+            std::cout << "Extension Data: \"" << data_str << "\"\n";
         }
     }
 
-    std::time_t parseTime() const {
-        uint32_t seconds = ntohl(this->packet.txTimeSec);
-        return static_cast<std::time_t>(seconds - NTP_TIMESTAMP_DELTA);
-    }
-    
-
-    void parse_extension_field(const uint8_t* rawData) {        
-        //std::cout << "Parsing Extension Field\n";
-        //size_t extensionStart = sizeof(NtpPacket);
-
-        //// parse_extension_field
-
-        ////// If data is beyond the normal NTP packet size, parse the extension into the struct
-        //NtpExtensionField extension;
-        //memcpy(&extension, rawData + extensionStart, sizeof(NtpExtensionField));
-        //this->ext = extension;  // Store extension field
-
-        ////these 2 print wrong
-        ////std::cout << "Extension Length: " << this->ext.length << "\n";
-        //std::cout << "Extension Length: " << ntohs(this->ext.length) << "\n"; //need to use ntohs to get back into little endian from net order (big endian)
-        //std::cout << "Extension Type: " << ntohs(this->ext.type) << "\n";
-        ////this prints correctly(ish, AAAAAAAA and a pi symbol)
-        //std::cout << "Extension Data: " << this->ext.data << "\n";
-
-        std::cout << "Parsing Extension Field\n";
-
-        // Create a "walking" pointer to the beginning of the extension data
-        const uint8_t* p = rawData + sizeof(NtpPacket);
-
-        // Pull type out (2 bytes, uint16_t)
-        uint16_t raw_type;
-        memcpy(&raw_type, p, sizeof(uint16_t));
-        this->ext.type = ntohs(raw_type);
-        p += sizeof(uint16_t); // Advance the pointer by 2 bytes
-
-        // Pull length out (2 bytes, uint16_t)
-        uint16_t raw_length;
-        memcpy(&raw_length, p, sizeof(uint16_t));
-        this->ext.length = ntohs(raw_length);
-        p += sizeof(uint16_t); // Advance the pointer by 2 bytes
-
-        //pull rest ot bytes, which is data field
-        if (this->ext.length < 4) {
-            // This is an invalid length, handle error
-            std::cerr << "Error: Invalid extension length " << this->ext.length << "\n";
-            return;
-        }
-        //strip out the 4 byte headers
-        size_t data_payload_size = this->ext.length - 4;
-
-        // 3. Copy the raw data payload. No endian conversion needed for raw bytes.
-        // Add a safety check to prevent a buffer overflow on this->ext.data, 
-        // we make sure that at the specified size is not smaller than the data, which would overflow.
-        // std::min would limit the copy size to the buffer's capacity to prevent an overflow.
-        size_t bytes_to_copy = (std::min)(data_payload_size, sizeof(this->ext.data)); //need to () std::min as it conflicts with win macros, () hides from preprocessor
-        memcpy(this->ext.data, p, bytes_to_copy);
-
-        std::cout << "Extension Type: " << this->ext.type << "\n";
-        std::cout << "Extension Length: " << this->ext.length << "\n";
-        std::cout << "Extension Data: " << this->ext.data << "\n";
-
+    // --- Helper Functions for Endian Conversion ---
+    void convertToNetworkOrder(NtpPacketWithExtension& p) {
+        // Packet
+        p.packet.rootDelay = htonl(p.packet.rootDelay);
+        p.packet.rootDispersion = htonl(p.packet.rootDispersion);
+        p.packet.refId = htonl(p.packet.refId);
+        p.packet.refTimeSec = htonl(p.packet.refTimeSec);
+        p.packet.refTimeFrac = htonl(p.packet.refTimeFrac);
+        p.packet.origTimeSec = htonl(p.packet.origTimeSec);
+        p.packet.origTimeFrac = htonl(p.packet.origTimeFrac);
+        p.packet.recvTimeSec = htonl(p.packet.recvTimeSec);
+        p.packet.recvTimeFrac = htonl(p.packet.recvTimeFrac);
+        p.packet.txTimeSec = htonl(p.packet.txTimeSec);
+        p.packet.txTimeFrac = htonl(p.packet.txTimeFrac);
+        // Extension
+        p.ext.type = htons(p.ext.type);
+        p.ext.length = htons(p.ext.length);
     }
 
-
-    void printRawBuffer() const {
-        const uint8_t* raw = reinterpret_cast<const uint8_t*>(&this->packet);
-        //constexpr size_t size = sizeof(NtpPacket);
-        constexpr size_t size = sizeof(NtpPacketWithExtension);
-
-        std::cout << "NTP Packet Raw Buffer (hex):\n";
-        for (size_t i = 0; i < size; ++i) {
-            printf("%02X ", raw[i]);
-            if ((i + 1) % 8 == 0) std::cout << "\n"; // group by 8 bytes
-        }
+    void convertToHostOrder(NtpPacketWithExtension& p) {
+        // This is the exact same logic, as ntoh/hton are often identical macros
+        // But it's good practice to have separate functions for clarity
+        convertToNetworkOrder(p);
     }
-
 };
 
+// main() is the entry point of your program
 int main() {
     try {
-        NtpClient client;
-        client.print_debug_info();
-        std::time_t t = client.getTime();
-        //std::string t_string = client.getTime();
-        std::cout << "NTP Time (UTC): " << std::ctime(&t);
-    }
-    catch (const std::exception& e) {
-        std::cerr << "NTP Client error: " << e.what() << '\n';
+        // Create an instance of the client.
+        // We'll use a real public NTP server pool and the standard NTP port (123).
+        NtpClient client("127.0.0.1", 6969);
+
+        // Call the method that prepares, sends, and receives the packet.
+        client.sendAndReceiveExtension();
+        std::string extension_data = client.getExtensionData();
+        std::cout << extension_data << std::endl;
+
+        std::time_t server_time = client.getServerTime();
+        std::cout << "✅ Success! Retrieved data from the client.\n";
+        std::cout << "Server Time (from getter): " << ctime(&server_time);
+    
     }
 
-    return 0;
+
+    catch (const std::exception& e) {
+        // If anything goes wrong (socket creation, send/receive), an exception is thrown.
+        // We catch it here and print the error message.
+        std::cerr << "An error occurred: " << e.what() << std::endl;
+        return 1; // Indicate failure
+    }
+
+    return 0; // Indicate success
 }
+
+//int main() {
+//    try {
+//        NtpClient client;
+//        client.print_debug_info();
+//        std::time_t t = client.getTime();
+//        //std::string t_string = client.getTime();
+//        std::cout << "NTP Time (UTC): " << std::ctime(&t);
+//    }
+//    catch (const std::exception& e) {
+//        std::cerr << "NTP Client error: " << e.what() << '\n';
+//    }
+//
+//    return 0;
+//}
