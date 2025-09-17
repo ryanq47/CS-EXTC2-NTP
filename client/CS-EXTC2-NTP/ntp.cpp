@@ -5,8 +5,10 @@
 #include <iostream>
 #include <vector>
 #include <iomanip>
+//for htons
+#include <winsock2.h> 
+#pragma comment(lib, "Ws2_32.lib")
 
-#include <winsock2.h> //for htons
 /*
 * 
 * NTP Packet Reference
@@ -114,12 +116,30 @@ public:
         return packetVector;
     }
 
-    void addExtensionField(const std::array<uint8_t, 4>& fieldType, const std::vector<uint8_t>& value) {
-        //first 4 are the size, rest is the vector/rest of extension field
-        size_t extLength = 2 + 2 + value.size(); //2 bytes of field type, 2 of length, size of data
-        //RFC 7822 defines NTP ext feilds, which specify 2 bytes of ext type, and 2 of length. To look legit, we should follow that
 
-        //size_t paddedLength = (extLength + 3) & ~3;
+/**
+* @brief Adds an extension field to the current packet. This is where data is hidden
+* 
+*
+* @param fieldType std::array<uint8_t, 2>& fieldType, the "type" of extension it is. Ex: `std::array<uint8_t, 2> myFieldArray = {1,2};`
+* @param data std::vector<uint8_t>& data, the data that is added to the extension field. Ex: `std::vector<uint8_t> packetData = {10,20,30,40};` Using uint8_t as this can hold one byte of any value, which is perfect for tunneling data.
+* @return void
+*/
+    void addExtensionField(const std::array<uint8_t, 2>& fieldType, const std::vector<uint8_t>& data) {
+        //first 4 are the size, rest is the vector/rest of extension field
+        size_t extLength = 2 + 2 + data.size(); //2 bytes of field type, 2 of length, size of data
+        /*
+        
+        RFC 7822 defines NTP ext feilds, which specify 2 bytes of ext type, and 2 of length. To look legit, we should follow that
+        https://datatracker.ietf.org/doc/html/rfc7822#page-3
+
+        Note, this limits each extensino field to  65532 octets (from RFC 7822):
+
+            While the minimum field length containing required fields is
+            four words (16 octets), the maximum field length cannot be longer
+            than 65532 octets/bytes, due to the maximum size of the Length field.
+        */
+
         /*
             The field length needs to be padded to a multiple of 4 bytes. We can use this calculation to mathematically round up to the nearest multiple of 4.            
             This hurts my brain a bit.
@@ -159,10 +179,26 @@ public:
         std::memcpy(extension_.data() + 2, &netLength, 2);
 
         //then get rest of data into it
-        std::memcpy(extension_.data() + 4, value.data(), value.size());
+        std::memcpy(extension_.data() + 4, data.data(), data.size());
+
+
+        //Debug Prings
+        std::cout << "[?] Ext Length:\t\t" << extLength << std::endl;
+        std::cout << "[?] padded Length:\t" << paddedLength << std::endl;
+        //std::cout << "[?] :\t" << paddedLength << std::endl;
+
     }
 
+ /**
+ * @brief Prints the current packet buffer to the terminal
+ *
+ * @return void
+ */
     void printPacket() const {
+ 
+        //bugged if calling after adding extension.
+        //Works on first call (ex, if called ONLY after adding extension, the sizing is correct)
+        //Not a big deal right now, but something to keep in mind
         auto packet = getPacket();
         std::cout << "Packet (" << packet.size() << " bytes):" << std::endl;
         for (size_t i = 0; i < packet.size(); ++i) {
@@ -171,7 +207,7 @@ public:
             if ((i + 1) % 8 == 0) std::cout << std::endl;
         }
 
-        std::cout << "li_vn_mode" << packet_.li_vn_mode << std::endl;
+        //std::cout << "li_vn_mode" << packet_.li_vn_mode << std::endl;
     }
 
 private:
