@@ -6,6 +6,7 @@
 #include <vector>
 #include <iomanip>
 
+#include <winsock2.h> //for htons
 /*
 * 
 * NTP Packet Reference
@@ -113,12 +114,51 @@ public:
         return packetVector;
     }
 
-    void addExtensionField(const std::array<uint8_t, 4>& fieldType,
-        const std::vector<uint8_t>& value) {
-        size_t extLength = 4 + value.size();
-        size_t paddedLength = (extLength + 3) & ~3;
+    void addExtensionField(const std::array<uint8_t, 4>& fieldType, const std::vector<uint8_t>& value) {
+        //first 4 are the size, rest is the vector/rest of extension field
+        size_t extLength = 2 + 2 + value.size(); //2 bytes of field type, 2 of length, size of data
+        //RFC 7822 defines NTP ext feilds, which specify 2 bytes of ext type, and 2 of length. To look legit, we should follow that
+
+        //size_t paddedLength = (extLength + 3) & ~3;
+        /*
+            The field length needs to be padded to a multiple of 4 bytes. We can use this calculation to mathematically round up to the nearest multiple of 4.            
+            This hurts my brain a bit.
+
+            If extLength = 1,
+                1 + 3 = 4
+                4 / 4 = 1       
+                1 * 4 = 4       padded length
+
+            If extLength = 2,
+                2 + 3 = 5
+                5 / 4 = 1       int, so decimal gets chopped off
+                1 * 4 = 4       padded length
+
+            If extLength = 3,
+                3 + 3 = 6
+                6 / 4 = 1       int, so decimal gets chopped off
+                1 * 4 = 4       padded length
+
+            If extLength = 4,
+                4 + 3 = 7
+                7 / 4 = 1       int, so decimal gets chopped off
+                1 * 4 = 4       padded length
+        
+        */
+        size_t paddedLength = ((extLength + 3) / 4) * 4;
+
+        //resize to size of full new legth, and the 0 is all new values are 0, 0 fills the rest here
         extension_.resize(paddedLength, 0);
-        std::memcpy(extension_.data(), fieldType.data(), 4);
+
+        // Copy fieldType/extensionTpe (2 bytes)
+        std::memcpy(extension_.data(), fieldType.data(), 2);
+
+        // Copy extension length (2 bytes) in network byte order (big endian)
+        //need to convert length to net order due to RFC/sending data over the line standards.
+        uint16_t netLength = htons(static_cast<uint16_t>(extLength));
+        std::memcpy(extension_.data() + 2, &netLength, 2);
+
+        //then get rest of data into it
         std::memcpy(extension_.data() + 4, value.data(), value.size());
     }
 
