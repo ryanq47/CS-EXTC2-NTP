@@ -6,6 +6,7 @@
 #include <vector>
 #include <iomanip>
 #include "ntp.hpp"
+#include "createntp.hpp"
 //for htons
 #include <winsock2.h> 
 #pragma comment(lib, "Ws2_32.lib")

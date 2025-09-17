@@ -124,10 +124,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="ntp.cpp" />
+    <ClCompile Include="createntp.cpp" />
+    <ClCompile Include="parsentp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="constants.hpp" />
+    <ClInclude Include="createntp.hpp" />
     <ClInclude Include="ntp.hpp" />
+    <ClInclude Include="parsentp.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
