@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <iomanip>
+#include "ntp.hpp"
 //for htons
 #include <winsock2.h> 
 #pragma comment(lib, "Ws2_32.lib")
@@ -46,171 +47,132 @@
 
 */
 
-class NTPPacket {
-public:
-    // Define the struct inside the class
-#pragma pack(push, 1)
-    struct PacketData {
-        uint8_t li_vn_mode;
-        uint8_t stratum;
-        uint8_t poll;
-        int8_t precision;
-        uint32_t root_delay;
-        uint32_t root_dispersion;
-        uint32_t reference_id;
-        uint64_t reference_ts;
-        uint64_t originate_ts;
-        uint64_t receive_ts;
-        uint64_t transmit_ts;
-    };
-#pragma pack(pop)
 
-    static constexpr size_t BASE_PACKET_SIZE = sizeof(PacketData);
+std::vector<uint8_t> NTPPacket::getPacket() const {
+    std::vector<uint8_t> packetVector(sizeof(PacketData));
+    std::memcpy(packetVector.data(), &packet_, sizeof(PacketData));
+    //if extension, add in extra bytes to end
+    packetVector.insert(packetVector.end(), extension_.begin(), extension_.end());
+    return packetVector;
+}
 
-    NTPPacket(uint8_t li = 0, uint8_t version = 4, uint8_t mode = 3) {
-        std::memset(&packet_, 0, sizeof(PacketData));
+NTPPacket::NTPPacket(uint8_t li, uint8_t version, uint8_t mode) {
+    std::memset(&packet_, 0, sizeof(PacketData));
 
-        //packet things & bitshift reference
+    //packet things & bitshift reference
 
-        //Note, bitshift reference cuz C++ does it weird w syntax
-        /*
-        1 << 0  = 00000001 (1)
-        1 << 1  = 00000010 (2)
-        1 << 2  = 00000100 (4)
-        1 << 3  = 00001000 (8)
-        1 << 4  = 00010000 (16)
-        1 << 5  = 00100000 (32)
-        1 << 6  = 01000000 (64)
-        1 << 7  = 10000000 (128)
+    //Note, bitshift reference cuz C++ does it weird w syntax
+    /*
+    1 << 0  = 00000001 (1)
+    1 << 1  = 00000010 (2)
+    1 << 2  = 00000100 (4)
+    1 << 3  = 00001000 (8)
+    1 << 4  = 00010000 (16)
+    1 << 5  = 00100000 (32)
+    1 << 6  = 01000000 (64)
+    1 << 7  = 10000000 (128)
 
-        Basically, 1,then X number of zero's get put to the left
+    Basically, 1,then X number of zero's get put to the left
 
-        For the li_vn_mode: 
-        Bits:   7   6   5   4   3   2   1   0
-               [LI][LI][VN][VN][VN][MO][MO][MO]
+    For the li_vn_mode:
+    Bits:   7   6   5   4   3   2   1   0
+           [LI][LI][VN][VN][VN][MO][MO][MO]
 
 
-        The below line does this:
-        */
-        uint8_t _li = (li << 6);             //XX000000
-        uint8_t _version = (version << 3);   //00XXX000
-        uint8_t _mode = mode;                //000000XX
-        
-        /*
-        then, | XOR's then, which combies into the following struct:
-        Bits:   7   6   5   4   3   2   1   0
-               [LI][LI][VN][VN][VN][MO][MO][MO]
-        */
-        packet_.li_vn_mode = _li | _version | _mode;
-        packet_.stratum = 0;                //distance from ref clock. Fine to be 0
-        packet_.poll = 6;                   //Max interval (seconds) between successive messages. Not sure if it matters or not
-        packet_.precision = -20;            //how precise clock is. -20: 1/1048576 of a second. -6: 1/64 seconds
-        // Other fields remain zero
+    The below line does this:
+    */
+    uint8_t _li = (li << 6);             //XX000000
+    uint8_t _version = (version << 3);   //00XXX000
+    uint8_t _mode = mode;                //000000XX
+
+    /*
+    then, | XOR's then, which combies into the following struct:
+    Bits:   7   6   5   4   3   2   1   0
+           [LI][LI][VN][VN][VN][MO][MO][MO]
+    */
+    packet_.li_vn_mode = _li | _version | _mode;
+    packet_.stratum = 0;                //distance from ref clock. Fine to be 0
+    packet_.poll = 6;                   //Max interval (seconds) between successive messages. Not sure if it matters or not
+    packet_.precision = -20;            //how precise clock is. -20: 1/1048576 of a second. -6: 1/64 seconds
+    // Other fields remain zero
+}
+
+void NTPPacket::addExtensionField(const std::array<uint8_t, 2>& fieldType, const std::vector<uint8_t>& data) {
+    //first 4 are the size, rest is the vector/rest of extension field
+    size_t extLength = 2 + 2 + data.size(); //2 bytes of field type, 2 of length, size of data
+    /*
+
+    RFC 7822 defines NTP ext feilds, which specify 2 bytes of ext type, and 2 of length. To look legit, we should follow that
+    https://datatracker.ietf.org/doc/html/rfc7822#page-3
+
+    Note, this limits each extensino field to  65532 octets (from RFC 7822):
+
+        While the minimum field length containing required fields is
+        four words (16 octets), the maximum field length cannot be longer
+        than 65532 octets/bytes, due to the maximum size of the Length field.
+    */
+
+    /*
+        The field length needs to be padded to a multiple of 4 bytes. We can use this calculation to mathematically round up to the nearest multiple of 4.
+        This hurts my brain a bit.
+
+        If extLength = 1,
+            1 + 3 = 4
+            4 / 4 = 1
+            1 * 4 = 4       padded length
+
+        If extLength = 2,
+            2 + 3 = 5
+            5 / 4 = 1       int, so decimal gets chopped off
+            1 * 4 = 4       padded length
+
+        If extLength = 3,
+            3 + 3 = 6
+            6 / 4 = 1       int, so decimal gets chopped off
+            1 * 4 = 4       padded length
+
+        If extLength = 4,
+            4 + 3 = 7
+            7 / 4 = 1       int, so decimal gets chopped off
+            1 * 4 = 4       padded length
+
+    */
+    size_t paddedLength = ((extLength + 3) / 4) * 4;
+
+    //resize to size of full new legth, and the 0 is all new values are 0, 0 fills the rest here
+    extension_.resize(paddedLength, 0);
+
+    // Copy fieldType/extensionTpe (2 bytes)
+    std::memcpy(extension_.data(), fieldType.data(), 2);
+
+    // Copy extension length (2 bytes) in network byte order (big endian)
+    //need to convert length to net order due to RFC/sending data over the line standards.
+    uint16_t netLength = htons(static_cast<uint16_t>(extLength));
+    std::memcpy(extension_.data() + 2, &netLength, 2);
+
+    //then get rest of data into it
+    std::memcpy(extension_.data() + 4, data.data(), data.size());
+
+
+    //Debug Prings
+    std::cout << "[?] Ext Length:\t\t" << extLength << std::endl;
+    std::cout << "[?] padded Length:\t" << paddedLength << std::endl;
+    //std::cout << "[?] :\t" << paddedLength << std::endl;
+
+}
+
+void NTPPacket::printPacket() const {
+
+    //bugged if calling after adding extension.
+    //Works on first call (ex, if called ONLY after adding extension, the sizing is correct)
+    //Not a big deal right now, but something to keep in mind
+    auto packet = getPacket();
+    std::cout << "Packet (" << packet.size() << " bytes):" << std::endl;
+    for (size_t i = 0; i < packet.size(); ++i) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0')
+            << static_cast<int>(packet[i]) << " ";
+        if ((i + 1) % 8 == 0) std::cout << std::endl;
     }
 
-    std::vector<uint8_t> getPacket() const {
-        std::vector<uint8_t> packetVector(sizeof(PacketData));
-        std::memcpy(packetVector.data(), &packet_, sizeof(PacketData));
-        //if extension, add in extra bytes to end
-        packetVector.insert(packetVector.end(), extension_.begin(), extension_.end());
-        return packetVector;
-    }
-
-
-/**
-* @brief Adds an extension field to the current packet. This is where data is hidden
-* 
-*
-* @param fieldType std::array<uint8_t, 2>& fieldType, the "type" of extension it is. Ex: `std::array<uint8_t, 2> myFieldArray = {1,2};`
-* @param data std::vector<uint8_t>& data, the data that is added to the extension field. Ex: `std::vector<uint8_t> packetData = {10,20,30,40};` Using uint8_t as this can hold one byte of any value, which is perfect for tunneling data.
-* @return void
-*/
-    void addExtensionField(const std::array<uint8_t, 2>& fieldType, const std::vector<uint8_t>& data) {
-        //first 4 are the size, rest is the vector/rest of extension field
-        size_t extLength = 2 + 2 + data.size(); //2 bytes of field type, 2 of length, size of data
-        /*
-        
-        RFC 7822 defines NTP ext feilds, which specify 2 bytes of ext type, and 2 of length. To look legit, we should follow that
-        https://datatracker.ietf.org/doc/html/rfc7822#page-3
-
-        Note, this limits each extensino field to  65532 octets (from RFC 7822):
-
-            While the minimum field length containing required fields is
-            four words (16 octets), the maximum field length cannot be longer
-            than 65532 octets/bytes, due to the maximum size of the Length field.
-        */
-
-        /*
-            The field length needs to be padded to a multiple of 4 bytes. We can use this calculation to mathematically round up to the nearest multiple of 4.            
-            This hurts my brain a bit.
-
-            If extLength = 1,
-                1 + 3 = 4
-                4 / 4 = 1       
-                1 * 4 = 4       padded length
-
-            If extLength = 2,
-                2 + 3 = 5
-                5 / 4 = 1       int, so decimal gets chopped off
-                1 * 4 = 4       padded length
-
-            If extLength = 3,
-                3 + 3 = 6
-                6 / 4 = 1       int, so decimal gets chopped off
-                1 * 4 = 4       padded length
-
-            If extLength = 4,
-                4 + 3 = 7
-                7 / 4 = 1       int, so decimal gets chopped off
-                1 * 4 = 4       padded length
-        
-        */
-        size_t paddedLength = ((extLength + 3) / 4) * 4;
-
-        //resize to size of full new legth, and the 0 is all new values are 0, 0 fills the rest here
-        extension_.resize(paddedLength, 0);
-
-        // Copy fieldType/extensionTpe (2 bytes)
-        std::memcpy(extension_.data(), fieldType.data(), 2);
-
-        // Copy extension length (2 bytes) in network byte order (big endian)
-        //need to convert length to net order due to RFC/sending data over the line standards.
-        uint16_t netLength = htons(static_cast<uint16_t>(extLength));
-        std::memcpy(extension_.data() + 2, &netLength, 2);
-
-        //then get rest of data into it
-        std::memcpy(extension_.data() + 4, data.data(), data.size());
-
-
-        //Debug Prings
-        std::cout << "[?] Ext Length:\t\t" << extLength << std::endl;
-        std::cout << "[?] padded Length:\t" << paddedLength << std::endl;
-        //std::cout << "[?] :\t" << paddedLength << std::endl;
-
-    }
-
- /**
- * @brief Prints the current packet buffer to the terminal
- *
- * @return void
- */
-    void printPacket() const {
- 
-        //bugged if calling after adding extension.
-        //Works on first call (ex, if called ONLY after adding extension, the sizing is correct)
-        //Not a big deal right now, but something to keep in mind
-        auto packet = getPacket();
-        std::cout << "Packet (" << packet.size() << " bytes):" << std::endl;
-        for (size_t i = 0; i < packet.size(); ++i) {
-            std::cout << std::hex << std::setw(2) << std::setfill('0')
-                << static_cast<int>(packet[i]) << " ";
-            if ((i + 1) % 8 == 0) std::cout << std::endl;
-        }
-
-        //std::cout << "li_vn_mode" << packet_.li_vn_mode << std::endl;
-    }
-
-private:
-    PacketData packet_;               // Struct instance
-    std::vector<uint8_t> extension_;  // For extension fields
-};
+    //std::cout << "li_vn_mode" << packet_.li_vn_mode << std::endl;
+}

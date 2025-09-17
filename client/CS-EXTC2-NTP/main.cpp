@@ -7,7 +7,7 @@ CS-EXTC2-NTP
 */
 
 #include <iostream>
-#include "ntp.cpp"
+#include "ntp.hpp"
 
 int main() {
 	//Stuff here

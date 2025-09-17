@@ -126,6 +126,9 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ntp.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ntp.hpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
