@@ -99,9 +99,9 @@ public:
                [LI][LI][VN][VN][VN][MO][MO][MO]
         */
         packet_.li_vn_mode = _li | _version | _mode;
-        packet_.stratum = 0;
-        packet_.poll = 6;
-        packet_.precision = -20;
+        packet_.stratum = 0;                //distance from ref clock. Fine to be 0
+        packet_.poll = 6;                   //Max interval (seconds) between successive messages. Not sure if it matters or not
+        packet_.precision = -20;            //how precise clock is. -20: 1/1048576 of a second. -6: 1/64 seconds
         // Other fields remain zero
     }
 
