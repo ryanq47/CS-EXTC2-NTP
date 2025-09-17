@@ -18,6 +18,7 @@ Extension Field Key:
 
 #include <iostream>
 #include "createntp.hpp"
+#include "parsentp.hpp"
 #include "ntp.hpp"
 #include "constants.hpp"
 
@@ -38,6 +39,10 @@ int main() {
 	packet.printPacket();
 
 	//std::cout << packet << std::endl;
+
+	auto packetParser = NTPPacketParser(packetData);
+	
+	//get payload, etc.
 	
 
 }
