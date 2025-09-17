@@ -26,7 +26,6 @@ also remember - .at/vectors are 0 indexed.
 #include <iostream>
 
 NTPPacketParser::NTPPacketParser(std::vector<uint8_t> ntpPacket) {
-    //weird but, packet not full size???? says its 4.
     std::cout << "Parsing packet of size " << ntpPacket.size() << std::endl;
     std::cout << "Struct size" << sizeof(PacketData) << std::endl;
     if (ntpPacket.size() < sizeof(PacketData)) {
@@ -55,5 +54,18 @@ NTPPacketParser::NTPPacketParser(std::vector<uint8_t> ntpPacket) {
 
 
     //also - don't bother adding the ext field to the struct,just manually extract the extension field based on length, etc. rather than adding complications with struct stuff
+
+}
+
+void NTPPacketParser::_extractExtension() {
+    /*
+    Extract extension from packet
+    
+
+    Store type, payload, and size in class var, 
+
+    Not meant to be called from outside of this class. is a private method
+    */
+
 
 }

@@ -36,13 +36,15 @@ int main() {
 		packetData
 	);
 
-	packet.printPacket();
+	//packet.printPacket();
 
 	//std::cout << packet << std::endl;
-
-	auto packetParser = NTPPacketParser(packetData);
+	std::vector < uint8_t> packet_bytes = packet.getPacket();
+	auto packetParser = NTPPacketParser(packet_bytes);
 	
 	//get payload, etc.
 	
+
+	packet.printPacket();
 
 }

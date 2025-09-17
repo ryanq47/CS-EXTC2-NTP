@@ -11,5 +11,7 @@ public:
 private:
     //move this into a class var so it can be accessed everywhere
     PacketData packetStruct;
+
+    void NTPPacketParser::extractExtension();
 };
 
