@@ -74,4 +74,6 @@ Figure out chunking. Might be best to one func this, or class it. OneFunc may be
 
 Uses the same exact chunker as above, BUT, uses adiff header. Maybe '0x10 0xAD' for (pay)load
 
+Then call injection logic to run payload.
+
 */
