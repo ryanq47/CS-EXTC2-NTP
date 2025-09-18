@@ -22,11 +22,13 @@ Extension Field Key:
 #include "ntp.hpp"
 #include "constants.hpp"
 #include "helpers.hpp"
+#include "net.hpp"
 #include <vector>
 
 std::vector<uint8_t> chunker(std::vector<uint8_t> data) {
 	//1. Calculate size of data, (data.size()), then send a sizePacket to server. If OK, continue
 	size_t dataSize = data.size();
+	std::vector<uint8_t> responseDataBuffer = {};
 
 
 	//int amountOfChunks = dataSize / Chunk::maxChunkSize;
@@ -44,13 +46,22 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data) {
 		std::cout << "[" << i << "/" << amountOfChunks << "]" << " ChunkData: ";
 		printHexVector(chunkData);
 
-		// Now do something with chunkData, e.g. wrap in a Chunk object and send
-		//Chunk chunk(chunkData);
-		//sendChunk(chunk);  // replace with your actual send logic
-	}
+		//placeholder, should return a vector, of the full NTP packet
+		std::vector<uint8_t> response = sendChunk(chunkData); 
 
-		//parse packet wtih NTPPacketParser
-		//if response != an aknlowdgement from the server, then add to chunker array to return that data?
+		//Parse NTP packet, get data out of it (or whatever else is needed)
+		NTPPacketParser packetParser = NTPPacketParser(response);
+		//Get extension data:
+		std::vector<uint8_t> extensionData = packetParser.getExtensionData();
+
+		//take extracted extension data, put into buffer
+		responseDataBuffer.insert(responseDataBuffer.end(), extensionData.begin(), extensionData.end()); // append response to responseBuffer
+
+	}
+	//print full response data
+	std::cout << "Full Data from Responses: ";
+	printHexVector(responseDataBuffer);
+
 
 	//when done looping, return array
 	std::vector<uint8_t> placehodlerVec = { 0 };
