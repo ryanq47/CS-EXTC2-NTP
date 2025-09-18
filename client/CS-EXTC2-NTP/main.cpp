@@ -34,7 +34,7 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data) {
 	//int amountOfChunks = dataSize / Chunk::maxChunkSize;
 	int amountOfChunks = (dataSize + Chunk::maxChunkSize - 1) / Chunk::maxChunkSize; //gives you one extra chunk for remainder
 
-	std::cout << "[?] Data of size " << dataSize << " will need " << amountOfChunks << " chunks to send." << std::endl;
+	std::cout << "[?] Data of size " << dataSize << " will need " << amountOfChunks << " chunks to send. Max Chunk Size: " << Chunk::maxChunkSize << std::endl;
 
 	// Loop over each chunk index
 	for (int i = 0; i < amountOfChunks; ++i) { //++i as we want to get the last chunk
@@ -64,7 +64,7 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data) {
 
 
 	//when done looping, return array
-	std::vector<uint8_t> placehodlerVec = { 0 };
+	std::vector<uint8_t> placehodlerVec = {};
 	return placehodlerVec;
 }
 
