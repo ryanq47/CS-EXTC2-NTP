@@ -74,7 +74,7 @@ public:
 *
 * @return void
 */
-    void printPacket() const;
+    //void printPacket() const;
 
 private:
     PacketData packet_;

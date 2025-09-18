@@ -162,18 +162,18 @@ void NTPPacket::addExtensionField(const std::array<uint8_t, 2>& fieldType, const
 
 }
 
-void NTPPacket::printPacket() const {
-
-    //bugged if calling after adding extension.
-    //Works on first call (ex, if called ONLY after adding extension, the sizing is correct)
-    //Not a big deal right now, but something to keep in mind
-    auto packet = getPacket();
-    std::cout << "Raw Packet (" << packet.size() << " bytes):" << std::endl;
-    for (size_t i = 0; i < packet.size(); ++i) {
-        std::cout << std::hex << std::setw(2) << std::setfill('0')
-            << static_cast<int>(packet[i]) << " ";
-        if ((i + 1) % 8 == 0) std::cout << std::endl;
-    }
+//void NTPPacket::printPacket() const {
+//
+//    //bugged if calling after adding extension.
+//    //Works on first call (ex, if called ONLY after adding extension, the sizing is correct)
+//    //Not a big deal right now, but something to keep in mind
+//    auto packet = getPacket(); //busted cuz it only pulls the struct, not the ful lpacket + extension
+//    std::cout << "Raw Packet (" << packet.size() << " bytes):" << std::endl;
+//    for (size_t i = 0; i < packet.size(); ++i) {
+//        std::cout << std::hex << std::setw(2) << std::setfill('0')
+//            << static_cast<int>(packet[i]) << " ";
+//        if ((i + 1) % 8 == 0) std::cout << std::endl;
+//    }
 
     //std::cout << "li_vn_mode" << packet_.li_vn_mode << std::endl;
-}
+//}
