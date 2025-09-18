@@ -30,7 +30,7 @@ int main() {
 	auto packet = NTPPacket();
 	//packet.printPacket();
 
-	std::vector<uint8_t> packetData = {10,20,30,40};
+	std::vector<uint8_t> packetData = {0xDE,0xAD,0xBE,0xEF};
 	packet.addExtensionField(
 		NtpExtensionField::giveMePayload,
 		packetData
