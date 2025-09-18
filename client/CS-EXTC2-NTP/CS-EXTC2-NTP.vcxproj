@@ -123,6 +123,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="helpers.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="createntp.cpp" />
     <ClCompile Include="parsentp.cpp" />
@@ -130,6 +131,7 @@
   <ItemGroup>
     <ClInclude Include="constants.hpp" />
     <ClInclude Include="createntp.hpp" />
+    <ClInclude Include="helpers.hpp" />
     <ClInclude Include="ntp.hpp" />
     <ClInclude Include="parsentp.hpp" />
   </ItemGroup>

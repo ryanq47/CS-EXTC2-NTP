@@ -25,20 +25,7 @@ also remember - .at/vectors are 0 indexed.
 #include "parsentp.hpp"
 #include "constants.hpp"
 #include <iostream>
-
-
-#include <iostream>
-#include <vector>
-#include <iomanip> // for std::setw and std::setfill
-
-void printHexVector(const std::vector<uint8_t>& vec) {
-    for (size_t i = 0; i < vec.size(); ++i) {
-        std::cout << std::setw(2) << std::setfill('0') << std::hex << (int)vec[i] << " ";
-    }
-    std::cout << std::dec << std::endl; // Reset back to decimal
-}
-
-
+#include "helpers.hpp"
 
 NTPPacketParser::NTPPacketParser(std::vector<uint8_t> ntpPacket) {
     std::cout << "[?] Parsing packet of size: " << ntpPacket.size() << std::endl;
@@ -76,6 +63,10 @@ NTPPacketParser::NTPPacketParser(std::vector<uint8_t> ntpPacket) {
 
     //also - don't bother adding the ext field to the struct,just manually extract the extension field based on length, etc. rather than adding complications with struct stuff
     _extractExtension();
+}
+
+std::vector<uint8_t> NTPPacketParser::getExtensionData() {
+    return this->_extensionData;
 }
 
 void NTPPacketParser::_extractExtension() {

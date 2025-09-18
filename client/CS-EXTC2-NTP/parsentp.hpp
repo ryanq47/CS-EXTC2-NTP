@@ -8,6 +8,7 @@ public:
     static constexpr size_t BASE_PACKET_SIZE = sizeof(PacketData);
 
     NTPPacketParser(std::vector<uint8_t> ntpPacket);
+    std::vector<uint8_t> getExtensionData();
 
 private:
     //move this into a class var so it can be accessed everywhere
@@ -15,7 +16,6 @@ private:
 
     //internal only method to extract extenion out
     void _extractExtension();
-
     //extension private vars
     //uint8_t _extensionType      = 0;
     std::array<uint8_t, 2> _extensionField;
