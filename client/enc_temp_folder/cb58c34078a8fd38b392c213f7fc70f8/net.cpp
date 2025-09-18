@@ -32,8 +32,6 @@ std::vector<uint8_t> placeholderNtpPacket = {
 #pragma comment(lib, "Ws2_32.lib")
 
 //note - wireshark showing as malformed packet, so somethign might be up
-
-//fixed - neeeds to be a valid NTP packet passed in, then it will send. This assumes it's an NTP packet, does not care about chunking, just about sending adn receviing packet.
 std::vector<uint8_t> sendChunk(
     std::vector <uint8_t> packet
 ) {
