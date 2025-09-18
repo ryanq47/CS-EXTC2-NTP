@@ -28,7 +28,7 @@ std::vector<uint8_t> placeholderNtpPacket = {
 #include <string>
 #include <stdexcept>
 #include <iostream>
-
+#include "constants.hpp"
 #pragma comment(lib, "Ws2_32.lib")
 
 //note - wireshark showing as malformed packet, so somethign might be up
@@ -37,17 +37,15 @@ std::vector<uint8_t> placeholderNtpPacket = {
 std::vector<uint8_t> sendChunk(
     std::vector <uint8_t> packet
 ) {
-    //placeholder address
-    std::string serverAddress = "127.0.0.1";
-    uint16_t port = 123;
+    //Pull addresses from constant
+    std::string serverAddress = Net::serverAddress;
+    uint16_t port = Net::port;
 
     std::cout << "[NET] Size of chunk: " << packet.size() << std::endl;
 
     WSADATA wsaData;
     SOCKET sock = INVALID_SOCKET;
     std::vector<uint8_t> response;
-
-
 
     // Initialize Winsock
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
@@ -81,7 +79,7 @@ std::vector<uint8_t> sendChunk(
         }
 
         // Receive response
-        uint8_t buffer[512];  // Typical NTP response is small, this is enough
+        uint8_t buffer[2048];  // 2048 bytes just in case anything gets too big. Probaby should make more dynamic
         sockaddr_in fromAddr = {};
         int fromLen = sizeof(fromAddr);
 
