@@ -29,10 +29,25 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data) {
 	size_t dataSize = data.size();
 
 
-	int amountOfChunks = dataSize / Chunk::maxChunkSize;
-	std::cout << "[?] Data of size " << dataSize << " will need " << dataSize << " chunks to send." << std::endl;
+	//int amountOfChunks = dataSize / Chunk::maxChunkSize;
+	int amountOfChunks = (dataSize + Chunk::maxChunkSize - 1) / Chunk::maxChunkSize; //gives you one extra chunk for remainder
 
-	//loop over data, chunk data into pieces
+	std::cout << "[?] Data of size " << dataSize << " will need " << amountOfChunks << " chunks to send." << std::endl;
+
+	// Loop over each chunk index
+	for (int i = 0; i < amountOfChunks; ++i) { //++i as we want to get the last chunk
+		size_t start = i * Chunk::maxChunkSize; //get how far into the data we need to be to get the chunk
+		size_t end = std::min(start + Chunk::maxChunkSize, dataSize); //gets the smaller of the 2, whether that be dataSize, or start+maxChunkSize. TLDR, prevents trying to read outside of func arg provided data buffer (which is only so big)
+
+		std::vector<uint8_t> chunkData(data.begin() + start, data.begin() + end);
+
+		std::cout << "[" << i << "/" << amountOfChunks << "]" << " ChunkData: ";
+		printHexVector(chunkData);
+
+		// Now do something with chunkData, e.g. wrap in a Chunk object and send
+		//Chunk chunk(chunkData);
+		//sendChunk(chunk);  // replace with your actual send logic
+	}
 
 		//parse packet wtih NTPPacketParser
 		//if response != an aknlowdgement from the server, then add to chunker array to return that data?
