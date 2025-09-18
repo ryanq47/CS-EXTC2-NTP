@@ -46,8 +46,17 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data) {
 		std::cout << "[" << i << "/" << amountOfChunks << "]" << " ChunkData: ";
 		printHexVector(chunkData);
 
+
+		//creat ntp packet first
+		auto packet = NTPPacket();
+		packet.addExtensionField(
+			NtpExtensionField::giveMePayload,
+			chunkData
+		);
+		//pass full ntp packet 
+		std::vector < uint8_t> packet_bytes = packet.getPacket();
 		//placeholder, should return a vector, of the full NTP packet
-		std::vector<uint8_t> response = sendChunk(chunkData); 
+		std::vector<uint8_t> response = sendChunk(packet_bytes);
 
 		//Parse NTP packet, get data out of it (or whatever else is needed)
 		NTPPacketParser packetParser = NTPPacketParser(response);
