@@ -78,13 +78,14 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         std::cout << "[?] sizePacket recieved, starting chunking" << std::endl;
 
         uint32_t clientID = generateClientID();
-        std::cout << "Theoretical Client ID" << clientID << std::endl;
+        std::cout << "Theoretical Client ID: " << clientID << std::endl;
+
+        //placeholder for ID
+        std::vector<uint8_t> clientIdVector = uint32ToBytes(clientID);
+        //std::vector<uint8_t> clientIdVector = { 0x00,0x00,0x00,0x00 };
 
         //create NTP packet for response, with client ID included
         NTPPacket idPacket;
-
-        //placeholder for ID
-        std::vector<uint8_t> clientIdVector = { 0x00,0x00,0x00,0x00 };
 
         idPacket.addExtensionField(
             NtpExtensionField::idPacket,

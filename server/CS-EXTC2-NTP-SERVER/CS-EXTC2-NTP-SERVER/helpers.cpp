@@ -73,6 +73,28 @@ void sendNormalNtpPacket(sockaddr_in* client_addr, SOCKET sock) {
 }
 
 /*
+
+Does byte stuff to shift each byte into one in the vector:
+
+Ex: Shifts 24 0's in front of value
+bytes[0] = static_cast<uint8_t>((value >> 24) & 0xFF);
+00000000 00000000 00000000 00010010   (0x00000012)
+
+Does for each, at 16, then 8, then 0
+
+Just aligns thigns into a uint32
+
+*/
+std::vector<uint8_t> uint32ToBytes(uint32_t value) {
+    std::vector<uint8_t> bytes(4);
+    bytes[0] = static_cast<uint8_t>((value >> 24) & 0xFF); // Most significant byte
+    bytes[1] = static_cast<uint8_t>((value >> 16) & 0xFF);
+    bytes[2] = static_cast<uint8_t>((value >> 8) & 0xFF);
+    bytes[3] = static_cast<uint8_t>(value & 0xFF);         // Least significant byte
+    return bytes;
+}
+
+/*
 For sending an NTP packet back.
 */
 void sendNtpPacket(sockaddr_in* client_addr, SOCKET sock, std::vector<uint8_t> ntpPacket) {
