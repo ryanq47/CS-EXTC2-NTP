@@ -25,30 +25,47 @@ Extension Field Key:
 #include "net.hpp"
 #include <vector>
 
+std::vector<uint8_t> size_tToBytes(size_t value) {
+	std::vector<uint8_t> bytes(sizeof(size_t));
+	std::memcpy(bytes.data(), &value, sizeof(size_t));
+	return bytes;
+}
+
 std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField) {
 	//1. Calculate size of data, (data.size()), then send a sizePacket to server. If OK, continue
-	size_t dataSize = data.size();
+	uint64_t dataSize = data.size(); //uint64_t acn hold a size of like 18 Quadrillion bytes (18 exabytes). I hope someone isn't sending that much data
+	//but who knows. Rather be safe than sorry.
 	
-	////send initial packet with size of total message
-	//auto packet = NTPPacket();
-	//packet.addExtensionField(
-	//	extensionField, //NtpExtensionField::giveMePayload,
-	//	chunkData
-	//);
+	/*
+	Need to send a size message to tell the server that the total message length will be X size, for chunking purposes. 
+	*/
+	auto packetToNotifyServerOfSize = NTPPacket();
 
-	//std::vector < uint8_t> packet_bytes = packet.getPacket();
-	////placeholder, should return a vector, of the full NTP packet
-	//std::vector<uint8_t> response = sendChunk(packet_bytes);
-	//
+
+	auto incomingSize = size_tToBytes(dataSize);
+	packetToNotifyServerOfSize.addExtensionField(
+		NtpExtensionField::sizePacket, //NtpExtensionField::giveMePayload,
+		incomingSize
+	);
+
+	std::vector < uint8_t> packetToNotifyServerOfSizeBytes = packetToNotifyServerOfSize.getPacket();
+	std::vector<uint8_t> response = sendChunk(packetToNotifyServerOfSizeBytes);
 	
+	//extract session ID
+	//std::vector<uint8_t> sessionID;
+	////48 for init packet, 4 past response
+	//sessionID.insert(sessionID.end(), response.begin() + 48 + 4, response.end());
+	//std::cout << "[?] Session ID: " << std::endl;
+	//printHexVector(sessionID);
+
+	std::cout << "[?] Packet to notify server of size: " << std::endl;
+	printHexVectorPacket(packetToNotifyServerOfSizeBytes);
+
+	//2. Start chunking process
+	std::cout << "[?] Starting chunking process: --------------------" << std::endl;
+
 	std::vector<uint8_t> responseDataBuffer = {};
-
-
-
-
-	//int amountOfChunks = dataSize / Chunk::maxChunkSize;
 	int amountOfChunks = (dataSize + Chunk::maxChunkSize - 1) / Chunk::maxChunkSize; //gives you one extra chunk for remainder
-
 	std::cout << "[?] Data of size " << dataSize << " will need " << amountOfChunks << " chunks to send. Max Chunk Size: " << Chunk::maxChunkSize << std::endl;
 
 	// Loop over each chunk index
@@ -83,9 +100,10 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 
 	}
 	//print full response data
-	std::cout << "Full Data from Responses: ";
+	std::cout << "[?] Full Data from Responses: ";
 	printHexVector(responseDataBuffer);
 
+	std::cout << "[?] chunking process complete: --------------------" << std::endl;
 
 	//when done looping, return array
 	//std::vector<uint8_t> placehodlerVec = {};

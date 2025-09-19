@@ -41,7 +41,7 @@ std::vector<uint8_t> sendChunk(
     std::string serverAddress = Net::serverAddress;
     uint16_t port = Net::port;
 
-    std::cout << "[NET] Size of chunk: " << packet.size() << std::endl;
+    //std::cout << "[NET] Size of chunk: " << packet.size() << std::endl;
 
     WSADATA wsaData;
     SOCKET sock = INVALID_SOCKET;
