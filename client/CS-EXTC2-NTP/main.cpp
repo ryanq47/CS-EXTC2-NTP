@@ -19,11 +19,16 @@ std::vector<uint8_t> size_tToBytes(size_t value) {
 }
 
 std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField) {
-
+	std::cout << "----------------------" << std::endl;
+	std::cout << "Sending NTP Packet(s)	" << std::endl;
+	std::cout << "----------------------" << std::endl;
+	//packetDebugger(data);
 	//1. Calculate size of data, (data.size()), then send a sizePacket to server. If OK, continue
 	uint64_t dataSize = data.size(); //uint64_t acn hold a size of like 18 Quadrillion bytes (18 exabytes). I hope someone isn't sending that much data
 	//but who knows. Rather be safe than sorry.
 	
+
+
 	std::cout << "[?] Chunker started on data the size of : " << dataSize << std::endl;
 
 
@@ -39,8 +44,9 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 		incomingSize
 	);
 
-	std::cout << "[?] Packet to notify server of size: " << std::endl;
-	printHexVectorPacket(packetToNotifyServerOfSize.getPacket());
+	std::cout << "[?] Sending size packet " << std::endl;
+	//std::cout << "[?] Packet to notify server of size: " << std::endl;
+	//printHexVectorPacket(packetToNotifyServerOfSize.getPacket());
 
 	std::vector < uint8_t> packetToNotifyServerOfSizeBytes = packetToNotifyServerOfSize.getPacket();
 	std::vector<uint8_t> response = sendChunk(packetToNotifyServerOfSizeBytes);
@@ -79,10 +85,22 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 
 		//pass full ntp packet 
 		std::vector < uint8_t> packet_bytes = packet.getPacket();
-		//placeholder, should return a vector, of the full NTP packet
-		std::vector<uint8_t> response = sendChunk(packet_bytes);
+
+		//Print that we've received  a packet, and then print debug items below it
+		std::cout << "----------------------" << std::endl;
+		//std::cout << "Sending NTP Packet	" << std::endl;
+		std::cout << "Sending NTP Packet [" << i+1 << "/" << amountOfChunks << "]" << std::endl;
+		std::cout << "----------------------" << std::endl;
 		//run the debugger directly on the incoming respnose packet
-		//packetDebugger(response);
+		packetDebugger(packet_bytes);
+		std::vector<uint8_t> response = sendChunk(packet_bytes);
+
+		//Print that we've received  a packet, and then print debug items below it
+		std::cout << "----------------------" << std::endl;
+		std::cout << "Recieved Response Packet" << std::endl;
+		std::cout << "----------------------" << std::endl;
+		//run the debugger directly on the incoming respnose packet
+		packetDebugger(response);
 
 		//Parse NTP packet, get data out of it (or whatever else is needed)
 		NTPPacketParser packetParser = NTPPacketParser(response);
@@ -120,22 +138,19 @@ int main() {
 		packetData
 	);
 
-	//packet.printPacket();
-
-
 	//parse the created packet (testing parser)
 	std::vector < uint8_t> packet_bytes = packet.getPacket();
 	NTPPacketParser packetParser = NTPPacketParser(packet_bytes);
 	std::vector<uint8_t> extensionData = packetParser.getExtensionData();
 
-	std::cout << "[?] extensionData (From Main):";
-	printHexVector(extensionData);
-	std::cout << std::endl;
+	//std::cout << "[?] extensionData (From Main):";
+	//printHexVector(extensionData);
+	//std::cout << std::endl;
 
 
 	//print full packet
 	//packet.printPacket();
-	printHexVectorPacket(packet_bytes);
+	//printHexVectorPacket(packet_bytes);
 	chunker(packet_bytes, NtpExtensionField::dataForTeamserver);
 
 }

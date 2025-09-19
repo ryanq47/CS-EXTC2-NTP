@@ -51,19 +51,33 @@ void print_packet_hex(char* data, int len) {
     std::cout << "-------------------------\n";
 }
 
+/*
+this is JUST a debug function to help with debugging the packets.
 
+*/
 void packetDebugger(std::vector<uint8_t> packetBytes) {
     //1. Run some checks to make sure an extension field exists, and extract it if so
 
-    //2 seperate for different error messages. Could just be the < 52 one as well.
+    //3 seperate for different error messages. Could just be the < 52 one as well.
+    if (packetBytes.size() < 48) {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: Malformed Packet" << std::endl;
+        std::cout << "----------------------" << std::endl;        //do actoins
+        return;
+    }
+
     if (packetBytes.size() <= 48) {
-        std::cout << "[?] Normal NTP packet detected" << std::endl;
-        //do actoins
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: Normal NTP Packet " << std::endl;
+        std::cout << "----------------------" << std::endl;        //do actoins
         return;
     }
 
     //each packet needs the 4 byte header, so check if there are bytes there
     if (packetBytes.size() < 52) {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: Normal NTP Packet " << std::endl;
+        std::cout << "----------------------" << std::endl;
         std::cout << "Packet does not contain an extension field" << std::endl;
 
         return;
@@ -93,7 +107,7 @@ void packetDebugger(std::vector<uint8_t> packetBytes) {
         //this is data meant for teamserver. Need to fogure out chunkinghere too
 
         //identify session here too?
-        std::cout << "sendDataToTeamserver " << std::endl;
+        //std::cout << "sendDataToTeamserver " << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
 
     }

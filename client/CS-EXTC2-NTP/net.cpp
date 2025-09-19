@@ -92,7 +92,7 @@ std::vector<uint8_t> sendChunk(
             throw std::runtime_error("Timeout or error receiving response");
         }
 
-        print_packet_hex(buffer, recvLen);
+        //print_packet_hex(buffer, recvLen);
 
         response.assign(buffer, buffer + recvLen);
     }

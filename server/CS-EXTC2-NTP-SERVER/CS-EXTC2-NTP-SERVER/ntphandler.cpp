@@ -23,14 +23,18 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
     //2 seperate for different error messages. Could just be the < 52 one as well.
     if (packet.size() <= 48) {
-        std::cout << "[?] Normal NTP packet detected" << std::endl;
-        //send back a default packet
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: Normal NTP Packet " << std::endl;
+        std::cout << "----------------------" << std::endl;        //send back a default packet
         sendNormalNtpPacket(client_addr, sock);
         return;
     }
 
     //each packet needs the 4 byte header, so check if there are bytes there
     if (packet.size() < 52) {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: Normal NTP Packet " << std::endl;
+        std::cout << "----------------------" << std::endl;
         std::cout << "Packet does not contain an extension field" << std::endl;
 
         //send back a default packet

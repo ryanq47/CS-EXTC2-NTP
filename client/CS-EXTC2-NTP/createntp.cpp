@@ -58,6 +58,7 @@ std::vector<uint8_t> NTPPacket::getPacket() const {
 }
 
 NTPPacket::NTPPacket(uint8_t li, uint8_t version, uint8_t mode) {
+    //std::cout << "Creating new packet" << std::endl;
     std::memset(&packet_, 0, sizeof(PacketData));
 
     //packet things & bitshift reference
@@ -156,8 +157,8 @@ void NTPPacket::addExtensionField(const std::array<uint8_t, 2>& fieldType, const
 
 
     //Debug Prings
-    std::cout << "[?] Ext Length:\t\t" << extLength << std::endl;
-    std::cout << "[?] padded Length:\t" << paddedLength << std::endl;
+    //std::cout << "[?] Ext Length:\t\t" << extLength << std::endl;
+    //std::cout << "[?] padded Length:\t" << paddedLength << std::endl;
     //std::cout << "[?] :\t" << paddedLength << std::endl;
 
 }
