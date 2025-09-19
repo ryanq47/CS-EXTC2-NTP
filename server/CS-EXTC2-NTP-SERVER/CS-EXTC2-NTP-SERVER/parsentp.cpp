@@ -69,6 +69,10 @@ std::vector<uint8_t> NTPPacketParser::getExtensionData() {
     return this->_extensionData;
 }
 
+std::vector<uint8_t> NTPPacketParser::getExtension() {
+    return this->_extension;
+}
+
 void NTPPacketParser::_extractExtension() {
     /*
     Extract extension from packet

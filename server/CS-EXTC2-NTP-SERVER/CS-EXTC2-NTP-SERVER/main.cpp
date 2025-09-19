@@ -48,9 +48,15 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         << inet_ntoa(client_addr->sin_addr) << ":"
         << ntohs(client_addr->sin_port) << std::endl;
 
-    if (packet.size() < 48) {
-        std::cout << "Packet does not contain an extension field" << std::endl;
+    if (packet.size() <= 48) {
+        std::cout << "Normal NTP packet detected" << std::endl;
         //return a normal packet, make this a func
+        return;
+    }
+
+    //each packet needs the 4 byte header, so check if there are bytes there
+    if (packet.size() < 52) {
+        std::cout << "Packet does not contain an extension field" << std::endl;
         return;
     }
 
@@ -58,14 +64,16 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
     //Extract extension field
     NTPPacketParser ntpPacket(packet);
-    std::vector<uint8_t> ntpPacketExtension = ntpPacket.getExtensionData();
-    printHexVectorPacket(ntpPacketExtension);
+    std::vector<uint8_t> ntpPacketExtension = ntpPacket.getExtension();
+    //printHexVector(packet);
+    //vector subscriptiotn out of range^^ 
+
 
     //if ntpPacketExtension header == whatever of constnts... then this that
 
     // Echo back the received packet (for demonstration)
-    sendto(sock, data, len, 0, (sockaddr*)client_addr, sizeof(*client_addr));
-    std::cout << "Sent response back to client\n";
+    //sendto(sock, data, len, 0, (sockaddr*)client_addr, sizeof(*client_addr));
+    //std::cout << "Sent response back to client\n";
 }
 
 int main() {

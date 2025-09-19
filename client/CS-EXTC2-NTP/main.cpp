@@ -32,10 +32,14 @@ std::vector<uint8_t> size_tToBytes(size_t value) {
 }
 
 std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField) {
+
 	//1. Calculate size of data, (data.size()), then send a sizePacket to server. If OK, continue
 	uint64_t dataSize = data.size(); //uint64_t acn hold a size of like 18 Quadrillion bytes (18 exabytes). I hope someone isn't sending that much data
 	//but who knows. Rather be safe than sorry.
 	
+	std::cout << "[?] Chunker started on data the size of : " << dataSize << std::endl;
+
+
 	/*
 	Need to send a size message to tell the server that the total message length will be X size, for chunking purposes. 
 	*/
@@ -48,6 +52,9 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 		incomingSize
 	);
 
+	std::cout << "[?] Packet to notify server of size: " << std::endl;
+	printHexVectorPacket(packetToNotifyServerOfSize.getPacket());
+
 	std::vector < uint8_t> packetToNotifyServerOfSizeBytes = packetToNotifyServerOfSize.getPacket();
 	std::vector<uint8_t> response = sendChunk(packetToNotifyServerOfSizeBytes);
 	
@@ -57,9 +64,6 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 	//sessionID.insert(sessionID.end(), response.begin() + 48 + 4, response.end());
 	//std::cout << "[?] Session ID: " << std::endl;
 	//printHexVector(sessionID);
-
-	std::cout << "[?] Packet to notify server of size: " << std::endl;
-	printHexVectorPacket(packetToNotifyServerOfSizeBytes);
 
 	//2. Start chunking process
 	std::cout << "[?] Starting chunking process: --------------------" << std::endl;

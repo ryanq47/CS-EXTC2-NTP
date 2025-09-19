@@ -8,6 +8,7 @@ public:
     static constexpr size_t BASE_PACKET_SIZE = sizeof(PacketData);
 
     NTPPacketParser(std::vector<uint8_t> ntpPacket);
+    std::vector<uint8_t> getExtension();
     std::vector<uint8_t> getExtensionData();
 
 private:
