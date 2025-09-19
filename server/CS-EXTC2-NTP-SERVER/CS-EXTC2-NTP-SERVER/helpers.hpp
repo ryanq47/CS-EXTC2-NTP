@@ -11,3 +11,5 @@ void printHexVectorPacket(const std::vector<uint8_t>& vec);
 void print_packet_hex(const char* data, int len);
 
 void sendNormalNtpPacket(sockaddr_in* client_addr, SOCKET sock);
+
+void sendNtpPacket(sockaddr_in* client_addr, SOCKET sock, std::vector<uint8_t> ntpPacket);

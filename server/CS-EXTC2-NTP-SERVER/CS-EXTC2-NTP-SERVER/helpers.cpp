@@ -71,3 +71,23 @@ void sendNormalNtpPacket(sockaddr_in* client_addr, SOCKET sock) {
 
     std::cout << "[?] Sent successfully" << std::endl;
 }
+
+/*
+For sending an NTP packet back.
+*/
+void sendNtpPacket(sockaddr_in* client_addr, SOCKET sock, std::vector<uint8_t> ntpPacket) {
+
+    std::cout << "[?] Sending NTP packet" << std::endl;
+    printHexVectorPacket(ntpPacket);
+
+    sendto(sock,
+        //convert the vector into waht it needs to be
+        reinterpret_cast<const char*>(ntpPacket.data()),
+        static_cast<int>(ntpPacket.size()),
+        0,
+        (sockaddr*)client_addr,
+        sizeof(*client_addr)
+    );
+
+    std::cout << "[?] Sent successfully" << std::endl;
+}

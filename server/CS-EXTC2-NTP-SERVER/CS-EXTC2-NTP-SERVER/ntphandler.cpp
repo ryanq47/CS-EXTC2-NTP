@@ -10,6 +10,7 @@
 #include "constants.hpp"
 #include <array>
 #include "client.hpp"
+#include "constants.hpp"
 
 void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET sock) {
     //bug is here, as it was +48 instead of whtaever. Need to get size safely, as well.
@@ -80,12 +81,29 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         std::cout << "Theoretical Client ID" << clientID << std::endl;
 
         //create NTP packet for response, with client ID included
+        NTPPacket idPacket;
+
+        //placeholder for ID
+        std::vector<uint8_t> clientIdVector = { 0x00,0x00,0x00,0x00 };
+
+        idPacket.addExtensionField(
+            NtpExtensionField::idPacket,
+            clientIdVector
+        );
+
+        std::vector<uint8_t> rawPacket = idPacket.getPacket();
+
+        sendNtpPacket(
+            client_addr,
+            sock,
+            rawPacket
+        );
 
         //pass to chunker func
         //pass socket, recv from, size, etc.
 
         //temp send back normal packet
-        sendNormalNtpPacket(client_addr, sock);
+        //sendNormalNtpPacket(client_addr, sock);
 
     }
 
