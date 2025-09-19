@@ -45,3 +45,29 @@ void print_packet_hex(const char* data, int len) {
 
     std::cout << "-------------------------\n";
 }
+
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include "createntp.hpp"
+
+void sendNormalNtpPacket(sockaddr_in* client_addr, SOCKET sock) {
+    //send back a default packet
+    NTPPacket defaultPacket;
+
+    std::vector<uint8_t> defaultPacketData = defaultPacket.getPacket();
+
+    std::cout << "[?] Sending normal NTP packet back" << std::endl;
+    printHexVectorPacket(defaultPacketData);
+
+    sendto(sock,
+        //convert the vector into waht it needs to be
+        reinterpret_cast<const char*>(defaultPacketData.data()),
+        static_cast<int>(defaultPacketData.size()),
+        0,
+        (sockaddr*)client_addr,
+        sizeof(*client_addr)
+    );
+
+    std::cout << "[?] Sent successfully" << std::endl;
+}

@@ -24,26 +24,8 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
     //2 seperate for different error messages. Could just be the < 52 one as well.
     if (packet.size() <= 48) {
         std::cout << "[?] Normal NTP packet detected" << std::endl;
-
         //send back a default packet
-        NTPPacket defaultPacket;
-
-        std::vector<uint8_t> defaultPacketData = defaultPacket.getPacket();
-
-        std::cout << "[?] Sending normal NTP packet back" << std::endl;
-        printHexVectorPacket(defaultPacketData);
-
-        sendto(sock,
-            //convert the vector into waht it needs to be
-            reinterpret_cast<const char*>(defaultPacketData.data()),
-            static_cast<int>(defaultPacketData.size()),
-            0,
-            (sockaddr*)client_addr,
-            sizeof(*client_addr)
-        );
-
-        std::cout << "[?] Sent successfully" << std::endl;
-
+        sendNormalNtpPacket(client_addr, sock);
         return;
     }
 
@@ -52,22 +34,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         std::cout << "Packet does not contain an extension field" << std::endl;
 
         //send back a default packet
-        NTPPacket defaultPacket;
-        std::vector<uint8_t> defaultPacketData = defaultPacket.getPacket();
-
-        std::cout << "[?] Sending normal NTP packet back" << std::endl;
-        printHexVectorPacket(defaultPacketData);
-
-        sendto(sock,
-            //convert the vector into waht it needs to be
-            reinterpret_cast<const char*>(defaultPacketData.data()),
-            static_cast<int>(defaultPacketData.size()),
-            0,
-            (sockaddr*)client_addr,
-            sizeof(*client_addr)
-        );
-
-        std::cout << "[?] Sent successfully" << std::endl;
+        sendNormalNtpPacket(client_addr, sock);
 
         return;
     }
@@ -85,6 +52,8 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         std::cout << "----------------------" << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
 
+        //temp send back normal packet
+        sendNormalNtpPacket(client_addr, sock);
 
     }
 
@@ -110,6 +79,9 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         //get data back
 
         //send data back with header of NtpExtensionField::dataFromTeamserver
+
+        //temp send back normal packet
+        sendNormalNtpPacket(client_addr, sock);
     }
 
     else {
@@ -120,23 +92,8 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         printHexVectorPacket(ntpPacket.getRawPacket());
 
         //if none of the headers match,s end back regular NTP packet
-                //send back a default packet
-        NTPPacket defaultPacket;
-        std::vector<uint8_t> defaultPacketData = defaultPacket.getPacket();
-
-        std::cout << "[?] Sending normal NTP packet back:" << std::endl;
-        printHexVectorPacket(defaultPacketData);
-
-        sendto(sock,
-            //convert the vector into waht it needs to be
-            reinterpret_cast<const char*>(defaultPacketData.data()),
-            static_cast<int>(defaultPacketData.size()),
-            0,
-            (sockaddr*)client_addr,
-            sizeof(*client_addr)
-        );
-
-        std::cout << "[?] Sent successfully" << std::endl;
+        //send back normal packet
+        sendNormalNtpPacket(client_addr, sock);
 
     }
 
