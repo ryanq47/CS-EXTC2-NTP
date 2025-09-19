@@ -111,10 +111,50 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
     //printHexVector(packet);
     //vector subscriptiotn out of range^^ 
 
+    //Based on each extensionField incoming from client
+
     if (ntpPacketExtensionField == NtpExtensionField::giveMePayload) {
         std::cout << "Give Me Payload " << std::endl;
     }
 
+    else if (ntpPacketExtensionField == NtpExtensionField::dataForTeamserver) {
+        //this is data meant for teamserver
+
+        //identify session here too?
+        std::cout << "sendDataToTeamserver " << std::endl;
+
+        //send to teamserver
+
+        //get data back
+
+        //send data back with header of NtpExtensionField::dataFromTeamserver
+    }
+
+    else if (ntpPacketExtensionField == NtpExtensionField::giveMePayload) {
+        std::cout << "Give Me Payload " << std::endl;
+    }
+
+    else {
+        //if none of the headers match,s end back regular NTP packet
+                //send back a default packet
+        NTPPacket defaultPacket;
+        std::vector<uint8_t> defaultPacketData = defaultPacket.getPacket();
+
+        std::cout << "[?] Sending normal NTP packet back" << std::endl;
+        printHexVectorPacket(defaultPacketData);
+
+        sendto(sock,
+            //convert the vector into waht it needs to be
+            reinterpret_cast<const char*>(defaultPacketData.data()),
+            static_cast<int>(defaultPacketData.size()),
+            0,
+            (sockaddr*)client_addr,
+            sizeof(*client_addr)
+        );
+
+        std::cout << "[?] Sent successfully" << std::endl;
+
+    }
 
     //if ntpPacketExtension header == whatever of constnts... then this that
 
