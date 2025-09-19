@@ -14,7 +14,7 @@ Ex:
 */
 
 /*
-Notes for parsing, use vector.at(), as it does bounds checking. This prevents 
+Notes for parsing, use vector.at(), as it does bounds checking. This prevents
 weird out of bounds problems if packets get malformed.
 
 also remember - .at/vectors are 0 indexed.
@@ -35,39 +35,14 @@ NTPPacketParser::NTPPacketParser(std::vector<uint8_t> ntpPacket) {
         return;
     }
 
-    //Check to make sure packet ahs extension
     if (ntpPacket.size() <= 48) {
         std::cout << "[!] Size of packet is less than or equal to 48, no extension: " << ntpPacket.size() << std::endl;
         //need a way to bubble up properly
         return;
     }
 
-
     //Setup vars
     _ntpPacket = std::move(ntpPacket); //move the ntpPacket into the internal var
-    //also init our struct
-    //packetStruct = PacketData();
-
-    //works fine without needing to actually parse the NTP packet,but could be useful in the future.Access violation otherwise.
-    // Manually copy bytes from packet into struct fields, rather than casting, for manual control/just incase the packet is malformed, etc.
-    //std::memcpy(&this->packetStruct.li_vn_mode, ntpPacket.data(), sizeof(this->packetStruct.li_vn_mode));
-    //std::memcpy(&this->packetStruct.stratum, ntpPacket.data() + 1, sizeof(this->packetStruct.stratum));
-    //std::memcpy(&this->packetStruct.poll, ntpPacket.data() + 2, sizeof(this->packetStruct.poll));
-    //std::memcpy(&this->packetStruct.precision, ntpPacket.data() + 3, sizeof(this->packetStruct.precision));
-    //std::memcpy(&this->packetStruct.root_delay, ntpPacket.data() + 4, sizeof(this->packetStruct.root_delay));
-    //std::memcpy(&this->packetStruct.root_dispersion, ntpPacket.data() + 8, sizeof(this->packetStruct.root_dispersion));
-    //std::memcpy(&this->packetStruct.reference_id, ntpPacket.data() + 12, sizeof(this->packetStruct.reference_id));
-    //std::memcpy(&this->packetStruct.reference_ts, ntpPacket.data() + 16, sizeof(this->packetStruct.reference_ts));
-    //std::memcpy(&this->packetStruct.originate_ts, ntpPacket.data() + 24, sizeof(this->packetStruct.originate_ts));
-    //std::memcpy(&this->packetStruct.receive_ts, ntpPacket.data() + 32, sizeof(this->packetStruct.receive_ts));
-    //std::memcpy(&this->packetStruct.transmit_ts, ntpPacket.data() + 40, sizeof(this->packetStruct.transmit_ts));
-
-    //// Now you can access the fields directly
-    //std::cout << "li_vn_mode: " << static_cast<int>(this->packetStruct.li_vn_mode) << std::endl;
-    //std::cout << "stratum: " << static_cast<int>(this->packetStruct.stratum) << std::endl;
-    //std::cout << "root_delay: " << this->packetStruct.root_delay << std::endl;
-    //std::cout << "reference_ts: " << this->packetStruct.reference_ts << std::endl;
-
 
     //also - don't bother adding the ext field to the struct,just manually extract the extension field based on length, etc. rather than adding complications with struct stuff
     _extractExtension();
@@ -77,12 +52,35 @@ std::vector<uint8_t> NTPPacketParser::getExtensionData() {
     return this->_extensionData;
 }
 
+std::vector<uint8_t> NTPPacketParser::getRawPacket() {
+    return this->_ntpPacket;
+}
+
+std::vector<uint8_t> NTPPacketParser::getExtension() {
+    return this->_extension;
+}
+
+std::array<uint8_t, 2> NTPPacketParser::getExtensionField() {
+    std::array<uint8_t, 2> extensionField = { 0, 0 };
+
+    if (this->_ntpPacket.size() >= 50) { // 48 for base, +2 for extension
+        //might be better to get this from _extension instead of _ntpPacket, problem for later.
+        extensionField[0] = this->_ntpPacket[48];
+        extensionField[1] = this->_ntpPacket[49];
+    }
+    else {
+        std::cerr << "Packet too short for extension field";
+    }
+
+    return extensionField;
+}
+
 void NTPPacketParser::_extractExtension() {
     /*
     Extract extension from packet
-    
 
-    Store type, payload, and size in class var, 
+
+    Store type, payload, and size in class var,
 
     Not meant to be called from outside of this class. is a private method
     */
@@ -93,7 +91,7 @@ void NTPPacketParser::_extractExtension() {
     Bytes 0 & 1: Type of extension (store in this->_extensionType)
 
     Bytes 2 & 3: Length of extension (specific to this packet only, not overall chunk) (store in this->_extensionLength)
-    
+
     Bytes 3-LENGTH: The rest of the extension (which is 4 byte padded, will need to remove padding properly...) (store in this->_extensionData)
 
     */
@@ -110,11 +108,11 @@ void NTPPacketParser::_extractExtension() {
 
     std::cout << "[?] Extension Field:\t";
     printHexVector(this->_extension);
-    
+
 
     // Extract the first 2 bytes for the extension type (NTP extension type)
     uint8_t extensionFieldByte0 = this->_extension[0]; //first 2 bytes are extension type
-    uint8_t extensionFieldByte1 = this->_extension[1]; 
+    uint8_t extensionFieldByte1 = this->_extension[1];
 
     this->_extensionField[0] = extensionFieldByte0;
     this->_extensionField[1] = extensionFieldByte1;
@@ -123,6 +121,7 @@ void NTPPacketParser::_extractExtension() {
         << std::hex << static_cast<int>(extensionFieldByte0) << " "
         << std::hex << static_cast<int>(extensionFieldByte1)
         << std::endl;
+    //why am I doing that
 
     //get length
     uint8_t extensionFieldByte2 = this->_extension[2]; // Next 2 bytes are Extension Length

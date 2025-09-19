@@ -29,6 +29,7 @@ std::vector<uint8_t> placeholderNtpPacket = {
 #include <stdexcept>
 #include <iostream>
 #include "constants.hpp"
+#include "helpers.hpp"
 #pragma comment(lib, "Ws2_32.lib")
 
 //note - wireshark showing as malformed packet, so somethign might be up
@@ -81,7 +82,7 @@ std::vector<uint8_t> sendChunk(
         }
 
         // Receive response
-        uint8_t buffer[2048];  // 2048 bytes just in case anything gets too big. Probaby should make more dynamic
+        char buffer[2048];  // 2048 bytes just in case anything gets too big. Probaby should make more dynamic
         sockaddr_in fromAddr = {};
         int fromLen = sizeof(fromAddr);
 
@@ -90,6 +91,8 @@ std::vector<uint8_t> sendChunk(
         if (recvLen == SOCKET_ERROR) {
             throw std::runtime_error("Timeout or error receiving response");
         }
+
+        print_packet_hex(buffer, recvLen);
 
         response.assign(buffer, buffer + recvLen);
     }
