@@ -11,7 +11,9 @@
 #include <array>
 
 void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET sock) {
-    std::vector<uint8_t> packet(data, data + 48);
+    //bug is here, as it was +48 instead of whtaever. Need to get size safely, as well.
+    //safely moving into vector by doing data + len (data is a char* so it's the first item
+    std::vector<uint8_t> packet(data, data + len);
 
     std::cout << "Received " << len << " bytes from "
         << inet_ntoa(client_addr->sin_addr) << ":"
@@ -114,6 +116,8 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
     }
 
     else {
+        std::cout << "[?] Packet extension did not match any known extensions" << std::endl;
+
         //if none of the headers match,s end back regular NTP packet
                 //send back a default packet
         NTPPacket defaultPacket;
