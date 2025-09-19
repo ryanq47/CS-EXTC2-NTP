@@ -126,6 +126,7 @@
     <ClCompile Include="createntp.cpp" />
     <ClCompile Include="helpers.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ntphandler.cpp" />
     <ClCompile Include="parsentp.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -133,6 +134,7 @@
     <ClInclude Include="createntp.hpp" />
     <ClInclude Include="helpers.hpp" />
     <ClInclude Include="ntp.hpp" />
+    <ClInclude Include="ntphandler.hpp" />
     <ClInclude Include="parsentp.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
