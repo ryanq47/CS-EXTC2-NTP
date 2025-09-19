@@ -73,6 +73,20 @@ std::vector<uint8_t> NTPPacketParser::getExtension() {
     return this->_extension;
 }
 
+std::array<uint8_t, 2> NTPPacketParser::getExtensionField() {
+    std::array<uint8_t, 2> extensionField = { 0, 0 };
+
+    if (this->_extension.size() >= 50) { // 48 for base, +2 for extension
+        extensionField[0] = this->_extension[48];
+        extensionField[1] = this->_extension[49];
+    }
+    else {
+        std::cerr << "Packet too short for extension field\n";
+    }
+
+    return extensionField;
+}
+
 void NTPPacketParser::_extractExtension() {
     /*
     Extract extension from packet
@@ -119,6 +133,7 @@ void NTPPacketParser::_extractExtension() {
         << std::hex << static_cast<int>(extensionFieldByte0) << " "
         << std::hex << static_cast<int>(extensionFieldByte1)
         << std::endl;
+    //why am I doing that
 
     //get length
     uint8_t extensionFieldByte2 = this->_extension[2]; // Next 2 bytes are Extension Length

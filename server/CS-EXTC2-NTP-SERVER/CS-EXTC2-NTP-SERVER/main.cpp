@@ -7,6 +7,8 @@
 #include "parsentp.hpp"
 #include "helpers.hpp"
 #include "createntp.hpp"
+#include "constants.hpp"
+#include <array>
 #pragma comment(lib, "ws2_32.lib")
 
 constexpr int NTP_PORT = 123;
@@ -51,11 +53,11 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
     if (packet.size() <= 48) {
         std::cout << "[?] Normal NTP packet detected" << std::endl;
-        //return a normal packet, make this a func
+        
+        //send back a default packet
         NTPPacket defaultPacket;
 
         std::vector<uint8_t> defaultPacketData = defaultPacket.getPacket();
-        //sendto(sock, data, len, 0, (sockaddr*)client_addr, sizeof(*client_addr));
 
         std::cout << "[?] Sending normal NTP packet back" << std::endl;
         printHexVectorPacket(defaultPacketData);
@@ -77,6 +79,25 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
     //each packet needs the 4 byte header, so check if there are bytes there
     if (packet.size() < 52) {
         std::cout << "Packet does not contain an extension field" << std::endl;
+
+        //send back a default packet
+        NTPPacket defaultPacket;
+        std::vector<uint8_t> defaultPacketData = defaultPacket.getPacket();
+
+        std::cout << "[?] Sending normal NTP packet back" << std::endl;
+        printHexVectorPacket(defaultPacketData);
+
+        sendto(sock,
+            //convert the vector into waht it needs to be
+            reinterpret_cast<const char*>(defaultPacketData.data()),
+            static_cast<int>(defaultPacketData.size()),
+            0,
+            (sockaddr*)client_addr,
+            sizeof(*client_addr)
+        );
+
+        std::cout << "[?] Sent successfully" << std::endl;
+
         return;
     }
 
@@ -85,8 +106,14 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
     //Extract extension field
     NTPPacketParser ntpPacket(packet);
     std::vector<uint8_t> ntpPacketExtension = ntpPacket.getExtension();
+    std::array<uint8_t, 2> ntpPacketExtensionField = ntpPacket.getExtensionField();
+
     //printHexVector(packet);
     //vector subscriptiotn out of range^^ 
+
+    if (ntpPacketExtensionField == NtpExtensionField::giveMePayload) {
+        std::cout << "Give Me Payload " << std::endl;
+    }
 
 
     //if ntpPacketExtension header == whatever of constnts... then this that

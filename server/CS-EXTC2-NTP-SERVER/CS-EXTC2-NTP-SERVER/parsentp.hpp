@@ -10,7 +10,7 @@ public:
     NTPPacketParser(std::vector<uint8_t> ntpPacket);
     std::vector<uint8_t> getExtension();
     std::vector<uint8_t> getExtensionData();
-
+    std::array<uint8_t, 2> getExtensionField();
 private:
     //move this into a class var so it can be accessed everywhere
     PacketData packetStruct{};
