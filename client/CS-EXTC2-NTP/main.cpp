@@ -55,6 +55,11 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 		//std::cout << "[" << i << "/" << amountOfChunks << "]" << " ChunkData: ";
 		//printHexVector(chunkData);
 
+		//Print that we're sending a packet, adn what type of packet it is.
+		std::cout << "----------------------" << std::endl;
+		std::cout << "Sending NTP Packet [" << i + 1 << "/" << amountOfChunks << "]" << std::endl;
+		std::cout << "----------------------" << std::endl;
+
 		//creat ntp packet first
 		auto packet = NTPPacket();
 		packet.addExtensionField(
@@ -64,11 +69,6 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 
 		//pass full ntp packet 
 		std::vector < uint8_t> packet_bytes = packet.getPacket();
-
-		//Print that we're sending a packet, adn what type of packet it is.
-		std::cout << "----------------------" << std::endl;
-		std::cout << "Sending NTP Packet [" << i+1 << "/" << amountOfChunks << "]" << std::endl;
-		std::cout << "----------------------" << std::endl;
 		//run the debugger directly on the incoming respnose packet
 		packetDebugger(packet_bytes);
 		std::vector<uint8_t> response = sendChunk(packet_bytes);
@@ -93,7 +93,9 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 	std::cout << "[?] Full Data from Responses: ";
 	printHexVector(responseDataBuffer);
 
-	std::cout << "[?] chunking process complete: --------------------" << std::endl;
+	std::cout << "======================" << std::endl;
+	std::cout << "Finished Chunking		" << std::endl;
+	std::cout << "======================" << std::endl;
 
 	//when done looping, return array
 	//std::vector<uint8_t> placehodlerVec = {};

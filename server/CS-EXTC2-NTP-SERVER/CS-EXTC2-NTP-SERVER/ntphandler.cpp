@@ -9,6 +9,7 @@
 #include "createntp.hpp"
 #include "constants.hpp"
 #include <array>
+#include "client.hpp"
 
 void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET sock) {
     //bug is here, as it was +48 instead of whtaever. Need to get size safely, as well.
@@ -18,6 +19,12 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
     std::cout << "Received " << len << " bytes from "
         << inet_ntoa(client_addr->sin_addr) << ":"
         << ntohs(client_addr->sin_port) << std::endl;
+
+
+    //0.: Extract client ID and stuff out, do class checks to see if it exstsi, and setup for further action
+    //note, size packet may not contain an id
+
+    //std::cout << "Theoretical Client ID" << generateClientID() << std::endl;
 
     //1. Run some checks to make sure an extension field exists, and extract it if so
 
@@ -55,6 +62,27 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         std::cout << "PCKT: Give Me Payload " << std::endl;
         std::cout << "----------------------" << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
+
+        //temp send back normal packet
+        sendNormalNtpPacket(client_addr, sock);
+
+    }
+
+    if (ntpPacketExtensionField == NtpExtensionField::sizePacket) {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: sizePacket " << std::endl;
+        std::cout << "----------------------" << std::endl;
+        printHexVectorPacket(ntpPacket.getRawPacket());
+
+        std::cout << "[?] sizePacket recieved, starting chunking" << std::endl;
+
+        uint32_t clientID = generateClientID();
+        std::cout << "Theoretical Client ID" << clientID << std::endl;
+
+        //create NTP packet for response, with client ID included
+
+        //pass to chunker func
+        //pass socket, recv from, size, etc.
 
         //temp send back normal packet
         sendNormalNtpPacket(client_addr, sock);

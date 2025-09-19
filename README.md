@@ -5,3 +5,17 @@ Left OFf:
  - Clean up client to print our similar to server, with what packet received, etc etc. Then continue to build bridging, and
  chunking as needed.
 
+
+//hadnling multiple clients:
+
+Loop in recv, for each packet. Each packet will have the unique client id. When each client
+packet comes in, based on the id & packet type, things will happen on that clietn packet tothe class
+(ex, add to a response buffer)
+
+Then destroy the class after its done
+
+
+size -> server
+id   -> Client
+    >> client class created
+//chunking start here
