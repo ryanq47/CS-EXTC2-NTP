@@ -1,4 +1,4 @@
-﻿
+
 #include <array>
 #include <cstdint>
 #include <cstring>
@@ -12,7 +12,7 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 /*
-* 
+*
 * NTP Packet Reference
 
  *    Byte     | Length | Field Name              | Description
@@ -30,7 +30,7 @@
  *     24      |   8    | Originate Timestamp     | Time request departed the client for the server
  *     32      |   8    | Receive Timestamp       | Time request arrived at the server
  *     40      |   8    | Transmit Timestamp      | Time reply departed the server for client
- 
+
 
  * LI (Leap Indicator): Warns of impending leap second (00 = no warning)
  * VN (Version Number): NTP version (e.g., 4 for NTPv4)

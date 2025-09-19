@@ -35,6 +35,14 @@ NTPPacketParser::NTPPacketParser(std::vector<uint8_t> ntpPacket) {
         return;
     }
 
+    //Check to make sure packet ahs extension
+    if (ntpPacket.size() <= 48) {
+        std::cout << "[!] Size of packet is less than or equal to 48, no extension: " << ntpPacket.size() << std::endl;
+        //need a way to bubble up properly
+        return;
+    }
+
+
     //Setup vars
     _ntpPacket = std::move(ntpPacket); //move the ntpPacket into the internal var
     //also init our struct

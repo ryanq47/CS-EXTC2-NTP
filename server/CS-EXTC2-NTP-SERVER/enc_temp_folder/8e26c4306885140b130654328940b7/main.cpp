@@ -58,8 +58,6 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         //sendto(sock, data, len, 0, (sockaddr*)client_addr, sizeof(*client_addr));
 
         std::cout << "[?] Sending normal NTP packet back" << std::endl;
-        printHexVectorPacket(defaultPacketData);
-
         sendto(sock,
             //convert the vector into waht it needs to be
             reinterpret_cast<const char*>(defaultPacketData.data()),
