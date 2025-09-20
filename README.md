@@ -19,3 +19,6 @@ size -> server
 id   -> Client //need to add functinality on client to take the client ID as well
     >> client class created
 //chunking start here
+
+
+//8PM 9/19: SessionID done for client, need to teach server to handle that field as well.
