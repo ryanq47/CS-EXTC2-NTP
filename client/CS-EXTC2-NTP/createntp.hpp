@@ -67,7 +67,7 @@ public:
 * @param data std::vector<uint8_t>& data, the data that is added to the extension field. Ex: `std::vector<uint8_t> packetData = {10,20,30,40};` Using uint8_t as this can hold one byte of any value, which is perfect for tunneling data.
 * @return void
 */
-    void addExtensionField(const std::array<uint8_t, 2>& fieldType, const std::vector<uint8_t>& data);
+    void addExtensionField(const std::array<uint8_t, 2>& fieldType, const std::vector<uint8_t>& data, const std::vector<uint8_t>& sessionId);
 
 /**
 * @brief Prints the current packet buffer to the terminal

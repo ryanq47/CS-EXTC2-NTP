@@ -9,3 +9,5 @@ void printHexVectorPacket(const std::vector<uint8_t>& vec);
 void print_packet_hex(char* data, int len);
 
 void packetDebugger(std::vector<uint8_t> packetBytes);
+
+std::vector<uint8_t> uint32ToBytes(uint32_t value);

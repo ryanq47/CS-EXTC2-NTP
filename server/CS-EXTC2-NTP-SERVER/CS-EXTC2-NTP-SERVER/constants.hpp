@@ -15,8 +15,8 @@ namespace NtpExtensionField {
     |-------|--------------------------------------|
     | 0-1   | Extension Field Type (2 bytes)       |
     | 2-3   | Extension Field Length (2 bytes)     |
-    | 4-5   | Session ID (2 bytes), makes sure uniqueness when talking to server
-    | 6-32  | Payload: Data to tunnel              | //probably could make bigger, maybe up unto max NTP size, or max UDP packet size. Define in constants?
+    | 4-7   | Session ID (4 bytes), makes sure uniqueness when talking to server
+    | 8-32  | Payload: Data to tunnel              | //probably could make bigger, maybe up unto max NTP size, or max UDP packet size. Define in constants?
     -----------------------------------------------
     Notes:
     - Total extension field size is always exactly 8 bytes.
@@ -36,7 +36,8 @@ namespace NtpExtensionField {
     |-------|--------------------------------------|
     | 0-1   | Extension Field Type (2 bytes)       |
     | 2-3   | Extension Field Length (2 bytes)     |
-    | 4-7   | Payload: Data Size (4 bytes, host order) |
+    | 4-7   | Session ID (4 bytes), makes sure uniqueness when talking to server (for this, all 0xFF if no client id)
+    | 8-11   | Payload: Data Size (4 bytes, host order) |
     -----------------------------------------------
     Notes:
     - Total extension field size is always exactly 8 bytes.
@@ -59,7 +60,7 @@ namespace NtpExtensionField {
     |-------|--------------------------------------|
     | 0-1   | Extension Field Type (2 bytes)       |
     | 2-3   | Extension Field Length (2 bytes)     |
-    | 4-5   | SessionID: The session ID to include in each packet |
+    | 4-7   | Session ID (4 bytes), makes sure uniqueness when talking to server
     -----------------------------------------------
 
     Ex: 0x53,0x55,0x00,0x02,0x00,0x01 //session id of 1

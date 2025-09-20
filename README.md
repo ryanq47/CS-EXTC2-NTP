@@ -16,6 +16,6 @@ Then destroy the class after its done
 
 
 size -> server
-id   -> Client
+id   -> Client //need to add functinality on client to take the client ID as well
     >> client class created
 //chunking start here

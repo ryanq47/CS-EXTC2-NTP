@@ -37,9 +37,12 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 	*/
 	auto packetToNotifyServerOfSize = NTPPacket();
 	auto incomingSize = size_tToBytes(dataSize);
+	std::vector<uint8_t> emptySessionId = { 0xFF, 0xFF, 0xFF, 0xFF };
+
 	packetToNotifyServerOfSize.addExtensionField(
 		NtpExtensionField::sizePacket, //NtpExtensionField::giveMePayload,
-		incomingSize
+		incomingSize,
+		emptySessionId
 	);
 	std::cout << "[?] Sending size packet " << std::endl;
 	std::vector < uint8_t> packetToNotifyServerOfSizeBytes = packetToNotifyServerOfSize.getPacket();
@@ -64,7 +67,8 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 		auto packet = NTPPacket();
 		packet.addExtensionField(
 			extensionField, //NtpExtensionField::giveMePayload,
-			chunkData
+			chunkData,
+			emptySessionId //REPLACE ME WITH REAL SESSION ID
 		);
 
 		//pass full ntp packet 
@@ -113,9 +117,12 @@ int main() {
 	//packet.printPacket();
 
 	std::vector<uint8_t> packetData = {0xDE,0xAD,0xBE,0xEF};
+	std::vector<uint8_t> emptySessionId = { 0xFF, 0xFF, 0xFF, 0xFF };
+
 	packet.addExtensionField(
 		NtpExtensionField::giveMePayload,
-		packetData
+		packetData,
+		emptySessionId
 	);
 
 	//parse the created packet (testing parser)
