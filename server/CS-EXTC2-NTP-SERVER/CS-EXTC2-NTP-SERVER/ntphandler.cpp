@@ -108,11 +108,18 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             //once we have the data, create a new packet with the extension field
             //this needs to be a size packet, which sends back the size of the payload.
             //future packets, wtih 0x00, will send the aactual paylaod
-            NTPPacket newPacket;
-            //newPacket.addExtensionField(
-            
-            //)
 
+            std::vector<uint8_t> sizeOfDataButAsAVectorBecauseEverythingIsAVector = uint32ToBytes(tempPayload.size());
+
+            NTPPacket newPacketClass;
+            newPacketClass.addExtensionField(
+                NtpExtensionField::sizePacket,
+                sizeOfDataButAsAVectorBecauseEverythingIsAVector
+            );
+
+            auto newPacket = newPacketClass.getPacket();
+
+            sendNtpPacket(client_addr, sock, newPacket);
         }
 
         else if (payloadArch == 0x64) {
