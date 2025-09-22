@@ -132,6 +132,7 @@
     <ClCompile Include="ntphandler.cpp" />
     <ClCompile Include="parsentp.cpp" />
     <ClCompile Include="server.cpp" />
+    <ClCompile Include="teamserver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="chunker.hpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="ntphandler.hpp" />
     <ClInclude Include="parsentp.hpp" />
     <ClInclude Include="server.hpp" />
+    <ClInclude Include="teamserver.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

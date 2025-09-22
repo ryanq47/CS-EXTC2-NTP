@@ -79,3 +79,9 @@ namespace Chunk {
 //    const std::string serverAddress = "127.0.0.1";
 //}
 
+namespace TeamServer {
+    const std::string address = "10.0.1.21";
+    constexpr int port = 8080;
+
+}
+
