@@ -21,6 +21,8 @@ Bytes 4-7:  Session ID for NTP packet
 
 1. getSize
 
+SomeDesc
+
 ```
 Bytes 0-1: 0x00,0x00
 Bytes 2-3: Size of Data
@@ -30,6 +32,8 @@ Bytes 8-.. Size of total data to be sent (explain this is for chunking)
 
 2. dataForTeamserver
 
+SomeDesc
+
 ```
 Bytes 0-1: 0x00,0x00
 Bytes 2-3: Size of Data
@@ -38,6 +42,8 @@ Bytes 8-.. Size of total data to be sent (explain this is for chunking)
 ```
 
 2. dataFromTeamserver
+
+SomeDesc
 
 ```
 Bytes 0-1: 0x00,0x00
