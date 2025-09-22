@@ -69,10 +69,10 @@ namespace NtpExtensionField {
 
 }
 
-//namespace Chunk {
-//    constexpr int maxChunkSize = 28; //28 for data (plus 4 for headers/size), as the packets must be aligned to 32 bit boundaries. There is logic to handle if they are less, but 28 (for an even 32) seemed easiest. 
-//
-//}
+namespace Chunk {
+    constexpr int maxChunkSize = 28; //28 for data (plus 4 for headers/size), as the packets must be aligned to 32 bit boundaries. There is logic to handle if they are less, but 28 (for an even 32) seemed easiest. 
+
+}
 //
 //namespace Net {
 //    constexpr uint16_t port = 123;
