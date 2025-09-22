@@ -30,9 +30,24 @@ Bytes 4-7: Unique ID
 Bytes 8-.. Size of total data to be sent (explain this is for chunking)
 ```
 
-2. dataForTeamserver
+**Payload Retrieveal **
+
+### Outbound Packet - 'giveMePayload'
 
 SomeDesc
+
+```
+Bytes 0-1: 0x00,0x00
+Bytes 2-3: Size of Data
+Bytes 4-7: Unique ID (EMPTY)
+Bytes 8: Architechure (0x86, 0x64, or 0x00) 0x00 = continue sending payload, 0x86/0x64 are their own respective arch.
+```
+    
+
+
+### Inboudn Packet  - getSize
+
+The server responds with a size of the 
 
 ```
 Bytes 0-1: 0x00,0x00
@@ -41,13 +56,34 @@ Bytes 4-7: Unique ID
 Bytes 8-.. Size of total data to be sent (explain this is for chunking)
 ```
 
-2. dataFromTeamserver
+**TeamServer Communications**
 
-SomeDesc
+Standard comms with teamserver, while in comms loop,   use 2 common packet structures
+
+### Outbound Packet – `dataForTeamserver`
+
+This structure defines what the client sends **to the TeamServer**.
 
 ```
-Bytes 0-1: 0x00,0x00
-Bytes 2-3: Size of Data
-Bytes 4-7: Unique ID
-Bytes 8-.. Size of total data to be sent (explain this is for chunking)
+Bytes 0-1: 0x00, 0x00                // Reserved / header indicator  
+Bytes 2-3: Size of Data              // Length of payload (excluding header)  
+Bytes 4-7: Unique ID                 // Identifier for this client/session  
+Bytes 8-..: Total Data Size          // Full size of data being transmitted 
+                                     // (used for chunk reassembly if data is split)
 ```
+
+---
+
+### Inbound Packet – `dataFromTeamserver`
+
+This structure defines what the TeamServer sends **back to the client** in response.
+
+```
+Bytes 0-1: 0x00, 0x00                // Reserved / header indicator  
+Bytes 2-3: Size of Data              // Length of payload (excluding header)  
+Bytes 4-7: Unique ID                 // Identifier for this client/session  
+Bytes 8-..: Total Data Size          // Full size of data being transmitted 
+                                     // (used for chunk reassembly if data is split)
+```
+
+** The Loop / At execution **

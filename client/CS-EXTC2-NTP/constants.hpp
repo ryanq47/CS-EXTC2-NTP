@@ -78,3 +78,8 @@ namespace Net {
     const std::string serverAddress = "127.0.0.1";
 }
 
+namespace Client {
+    const std::vector<uint8_t> emptySessionId = { 0xFF, 0xFF, 0xFF, 0xFF }; //const cuz this shuold never change
+    //std::vector<uint8_t> sessionId = {};       //not a const cuz this will change
+
+}
