@@ -1,24 +1,47 @@
 # CS-EXTC2-NTP
 
-
-Left OFf:
- - Clean up client to print our similar to server, with what packet received, etc etc. Then continue to build bridging, and
- chunking as needed.
+An NTP tunnel for Cobalt Strike beacons using External-C2
 
 
-//hadnling multiple clients:
+## Tunnel
+...
+Operates on extension fields
 
-Loop in recv, for each packet. Each packet will have the unique client id. When each client
-packet comes in, based on the id & packet type, things will happen on that clietn packet tothe class
-(ex, add to a response buffer)
+First 48 bytes, normal NTP. Next X bytes, Extension Field
 
-Then destroy the class after its done
+#### Extension Fields
 
+0. Overall Foramt
 
-size -> server
-id   -> Client //need to add functinality on client to take the client ID as well
-    >> client class created
-//chunking start here
+```
+Bytes 0-1: Extension Field ID
+Bytes 2-3: Size of extension field data
+Bytes 4-7:  Session ID for NTP packet
+```
 
+1. getSize
 
-//8PM 9/19: SessionID done for client, need to teach server to handle that field as well.
+```
+Bytes 0-1: 0x00,0x00
+Bytes 2-3: Size of Data
+Bytes 4-7: Unique ID
+Bytes 8-.. Size of total data to be sent (explain this is for chunking)
+```
+
+2. dataForTeamserver
+
+```
+Bytes 0-1: 0x00,0x00
+Bytes 2-3: Size of Data
+Bytes 4-7: Unique ID
+Bytes 8-.. Size of total data to be sent (explain this is for chunking)
+```
+
+2. dataFromTeamserver
+
+```
+Bytes 0-1: 0x00,0x00
+Bytes 2-3: Size of Data
+Bytes 4-7: Unique ID
+Bytes 8-.. Size of total data to be sent (explain this is for chunking)
+```
