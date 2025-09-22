@@ -34,3 +34,6 @@ Every message is a size, forTeamServer, or FromTeamServer, no givemepayload. Can
 for each chunk.
 
 client -> server (server strips NTP bs, just gets data) -> TS -> server (server adds NTP bs) -> client
+
+
+Left off by getting payload from server. Fill in for x64 as well, then work on chunking/the 0x00 setup to make sure it works

