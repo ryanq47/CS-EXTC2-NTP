@@ -103,8 +103,8 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             //create or access client class:
             ClientSession someClient(sessionId);
             someClient.setForClientBuffer(payload);
-            std::cout << "[?] Stored in client class: ";
-            printHexVector(someClient.getForClientBuffer());
+            std::cout << "[?] Stored payload in client class";
+            //printHexVector(someClient.getForClientBuffer());
             
 
             //once we have the data, create a new packet with the extension field

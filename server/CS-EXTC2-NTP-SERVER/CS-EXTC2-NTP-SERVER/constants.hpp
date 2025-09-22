@@ -80,7 +80,7 @@ namespace Chunk {
 //}
 
 namespace TeamServer {
-    const std::string address = "10.0.1.21";
+    const std::string address = "10.0.1.22";
     constexpr int port = 8080;
 
 }
