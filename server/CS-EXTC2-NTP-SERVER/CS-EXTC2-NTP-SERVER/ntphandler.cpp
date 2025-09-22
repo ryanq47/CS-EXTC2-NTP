@@ -64,6 +64,18 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         std::cout << "----------------------" << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
 
+        //Parse incoming packet for payload arch
+        /*
+        0x86/0x64: forward to TS
+
+        0x00: Incoming for more of payload. Parse for SessionID for chunker, with client class
+        
+        */
+
+        //Then, once you have payload, send back size of payload.
+        
+
+
         //temp send back normal packet
         sendNormalNtpPacket(client_addr, sock);
 

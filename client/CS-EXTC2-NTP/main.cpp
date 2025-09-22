@@ -107,11 +107,6 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 }
 
 
-
-
-
-
-
 /*
 * helper to get payload 
 */
