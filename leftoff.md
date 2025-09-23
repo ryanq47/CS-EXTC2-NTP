@@ -56,4 +56,19 @@ Printing Sesions: 1800238816
 [?] Could not find client class: 6b 4d 76 e0
 [?] Sending normal NTP packet back
 ```
-So something is goign wrong with that, and is the next spot to investigate
+So something is goign wrong with that, and is the next spot to investigate (in x86)
+
+^^ There's a byte order mixmatch. clientID/SessionId comes in as opposite endian than what it's stored as.
+
+uint32_t vectorToUint32(const std::vector<uint8_t>& vec) {
+    if (vec.size() < 4) {
+        throw std::runtime_error("Vector too small to convert to uint32_t");
+    }
+
+    uint32_t value;
+    std::memcpy(&value, vec.data(), sizeof(value));
+    return ntohl(value);  // Converts the value to host byte order
+}
+
+
+fixed by adding ntohl here, which is odd. I didn't think it was coming in as network order.

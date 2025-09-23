@@ -166,8 +166,11 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             //need to figure out class logic to see if a class exists. Maybe a basic factory that searches it or creates one, as a function.
 
             //need to convert sessionId to uint32 as that's what is hashed
-            uint32_t convertedSessionId;
-            std::memcpy(&convertedSessionId, sessionId.data(), sizeof(convertedSessionId));
+            //uint32_t convertedSessionId;
+            //std::memcpy(&convertedSessionId, sessionId.data(), sizeof(convertedSessionId));
+            uint32_t convertedSessionId = vectorToUint32(sessionId);
+
+            std::cout << "[?] Looking up class by key: " << convertedSessionId << std::endl;
 
             // Attempt to find key
             auto it = sessions.find(convertedSessionId);
@@ -201,47 +204,6 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         else {
             std::cout << "[?] Invalid Payload" << std::endl;
         }
-
-        //payloadArch.insert()
-
-        //Parse incoming packet for payload arch
-        /*
-        0x86/0x64: forward to TS, get payload
-
-        0x00: Incoming for more of payload. 
-        
-        */
-
-        /*
-        if packet.extensiondata == 0x86 {
-            //get payload from ts
-        }
-
-        else if packet.extesniondata == 0x64 {
-            //get payload from ts
-        }
-
-
-        else if packet.extensiondata == 0x00 {
-            //check if class exsists for client,
-            if so, access next chunk for cleint
-            client.getNextChunk()
-
-            //create response packet
-            responsePacket = creatResponsePacket
-
-            //and send it
-            sendNtpPacket(responsePacket)
-        }
-
-        
-        */
-        
-
-
-        //Then, once you have payload, send back size of payload.
-        
-
 
         //temp send back normal packet
         sendNormalNtpPacket(client_addr, sock);
@@ -308,7 +270,6 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         uint32_t clientID = generateClientID();
         std::cout << "[?] Client ID: " << clientID << std::endl;
         
-
         //placeholder for ID
         std::vector<uint8_t> clientIdVector = uint32ToBytes(clientID);
 

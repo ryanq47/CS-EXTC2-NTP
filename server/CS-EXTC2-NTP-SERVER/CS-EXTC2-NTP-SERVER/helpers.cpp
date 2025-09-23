@@ -122,7 +122,7 @@ uint32_t vectorToUint32(const std::vector<uint8_t>& vec) {
 
     uint32_t value;
     std::memcpy(&value, vec.data(), sizeof(value));
-    return value;
+    return ntohl(value);  // Converts the value to host byte order
 }
 
 #include "client.hpp"
