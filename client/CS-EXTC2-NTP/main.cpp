@@ -144,8 +144,24 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> sessionId) {
 	std::vector<uint8_t> giveMePayloadPacket = giveMePayloadPacketClass.getPacket();
 	std::vector<uint8_t> responsePacket = sendChunk(giveMePayloadPacket);
 
-	uint32_t payloadSize = 0;
-	std::memcpy(&payloadSize, responsePacket.data(), sizeof(payloadSize));
+	//get size from packet
+	NTPPacketParser sizePacketParsererClass(responsePacket);
+
+
+	auto payloadSizeVector = sizePacketParsererClass.getRawPacket();
+
+	//clientid not in server responses atm,so manually extract. This was the bug
+	std::vector<uint8_t> size;
+	size.insert(size.begin(), payloadSizeVector.begin() + 52, payloadSizeVector.end());
+
+	printHexVector(size);
+
+	//probelm here with size
+	uint32_t payloadSize = vectorToUint32(size);
+
+	//uint32_t payloadSize = 0;
+	//std::memcpy(&payloadSize, responsePacket.data(), sizeof(payloadSize));
+	//uint32_t payloadSize = vectorToUint32(responsePacket.getPacket())
 
 	//2. Iterate over size, and send a 0x00 (NtpExtensionField::giveMePayload) packet, until all data has been recieved.
 
@@ -173,7 +189,7 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> sessionId) {
 		//add data to vector
 		payloadBuffer.insert(payloadBuffer.end(), extensionData.begin(), extensionData.end());
 
-		std::cout << "Packet [" << counter << "/" << payloadSize/4 << "]" << std::endl;
+		std::cout << "Packet [" << counter << "/" << payloadSize/Chunk::maxChunkSize << "]" << std::endl;
 		counter++;
 	}
 

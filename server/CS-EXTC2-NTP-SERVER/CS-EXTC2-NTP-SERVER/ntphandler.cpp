@@ -104,7 +104,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 it->second.setForClientBuffer(payload);
 
 
-                std::cout << "[?] Stored payload in client class";
+                std::cout << "[?] Stored payload in client class, size: " << payload.size();
                 //printHexVector(someClient.getForClientBuffer());
 
 
@@ -113,10 +113,14 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 //future packets, wtih 0x00, will send the aactual paylaod
                 std::vector<uint8_t> sizeOfDataButAsAVectorBecauseEverythingIsAVector = uint32ToBytes(payload.size());
 
+                std::cout << "[?] DEBUG: Payload as vector: ";
+                printHexVector(sizeOfDataButAsAVectorBecauseEverythingIsAVector);
+
                 NTPPacket newPacketClass;
                 newPacketClass.addExtensionField(
                     NtpExtensionField::sizePacket,
                     sizeOfDataButAsAVectorBecauseEverythingIsAVector
+
                 );
 
                 auto newPacket = newPacketClass.getPacket();
@@ -178,7 +182,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 //std::cout << "Found: " << it->second << "\n";
                 std::cout << "[?] Class exists for " << convertedSessionId << std::endl;
                 //get next chunk - need to figure otu chunk size here too
-                std::vector<uint8_t> nextChunk = it->second.getNextChunk(4);
+                std::vector<uint8_t> nextChunk = it->second.getNextChunk(Chunk::maxChunkSize);
                 //send back
                 
                 //craet NTP packet

@@ -127,8 +127,8 @@ void NTPPacketParser::_extractExtension() {
         this->_ntpPacket.end()              //keep copying to end of packet, which *should* be end of extension field. Only one extension field per packet.
     );
 
-    std::cout << "[?] Extension Field:\t";
-    printHexVector(this->_extension);
+    //std::cout << "[?] Extension Field:\t";
+    //printHexVector(this->_extension);
 
 
     // Extract the first 2 bytes for the extension type (NTP extension type)
@@ -167,6 +167,6 @@ void NTPPacketParser::_extractExtension() {
         this->_extension.end()              //keep copying to end of packet, which *should* be end of extension field. Only one extension field per packet.
     );
 
-    std::cout << "[?] Extension Data:\t";
+    //std::cout << "[?] Extension Data:\t";
     printHexVector(this->_extensionData);
-}
+} 

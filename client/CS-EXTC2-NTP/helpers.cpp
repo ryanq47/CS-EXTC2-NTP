@@ -145,3 +145,14 @@ std::vector<uint8_t> uint32ToBytes(uint32_t value) {
     bytes[3] = static_cast<uint8_t>(value & 0xFF);         // Least significant byte
     return bytes;
 }
+
+#include <winsock2.h>
+uint32_t vectorToUint32(const std::vector<uint8_t>& vec) {
+    if (vec.size() < 4) {
+        throw std::runtime_error("Vector too small to convert to uint32_t");
+    }
+
+    uint32_t value;
+    std::memcpy(&value, vec.data(), sizeof(value));
+    return ntohl(value);  // Converts the value to host byte order
+}

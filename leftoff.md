@@ -73,4 +73,7 @@ uint32_t vectorToUint32(const std::vector<uint8_t>& vec) {
 
 fixed by adding ntohl here, which is odd. I didn't think it was coming in as network order.
 
-Something weird is happenign with chunking now, not getting full payload from server
+Something weird is happenign with chunking now, not getting full payload from server 
+^^ Fix: badif else tree
+
+New bug: Some bug with paylaod size, where server has correct size, but client is not seeing correct size
