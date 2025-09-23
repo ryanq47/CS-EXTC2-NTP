@@ -86,3 +86,8 @@ namespace TeamServer {
 
 }
 
+namespace Client {
+    const std::vector<uint8_t> emptySessionId = { 0xFF, 0xFF, 0xFF, 0xFF }; //const cuz this shuold never change
+    //std::vector<uint8_t> sessionId = {};       //not a const cuz this will change
+
+}

@@ -119,7 +119,8 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 NTPPacket newPacketClass;
                 newPacketClass.addExtensionField(
                     NtpExtensionField::sizePacket,
-                    sizeOfDataButAsAVectorBecauseEverythingIsAVector
+                    sizeOfDataButAsAVectorBecauseEverythingIsAVector,
+                    Client::emptySessionId //using empty sesion ID to fit spec
 
                 );
 
@@ -154,7 +155,9 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             NTPPacket newPacketClass;
             newPacketClass.addExtensionField(
                 NtpExtensionField::sizePacket,
-                sizeOfDataButAsAVectorBecauseEverythingIsAVector
+                sizeOfDataButAsAVectorBecauseEverythingIsAVector,
+                Client::emptySessionId //using empty sesion ID to fit spec
+
             );
 
             auto newPacket = newPacketClass.getPacket();
@@ -189,7 +192,9 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 NTPPacket responsePacketClass;
                 responsePacketClass.addExtensionField(
                     NtpExtensionField::dataFromTeamserver, //is this the best way to get this back? Maybe a dedicated header specifying payload
-                    nextChunk
+                    nextChunk,
+                    Client::emptySessionId //using empty sesion ID to fit spec
+
                 );
 
                 std::vector<uint8_t> responsePacket = responsePacketClass.getPacket();
@@ -235,7 +240,9 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
         idPacket.addExtensionField(
             NtpExtensionField::idPacket,
-            clientIdVector
+            clientIdVector,
+            Client::emptySessionId //using empty sesion ID to fit spec
+
         );
 
         std::vector<uint8_t> rawPacket = idPacket.getPacket();
@@ -293,7 +300,9 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
         idPacket.addExtensionField(
             NtpExtensionField::idPacket,
-            clientIdVector
+            clientIdVector,
+            Client::emptySessionId //using empty sesion ID to fit spec
+
         );
 
         std::vector<uint8_t> rawPacket = idPacket.getPacket();

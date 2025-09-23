@@ -148,16 +148,17 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> sessionId) {
 	NTPPacketParser sizePacketParsererClass(responsePacket);
 
 
-	auto payloadSizeVector = sizePacketParsererClass.getRawPacket();
+	auto payloadSizeVector = sizePacketParsererClass.getExtensionData();
 
 	//clientid not in server responses atm,so manually extract. This was the bug
-	std::vector<uint8_t> size;
-	size.insert(size.begin(), payloadSizeVector.begin() + 52, payloadSizeVector.end());
+	//std::vector<uint8_t> size;
+	//size.insert(size.begin(), payloadSizeVector.begin() + 56, payloadSizeVector.end());
 
-	printHexVector(size);
+	//printHexVector(size);
 
 	//probelm here with size
-	uint32_t payloadSize = vectorToUint32(size);
+	//uint32_t payloadSize = vectorToUint32(payloadSizeVector);
+	uint32_t payloadSize = vectorToUint32(payloadSizeVector);
 
 	//uint32_t payloadSize = 0;
 	//std::memcpy(&payloadSize, responsePacket.data(), sizeof(payloadSize));
@@ -214,7 +215,8 @@ std::vector<uint8_t> getId() {
 
 	NTPPacketParser responsePacketParser = NTPPacketParser(responsePacket);
 	//Get extension data:
-	std::vector<uint8_t> extensionData = responsePacketParser.getExtensionSessionId();
+	//std::vector<uint8_t> extensionData = responsePacketParser.getExtensionSessionId();
+	std::vector<uint8_t> extensionData = responsePacketParser.getExtensionData();
 
 
 	return extensionData;
