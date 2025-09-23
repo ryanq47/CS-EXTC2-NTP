@@ -75,3 +75,12 @@ uint32_t generateClientID() {
 
     return dist(gen);
 }
+
+
+//ClientSession clientFactory(std::vector<uint8_t> sessionId) {
+//    //look up if session ID in list of clients
+//
+//    //if so, reutrn that
+//
+//    //if not, create class for it
+//}
