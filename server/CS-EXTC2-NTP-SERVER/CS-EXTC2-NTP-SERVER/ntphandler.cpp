@@ -93,28 +93,41 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             //1. Get paylaod form TS
             std::vector<uint8_t> payload = getx86Payload();
 
-            //create or access client class - currnetly only creates
-            ClientSession someClient(sessionId);
-            someClient.setForClientBuffer(payload);
-            std::cout << "[?] Stored payload in client class";
-            //printHexVector(someClient.getForClientBuffer());
-            
+            //need to convert vector to uint32 cuz that's what find needs
+            uint32_t uintSessionId = vectorToUint32(sessionId);
 
-            //once we have the data, create a new packet with the extension field
-            //this needs to be a size packet, which sends back the size of the payload.
-            //future packets, wtih 0x00, will send the aactual paylaod
-            std::vector<uint8_t> sizeOfDataButAsAVectorBecauseEverythingIsAVector = uint32ToBytes(payload.size());
+            //lookup client class
+            std::cout << "Printing Sesions: ";
+            printSessionIDs(sessions);
+            auto it = sessions.find(uintSessionId);
+            if (it != sessions.end()) {
+                it->second.setForClientBuffer(payload);
 
-            NTPPacket newPacketClass;
-            newPacketClass.addExtensionField(
-                NtpExtensionField::sizePacket,
-                sizeOfDataButAsAVectorBecauseEverythingIsAVector
-            );
 
-            auto newPacket = newPacketClass.getPacket();
+                std::cout << "[?] Stored payload in client class";
+                //printHexVector(someClient.getForClientBuffer());
 
-            sendNtpPacket(client_addr, sock, newPacket);
-            return; //done, so don't continue
+
+                //once we have the data, create a new packet with the extension field
+                //this needs to be a size packet, which sends back the size of the payload.
+                //future packets, wtih 0x00, will send the aactual paylaod
+                std::vector<uint8_t> sizeOfDataButAsAVectorBecauseEverythingIsAVector = uint32ToBytes(payload.size());
+
+                NTPPacket newPacketClass;
+                newPacketClass.addExtensionField(
+                    NtpExtensionField::sizePacket,
+                    sizeOfDataButAsAVectorBecauseEverythingIsAVector
+                );
+
+                auto newPacket = newPacketClass.getPacket();
+
+                sendNtpPacket(client_addr, sock, newPacket);
+                return; //done, so don't continue
+            }
+            else {
+                std::cout << "[?] Could not find client class: ";
+                printHexVector(sessionId);
+            }
         }
 
         else if (payloadArch == 0x64) {
@@ -275,6 +288,14 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
     }
 
+    /*
+    Get ID packet - aka the first thing a client needs to call to 
+    1. Get an ID
+    2. Create a client class for them. We can then assume in other funcs that the class is created (should probably still check/have error handling)
+
+    //might help if I add ti to it
+    */
+
     if (ntpPacketExtensionField == NtpExtensionField::getIdPacket) {
         std::cout << "----------------------" << std::endl;
         std::cout << "PCKT: getIdPacket " << std::endl;
@@ -283,12 +304,24 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
         std::cout << "[?] getIdPacket recieved, Generating ID" << std::endl;
 
+        //This is also known as sessionId, probbably need to change everywhere to ClientID
         uint32_t clientID = generateClientID();
         std::cout << "[?] Client ID: " << clientID << std::endl;
+        
 
         //placeholder for ID
         std::vector<uint8_t> clientIdVector = uint32ToBytes(clientID);
-        //std::vector<uint8_t> clientIdVector = { 0x00,0x00,0x00,0x00 };
+
+        //Create class for th
+        ClientSession someClient(clientIdVector);
+
+
+        // Add the new ClientSession to the sessions map
+        //sessions[clientID] = someClient;
+        //have to use insert, as sessions[clientID] tries to create the class, instead of using an existing one
+        sessions.insert({ clientID, someClient });
+        std::cout << "[?] Added Client Session with ID: " << clientID << " to the sessions map." << std::endl;
+
 
         //create NTP packet for response, with client ID included
         NTPPacket idPacket;

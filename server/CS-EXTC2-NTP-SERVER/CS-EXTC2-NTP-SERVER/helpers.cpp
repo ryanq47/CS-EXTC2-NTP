@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <iomanip> // for std::setw and std::setfill
+#include <unordered_map>
 
 void printHexVector(const std::vector<uint8_t>& vec) {
     for (size_t i = 0; i < vec.size(); ++i) {
@@ -112,4 +113,22 @@ void sendNtpPacket(sockaddr_in* client_addr, SOCKET sock, std::vector<uint8_t> n
     );
 
     std::cout << "[?] Sent successfully" << std::endl;
+}
+
+uint32_t vectorToUint32(const std::vector<uint8_t>& vec) {
+    if (vec.size() < 4) {
+        throw std::runtime_error("Vector too small to convert to uint32_t");
+    }
+
+    uint32_t value;
+    std::memcpy(&value, vec.data(), sizeof(value));
+    return value;
+}
+
+#include "client.hpp"
+#include "globals.hpp"
+void printSessionIDs(const std::unordered_map<SessionID, ClientSession>& map) {
+    for (std::unordered_map<SessionID, ClientSession>::const_iterator it = map.begin(); it != map.end(); ++it) {
+        std::cout << it->first << std::endl;  // Requires operator<< for SessionID
+    }
 }

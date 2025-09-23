@@ -38,4 +38,22 @@ client -> server (server strips NTP bs, just gets data) -> TS -> server (server 
 
 Left off by getting payload from server. Fill in for x64 as well, then work on chunking/the 0x00 setup to make sure it works -->
 
-working up until 0x00 giveMePayload. Everything seems to be gonig good, but there's a lookup problem wher the client class eitehr isn't being created, or not being accessed correctly by the server, to get the data. Problem is that sessionID is 0...
+working up until 0x00 giveMePayload. Everything seems to be gonig good, but there's a lookup problem wher the client class eitehr isn't being created, or not being accessed correctly by the server, to get the data. Problem is that sessionID is 0 prolly due to parser
+
+
+The lookup is failing for the session: 
+
+```
+[?] Payload Arch = 0x86
+[?] X86 Payload Requested
+[?] Getting x86 from TeamServer
+[?] Sending frame to TS
+[?] Sending frame to TS
+[?] Sending frame to TS
+[?] Sending frame to TS
+[?] Payload of size 239616 recieved.
+Printing Sesions: 1800238816
+[?] Could not find client class: 6b 4d 76 e0
+[?] Sending normal NTP packet back
+```
+So something is goign wrong with that, and is the next spot to investigate
