@@ -46,7 +46,7 @@ int runServer() {
 
     std::cout << "NTP UDP server listening on port " << NTP_PORT << std::endl;
 
-    char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE * 100];
     while (true) {
         int recv_len = recvfrom(sock, buffer, BUFFER_SIZE, 0, (sockaddr*)&client_addr, &client_addr_len);
         if (recv_len == SOCKET_ERROR) {

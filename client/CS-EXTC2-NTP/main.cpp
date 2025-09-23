@@ -159,6 +159,9 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> sessionId) {
 	std::vector<uint8_t> getMoreOfPayloadPacket = getMoreOfPayloadPacketClass.getPacket();
 
 	std::vector<uint8_t> payloadBuffer;
+	std::cout << "Retrieveing payload of size " << payloadSize << std::endl;
+	uint32_t counter = 0;
+
 	while (payloadBuffer.size() < payloadSize) {
 		//send chunk and get data out of it
 		std::vector<uint8_t> responsePacket = sendChunk(getMoreOfPayloadPacket);
@@ -170,6 +173,8 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> sessionId) {
 		//add data to vector
 		payloadBuffer.insert(payloadBuffer.end(), extensionData.begin(), extensionData.end());
 
+		std::cout << "Packet [" << counter << "/" << payloadSize/4 << "]" << std::endl;
+		counter++;
 	}
 
 	//3. This should now be the payload data. 

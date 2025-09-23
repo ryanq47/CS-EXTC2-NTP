@@ -206,12 +206,12 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         }
 
         //temp send back normal packet
-        sendNormalNtpPacket(client_addr, sock);
+        //sendNormalNtpPacket(client_addr, sock);
 
     }
 
     //likely depracted
-    if (ntpPacketExtensionField == NtpExtensionField::sizePacket) {
+    else if (ntpPacketExtensionField == NtpExtensionField::sizePacket) {
         std::cout << "----------------------" << std::endl;
         std::cout << "PCKT: sizePacket " << std::endl;
         std::cout << "----------------------" << std::endl;
@@ -258,7 +258,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
     //might help if I add ti to it
     */
 
-    if (ntpPacketExtensionField == NtpExtensionField::getIdPacket) {
+    else if (ntpPacketExtensionField == NtpExtensionField::getIdPacket) {
         std::cout << "----------------------" << std::endl;
         std::cout << "PCKT: getIdPacket " << std::endl;
         std::cout << "----------------------" << std::endl;
