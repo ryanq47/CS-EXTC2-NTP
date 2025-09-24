@@ -13,8 +13,9 @@ CS-EXTC2-NTP
 #include <vector>
 #include "injector.hpp"
 
+
 // ======================================
-// Chunker - may need some reword
+// Chunker - may need some rework
 // ======================================
 std::vector<uint8_t> size_tToBytes(size_t value) {
 	std::vector<uint8_t> bytes(sizeof(size_t));

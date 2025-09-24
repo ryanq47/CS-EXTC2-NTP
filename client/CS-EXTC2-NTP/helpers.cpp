@@ -8,6 +8,9 @@
 #include <array>
 
 void printHexVector(const std::vector<uint8_t>& vec) {
+#if DONT_PRINT_DATA:
+    return;
+#endif
     for (size_t i = 0; i < vec.size(); ++i) {
         std::cout << std::setw(2) << std::setfill('0') << std::hex << (int)vec[i] << " ";
     }
@@ -16,6 +19,10 @@ void printHexVector(const std::vector<uint8_t>& vec) {
 
 //for specificalyl printing a packet with a newline after 8 hex chars
 void printHexVectorPacket(const std::vector<uint8_t>& vec) {
+#if DONT_PRINT_DATA:
+    return;
+#endif
+
     std::cout << "Packet ------------------" << std::endl;
     for (size_t i = 0; i < vec.size(); ++i) {
         std::cout << std::setw(2) << std::setfill('0') << std::hex << (int)vec[i] << " ";
@@ -30,12 +37,15 @@ void printHexVectorPacket(const std::vector<uint8_t>& vec) {
 }
 
 void print_packet_hex(char* data, int len) {
+#if DONT_PRINT_DATA:
+    return;
+#endif
     std::cout << "Packet ------------------\n";
 
     for (int i = 0; i < len; ++i) {
         // Print each byte as two hex digits
         std::cout << std::hex << std::setw(2) << std::setfill('0')
-            << (static_cast<unsigned int>(static_cast<unsigned char>(data[i]))) << " ";
+            << (static_cast<unsigned int>(static_cast<unsigned char>(data[i]))) << " " <<std::dec;
 
         // Print newline every 8 bytes
         if ((i + 1) % 8 == 0) {
@@ -56,6 +66,9 @@ this is JUST a debug function to help with debugging the packets.
 
 */
 void packetDebugger(std::vector<uint8_t> packetBytes) {
+#if DONT_PRINT_DATA:
+    return;
+#endif
     //1. Run some checks to make sure an extension field exists, and extract it if so
 
     //3 seperate for different error messages. Could just be the < 52 one as well.

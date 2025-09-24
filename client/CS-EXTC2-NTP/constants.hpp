@@ -1,6 +1,13 @@
 #pragma once
 #include <array>
 #include <string>
+
+//Stuff
+
+//do NOT print data if 1, otherwise do if 0
+#define DONT_PRINT_DATA 1
+
+
 //Extension Field headers for identifying what extension this is in the packet
 //also why in the world did I do this as an array, but eveerythign esle as a vector.
 namespace NtpExtensionField {
