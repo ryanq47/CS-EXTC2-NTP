@@ -80,3 +80,5 @@ New bug: Some bug with paylaod size, where server has correct size, but client i
 //fixed, sesion ID was not included on packets back to client. Fixed.
 
 //do some CLEANUP!
+
+Cleanup done, need to fix injection and figure out why it isn't working 
