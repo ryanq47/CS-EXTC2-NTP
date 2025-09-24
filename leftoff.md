@@ -81,4 +81,6 @@ New bug: Some bug with paylaod size, where server has correct size, but client i
 
 //do some CLEANUP!
 
-Cleanup done, need to fix injection and figure out why it isn't working 
+Cleanup done, need to fix injection and figure out why it isn't working.
+It appears to specifially be something with the trasfered in payload, not the declared 0x90 shellcode, so 
+something is getting weird. review that chain. 

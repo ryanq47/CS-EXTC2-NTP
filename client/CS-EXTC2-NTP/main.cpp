@@ -209,7 +209,11 @@ int main() {
 
 	//2. run payload
 	//bugs out here, is fine for now
-	injector(payloadBytes);
+	//printHexVector(payloadBytes);
+
+	std::vector<uint8_t> payload = { 0x90,0x90,0x90,0xc3 };
+	auto payload_len = payload.size();
+	injector(payload);
 
 	//3. read from pipe & start with chunk loop
 
