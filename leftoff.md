@@ -91,3 +91,5 @@ tested with multi client, it works, is a bit slower due to multiple access at on
 Need to add in sleep for eahc packet so it doesn;t spam too hard
 
 Workign on smb read loop & those commsn, see pipeStuff in client.
+
+//Bug where the response packet says its only 48 bytes, so a normap packet I think is getting sent back to the client somewhere

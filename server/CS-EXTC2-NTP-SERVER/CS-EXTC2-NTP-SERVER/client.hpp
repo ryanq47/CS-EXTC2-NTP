@@ -17,10 +17,12 @@ public:
     void setFromClientBufferSize(uint32_t bufferSize); //sets how big the incoming message is.
     uint32_t getFromClientBufferSize(); //gets fromClientBufferSize
 
+    //being lazy and putting this in public instad of private with a getter method
+    std::vector<uint8_t> fromClientBuffer; //vector and not a queue cuz we send the whole vector to the TS, and onlyapped to this. Not pop
+
 private:
     std::vector<uint8_t> clientID;
-    std::vector<uint8_t> fromClientBuffer;
-    uint32_t fromClientBufferSize;
+    uint32_t fromClientBufferSize = 0;
     std::deque<uint8_t> forClientBuffer;
     int chunkSize = Chunk::maxChunkSize - 8; //setting max chunksize to whatever the constnat is, minus 8 for headers.AKA how much data we can fit per extension
 };

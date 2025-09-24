@@ -307,11 +307,13 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         auto it = sessions.find(uintClientId);
         if (it != sessions.end()) {
             //extensino data here holds size of TOTAL message from client
+            
+            //this is getting emsy, 
             uint32_t uintMessageSize = vectorToUint32(ntpPacket.getExtensionData());
             it->second.setFromClientBufferSize(uintMessageSize);
 
 
-            std::cout << "[?] Stored size of message in client class, size: " << it->second.getFromClientBufferSize();
+            std::cout << std::dec << "[?] Stored size of message in client class, size: " << it->second.getFromClientBufferSize() << std::endl;
             //printHexVector(someClient.getForClientBuffer());
 
 
@@ -369,15 +371,76 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         std::cout << "sendDataToTeamserver " << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
 
-        //send to teamserver
+        //lookup client class. Should exist.
+        uint32_t uintClientId = vectorToUint32(clientId);
+        auto it = sessions.find(uintClientId);
+        if (it != sessions.end()) {
 
-        //get data back
+            //If buffer is bigger than ClientBufferSize, something screwed up somehwere.
+            if (it->second.getFromClientBufferSize() >= it->second.fromClientBuffer.size()) {
+                std::cout << "[!] More data than the ClientClass thinks it should have is being sent by client" << std::endl;
+                std::cout << "[!] Expected Size: " << it->second.fromClientBuffer.size() << "Actual Size: " << it->second.fromClientBuffer.size() << std::endl;
+            }
 
-        //send data back with header of NtpExtensionField::dataFromTeamserver
+            //append chunk to end of buffer 
+            it->second.fromClientBuffer.insert(it->second.fromClientBuffer.end(), ntpPacket.getExtensionData().begin(), ntpPacket.getExtensionData().end());
+        }
+        else {
+            std::cout << "[?] Could not find client class: ";
+            printHexVector(clientId);
+        }
+            
+        //send ok back
+        std::vector<uint8_t> emptyVec = {};
+        NTPPacket newPacketClass;
+        newPacketClass.addExtensionField(
+            NtpExtensionField::sizePacketAcknowledge,
+            emptyVec, //emtpy vector, not passing any data,just saying eerythign is okay
+            Client::emptyClientId //using empty sesion ID to fit spec
+        );
+        auto newPacket = newPacketClass.getPacket();
+
+        sendNtpPacket(client_addr, sock, newPacket);
+
+        //temp send back normal packet
+        //sendNormalNtpPacket(client_addr, sock);
+    }
+
+    /*
+    Meant for clients to check in and get the data from the teamserver here
+    
+    */
+    else if (ntpPacketExtensionField == NtpExtensionField::getTeamServerData) {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: getTeamServerData " << std::endl;
+        std::cout << "----------------------" << std::endl;
+        //this is data meant for teamserver. Need to fogure out chunkinghere too
+
+        //identify session here too?
+        std::cout << "getTeamServerData " << std::endl;
+        printHexVectorPacket(ntpPacket.getRawPacket());
+
+        //Look up client class
+
+        //append inbound to client class
+        // 
+
+        //send ok back
+        std::vector<uint8_t> emptyVec = {};
+        NTPPacket newPacketClass;
+        newPacketClass.addExtensionField(
+            NtpExtensionField::sizePacketAcknowledge,
+            emptyVec, //emtpy vector, not passing any data,just saying eerythign is okay
+            Client::emptyClientId //using empty sesion ID to fit spec
+        );
+        auto newPacket = newPacketClass.getPacket();
+
+        sendNtpPacket(client_addr, sock, newPacket);
 
         //temp send back normal packet
         sendNormalNtpPacket(client_addr, sock);
-    }
+        }
+
 
     else {
         std::cout << "----------------------" << std::endl;

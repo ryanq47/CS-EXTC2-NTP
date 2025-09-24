@@ -84,6 +84,7 @@ void sendNormalNtpPacket(sockaddr_in* client_addr, SOCKET sock) {
 }
 
 /*
+HEY!!! This outputs as network order, so no ntohl conversions needed here.
 
 Does byte stuff to shift each byte into one in the vector:
 

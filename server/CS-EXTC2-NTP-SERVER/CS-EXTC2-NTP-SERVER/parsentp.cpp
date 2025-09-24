@@ -163,7 +163,7 @@ void NTPPacketParser::_extractExtension() {
     //copy extension data (the payload) into the _extensionData vec
     this->_extensionData.insert(
         this->_extensionData.begin(),       //insert at beginning of extensinoData array
-        this->_extension.begin() + 4,       //2 bytes for type, 2 bytes for length, rest for payload
+        this->_extension.begin() + 8,       //2 bytes for type, 2 bytes for length, rest for payload
         this->_extension.end()              //keep copying to end of packet, which *should* be end of extension field. Only one extension field per packet.
     );
 

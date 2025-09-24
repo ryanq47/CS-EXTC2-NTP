@@ -138,6 +138,8 @@ void packetDebugger(std::vector<uint8_t> packetBytes) {
 }
 
 /*
+HEY!!! This outputs as network order, so no ntohl conversions needed here.
+
 
 Does byte stuff to shift each byte into one in the vector:
 
@@ -148,6 +150,7 @@ bytes[0] = static_cast<uint8_t>((value >> 24) & 0xFF);
 Does for each, at 16, then 8, then 0
 
 Just aligns thigns into a uint32
+
 
 */
 std::vector<uint8_t> uint32ToBytes(uint32_t value) {
