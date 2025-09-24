@@ -19,6 +19,7 @@ public:
 private:
     std::vector<uint8_t> clientID;
     std::vector<uint8_t> fromClientBuffer;
+    uint32_t fromClientBufferSize;
     std::deque<uint8_t> forClientBuffer;
     int chunkSize = Chunk::maxChunkSize - 8; //setting max chunksize to whatever the constnat is, minus 8 for headers.AKA how much data we can fit per extension
 };

