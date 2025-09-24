@@ -211,10 +211,15 @@ int main() {
 	//bugs out here, is fine for now
 	//printHexVector(payloadBytes);
 
-	std::vector<uint8_t> payload = { 0x90,0x90,0x90,0xc3 };
-	auto payload_len = payload.size();
-	injector(payload);
+	//std::vector<uint8_t> payload = { 0x90,0x90,0x90,0xc3 };
+	//auto payload_len = payload.size();
 
+	std::cout << "[?] Size of payload that's getting injected: " << payloadBytes.size() << std::endl;
+	std::cout << "[+] If you don't see 'Finished', it crashed." << std::endl;
+
+	injector(payloadBytes);
+
+	std::cout << "[+] Finished!" <<std::endl;
 	//3. read from pipe & start with chunk loop
 
 }
