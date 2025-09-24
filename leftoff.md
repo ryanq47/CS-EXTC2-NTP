@@ -78,3 +78,5 @@ Something weird is happenign with chunking now, not getting full payload from se
 
 New bug: Some bug with paylaod size, where server has correct size, but client is not seeing correct size
 //fixed, sesion ID was not included on packets back to client. Fixed.
+
+//do some CLEANUP!

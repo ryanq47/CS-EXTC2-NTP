@@ -20,4 +20,4 @@ void sendNtpPacket(sockaddr_in* client_addr, SOCKET sock, std::vector<uint8_t> n
 
 uint32_t vectorToUint32(const std::vector<uint8_t>& vec);
 
-void printSessionIDs(const std::unordered_map<SessionID, ClientSession>& map);
+void printClientIDs(const std::unordered_map<ClientID, ClientSession>& map);

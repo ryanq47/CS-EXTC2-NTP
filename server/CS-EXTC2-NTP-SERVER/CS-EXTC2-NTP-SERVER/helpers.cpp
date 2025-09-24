@@ -127,8 +127,8 @@ uint32_t vectorToUint32(const std::vector<uint8_t>& vec) {
 
 #include "client.hpp"
 #include "globals.hpp"
-void printSessionIDs(const std::unordered_map<SessionID, ClientSession>& map) {
-    for (std::unordered_map<SessionID, ClientSession>::const_iterator it = map.begin(); it != map.end(); ++it) {
-        std::cout << it->first << std::endl;  // Requires operator<< for SessionID
+void printClientIDs(const std::unordered_map<ClientID, ClientSession>& map) {
+    for (std::unordered_map<ClientID, ClientSession>::const_iterator it = map.begin(); it != map.end(); ++it) {
+        std::cout << it->first << std::endl;  // Requires operator<< for ClientID
     }
 }

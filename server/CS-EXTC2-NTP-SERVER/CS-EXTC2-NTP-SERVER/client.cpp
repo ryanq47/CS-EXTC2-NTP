@@ -4,11 +4,11 @@
 
 #include "client.hpp"
 
-ClientSession::ClientSession(const std::vector<uint8_t>& sessionId)
-    : sessionID(sessionId)
+ClientSession::ClientSession(const std::vector<uint8_t>& clientId)
+    : clientID(clientId)
 {
 
-    if (sessionID.size() != 4) {
+    if (clientID.size() != 4) {
         throw std::runtime_error("Session ID must be 4 bytes");
     }
 }
@@ -77,7 +77,7 @@ uint32_t generateClientID() {
 }
 
 
-//ClientSession clientFactory(std::vector<uint8_t> sessionId) {
+//ClientSession clientFactory(std::vector<uint8_t> clientId) {
 //    //look up if session ID in list of clients
 //
 //    //if so, reutrn that

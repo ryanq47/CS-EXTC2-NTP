@@ -1,4 +1,4 @@
 #include "globals.hpp"
 #include "client.hpp"
 
-std::unordered_map<SessionID, ClientSession> sessions;
+std::unordered_map<ClientID, ClientSession> sessions;

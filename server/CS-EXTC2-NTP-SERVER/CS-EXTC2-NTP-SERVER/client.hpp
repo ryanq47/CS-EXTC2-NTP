@@ -5,7 +5,7 @@
 #include "constants.hpp"
 class ClientSession {
 public:
-    explicit ClientSession(const std::vector<uint8_t>& sessionId);
+    explicit ClientSession(const std::vector<uint8_t>& clientId);
 
 
     // --- Getters / Setters ---
@@ -17,7 +17,7 @@ public:
 
 
 private:
-    std::vector<uint8_t> sessionID;
+    std::vector<uint8_t> clientID;
     std::vector<uint8_t> fromClientBuffer;
     std::deque<uint8_t> forClientBuffer;
     int chunkSize = Chunk::maxChunkSize - 8; //setting max chunksize to whatever the constnat is, minus 8 for headers.AKA how much data we can fit per extension

