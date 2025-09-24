@@ -53,9 +53,9 @@ namespace NtpExtensionField {
     */
 
     //ID extension, what the client sees in a response 
-    constexpr std::array<uint8_t, 2> sessionID = { 0x53, 0x55 }; //size packet, how big the incoming data is
+    constexpr std::array<uint8_t, 2> clientID = { 0x53, 0x55 }; //size packet, how big the incoming data is
     /*
-        SessionID Extension Field Layout (Total: 8 bytes)
+        clientID Extension Field Layout (Total: 8 bytes)
     -----------------------------------------------
     | Bytes | Description                          |
     |-------|--------------------------------------|
@@ -81,7 +81,7 @@ namespace Net {
 }
 
 namespace Client {
-    const std::vector<uint8_t> emptySessionId = { 0xFF, 0xFF, 0xFF, 0xFF }; //const cuz this shuold never change
-    //std::vector<uint8_t> sessionId = {};       //not a const cuz this will change
+    const std::vector<uint8_t> emptyClientId = { 0xFF, 0xFF, 0xFF, 0xFF }; //const cuz this shuold never change
+    //std::vector<uint8_t> clientId = {};       //not a const cuz this will change
 
 }
