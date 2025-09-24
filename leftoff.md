@@ -90,3 +90,4 @@ proiblm: not running as 64 bit lol -->
 tested with multi client, it works, is a bit slower due to multiple access at once though, especially when printing.
 Need to add in sleep for eahc packet so it doesn;t spam too hard
 
+Workign on smb read loop & those commsn, see pipeStuff in client.
