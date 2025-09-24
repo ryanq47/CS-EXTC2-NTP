@@ -13,7 +13,7 @@
 #pragma comment(lib, "ws2_32.lib")
 
 constexpr int NTP_PORT = 123;
-constexpr int BUFFER_SIZE = 128; // NTP packet size
+constexpr int BUFFER_SIZE = 1024; // NTP packet size
 
 int runServer() {
     WSADATA wsaData;
@@ -46,7 +46,9 @@ int runServer() {
 
     std::cout << "NTP UDP server listening on port " << NTP_PORT << std::endl;
 
-    char buffer[BUFFER_SIZE * 100];
+    //BUFFER HERE NEEDS TO BE MAX SIZE THE NTP PACKET CAN BE,as that's waht it's accounting for. currentyly set to 1024. Just something to 
+    //keep in mind
+    char buffer[BUFFER_SIZE];
     while (true) {
         int recv_len = recvfrom(sock, buffer, BUFFER_SIZE, 0, (sockaddr*)&client_addr, &client_addr_len);
         if (recv_len == SOCKET_ERROR) {
