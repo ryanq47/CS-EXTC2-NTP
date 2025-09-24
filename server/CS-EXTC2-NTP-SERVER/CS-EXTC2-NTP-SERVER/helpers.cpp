@@ -2,8 +2,12 @@
 #include <vector>
 #include <iomanip> // for std::setw and std::setfill
 #include <unordered_map>
+#include "constants.hpp"
 
 void printHexVector(const std::vector<uint8_t>& vec) {
+#if DONT_PRINT_DATA:
+    return;
+#endif
     for (size_t i = 0; i < vec.size(); ++i) {
         std::cout << std::setw(2) << std::setfill('0') << std::hex << (int)vec[i] << " ";
     }
@@ -12,6 +16,9 @@ void printHexVector(const std::vector<uint8_t>& vec) {
 
 //for specificalyl printing a packet with a newline after 8 hex chars
 void printHexVectorPacket(const std::vector<uint8_t>& vec) {
+#if DONT_PRINT_DATA:
+    return;
+#endif
     std::cout << "Packet ------------------" << std::endl;
     for (size_t i = 0; i < vec.size(); ++i) {
         std::cout << std::setw(2) << std::setfill('0') << std::hex << (int)vec[i] << " ";
@@ -26,6 +33,9 @@ void printHexVectorPacket(const std::vector<uint8_t>& vec) {
 }
 
 void print_packet_hex(const char* data, int len) {
+#if DONT_PRINT_DATA:
+    return;
+#endif
     std::cout << "Packet ------------------\n";
 
     for (int i = 0; i < len; ++i) {

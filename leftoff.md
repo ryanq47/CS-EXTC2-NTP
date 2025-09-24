@@ -71,7 +71,7 @@ uint32_t vectorToUint32(const std::vector<uint8_t>& vec) {
 }
 
 
-fixed by adding ntohl here, which is odd. I didn't think it was coming in as network order.
+<!-- fixed by adding ntohl here, which is odd. I didn't think it was coming in as network order.
 
 Something weird is happenign with chunking now, not getting full payload from server 
 ^^ Fix: badif else tree
@@ -79,8 +79,14 @@ Something weird is happenign with chunking now, not getting full payload from se
 New bug: Some bug with paylaod size, where server has correct size, but client is not seeing correct size
 //fixed, sesion ID was not included on packets back to client. Fixed.
 
-//do some CLEANUP!
+//do some CLEANUP! -->
 
-Cleanup done, need to fix injection and figure out why it isn't working.
+<!-- Cleanup done, need to fix injection and figure out why it isn't working.
 It appears to specifially be something with the trasfered in payload, not the declared 0x90 shellcode, so 
 something is getting weird. review that chain. 
+
+proiblm: not running as 64 bit lol -->
+
+tested with multi client, it works, is a bit slower due to multiple access at once though, especially when printing.
+Need to add in sleep for eahc packet so it doesn;t spam too hard
+
