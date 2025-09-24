@@ -173,7 +173,7 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> clientId) {
 	}
 
 	//3. This should now be the payload data. 
-	std::cout << "[+] Payload of size " << payloadBuffer.size() << " retrieved";
+	std::cout << "[+] Payload of size " << payloadBuffer.size() << " retrieved" << std::endl;
 	return payloadBuffer;
 }
 
