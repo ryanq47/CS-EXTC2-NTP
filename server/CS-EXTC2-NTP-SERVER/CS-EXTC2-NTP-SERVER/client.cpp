@@ -3,7 +3,7 @@
 #include <cstdint>
 
 #include "client.hpp"
-
+#include <iostream>
 ClientSession::ClientSession(const std::vector<uint8_t>& clientId)
     : clientID(clientId)
 {
@@ -61,14 +61,13 @@ void ClientSession::setForClientBuffer(const std::vector<uint8_t>& data) {
 }
 
 void ClientSession::setFromClientBufferSize(uint32_t bufferSize) {
-    //this->fromClientBufferSize = 0;                    // remove any existing data/set to 0
-    this->fromClientBufferSize = bufferSize;                    // remove any existing data/set to 0
-
+    this->fromClientBufferSize = bufferSize;
+    std::cout << "[DEBUG] setFromClientBufferSize called, value set to " << bufferSize << std::endl;
 }
 
-uint32_t ClientSession::getFromClientBufferSize() {
-    return this->fromClientBufferSize;
-
+uint32_t ClientSession::getFromClientBufferSize() const {
+    std::cout << "[DEBUG] getFromClientBufferSize called, returning " << fromClientBufferSize << std::endl;
+    return fromClientBufferSize;
 }
 
 

@@ -304,6 +304,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
         //lookup client class. Should exist.
         uint32_t uintClientId = vectorToUint32(clientId);
+        std::cout << "[?] Looking up client ID: " << uintClientId << std::endl;
         auto it = sessions.find(uintClientId);
         if (it != sessions.end()) {
             //extensino data here holds size of TOTAL message from client
@@ -373,17 +374,31 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
         //lookup client class. Should exist.
         uint32_t uintClientId = vectorToUint32(clientId);
+        std::cout << "[?] Looking up client ID: " << uintClientId << std::endl;
         auto it = sessions.find(uintClientId);
         if (it != sessions.end()) {
 
-            //If buffer is bigger than ClientBufferSize, something screwed up somehwere.
-            if (it->second.getFromClientBufferSize() >= it->second.fromClientBuffer.size()) {
+            std::cout << "Extension Data for dataForTeamserver:" << std::endl;
+            printHexVector(ntpPacket.getExtensionData());
+
+            //Bug somewhere in here. The extension data clearly has data in it. Somethng is up with expected size and actual size
+            //[? ] Looking up client ID : 2864018163
+            //    Extension Data for dataForTeamserver :
+            //    38 d9 f3 78 64 62 ab c3 dd 36 60 d4 5d 13 51 a9 76 64 1e 5c fd 0e 4a db 2a 55 16 70 40 e2 40 e8 00 89 c7 4a a2 94 0e 48 bf 48 60 b8 ed 20 99 4e d1 aa 52 14 67 1b f7 7d d9 aa cc 5a df af 86 8d 11 a9 c0 fc 8f 89 1a 9f 68 19 8d 81 c8 07 91 cf 5d d1 18 24 7b 69 eb ab 38 10 71 f3 c6 a6 84 db b2 9d c5 41 a6 e9 58 53 fd f1 3f d5 d3 0f 00 77 9e 62 1c 6a 79 aa 01 73 04 8d 80 36 47 b4 a3 72 37 11 ef f1
+            //    [!] More data than the ClientClass thinks it should have is being sent by client
+            //    [!] Expected Size : 132 Actual Size : 0
+
+            //BUG IS WITH STORAGE OF SIZE somehow
+
+            //If fromClientBuffer is bigger than ClientBufferSize, something screwed up somehwere.
+            if (it->second.fromClientBuffer.size() >= it->second.getFromClientBufferSize()) {
                 std::cout << "[!] More data than the ClientClass thinks it should have is being sent by client" << std::endl;
-                std::cout << "[!] Expected Size: " << it->second.fromClientBuffer.size() << "Actual Size: " << it->second.fromClientBuffer.size() << std::endl;
+                std::cout << "[!] Expected Size: " << it->second.getFromClientBufferSize() << " Actual Size: " << it->second.fromClientBuffer.size() << std::endl;
             }
 
+            auto extData = ntpPacket.getExtensionData();
             //append chunk to end of buffer 
-            it->second.fromClientBuffer.insert(it->second.fromClientBuffer.end(), ntpPacket.getExtensionData().begin(), ntpPacket.getExtensionData().end());
+            it->second.fromClientBuffer.insert(it->second.fromClientBuffer.end(), extData.begin(), extData.end());
         }
         else {
             std::cout << "[?] Could not find client class: ";
