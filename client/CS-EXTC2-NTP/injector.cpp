@@ -46,8 +46,9 @@ int injector(std::vector<uint8_t> payload) {
         return 1;
     }
 
-    //Wait for the thread to finish 
-    WaitForSingleObject(th, INFINITE);
+    //Waiting for 1 second to let the shellcode run and get established (and create the pipe), and then start reading from pipe stuff.
+    std::cout << "[!] Waiting one second to let ShellCode do its thing" << std::endl;
+    WaitForSingleObject(th, 1000);
     CloseHandle(th);
 
     return 0;

