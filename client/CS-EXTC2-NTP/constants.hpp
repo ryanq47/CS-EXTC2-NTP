@@ -35,8 +35,9 @@ namespace NtpExtensionField {
     //left off defining these, and getting teh chunking working/making sure it makes sense. Getting close to actual server being needed now. 
     constexpr std::array<uint8_t, 2> getIdPacket = { 0x12, 0x34 }; //Get ID packet
     constexpr std::array<uint8_t, 2> idPacket = { 0x1D, 0x1D }; //idPacket, has ID in it for client to use
-
     constexpr std::array<uint8_t, 2> sizePacket = { 0x51, 0x2E }; //size packet, how big the incoming data is
+    constexpr std::array<uint8_t, 2> sizePacketAcknowledge = { 0x50, 0x50 }; //size packet Acknowledge, a nothing burger to confrim data has been received
+
     /*
     sizePacket Extension Field Layout (Total: 8 bytes)
     -----------------------------------------------

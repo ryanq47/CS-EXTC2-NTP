@@ -60,6 +60,18 @@ void ClientSession::setForClientBuffer(const std::vector<uint8_t>& data) {
         data.end());
 }
 
+void ClientSession::setFromClientBufferSize(uint32_t bufferSize) {
+    //this->fromClientBufferSize = 0;                    // remove any existing data/set to 0
+    this->fromClientBufferSize = bufferSize;                    // remove any existing data/set to 0
+
+}
+
+uint32_t ClientSession::getFromClientBufferSize() {
+    return this->fromClientBufferSize;
+
+}
+
+
 std::vector<uint8_t> ClientSession::getForClientBuffer() const {
     return std::vector<uint8_t>(this->forClientBuffer.begin(), this->forClientBuffer.end());
 }

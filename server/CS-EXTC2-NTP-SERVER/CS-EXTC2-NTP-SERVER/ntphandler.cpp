@@ -302,27 +302,53 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
         std::cout << "[?] sizePacket recieved" << std::endl;
 
-        //parse packet, get ClientID
-
         //lookup client class. Should exist.
+        uint32_t uintClientId = vectorToUint32(clientId);
+        auto it = sessions.find(uintClientId);
+        if (it != sessions.end()) {
+            //extensino data here holds size of TOTAL message from client
+            uint32_t uintMessageSize = vectorToUint32(ntpPacket.getExtensionData());
+            it->second.setFromClientBufferSize(uintMessageSize);
 
+
+            std::cout << "[?] Stored size of message in client class, size: " << it->second.getFromClientBufferSize();
+            //printHexVector(someClient.getForClientBuffer());
+
+
+            //once we have the data, create a new packet with the extension field
+            //this needs to be some packet that aknowldeges that we got the message from the client, something simple. 
+            std::vector<uint8_t> emptyVec = {};
+            NTPPacket newPacketClass;
+            newPacketClass.addExtensionField(
+                NtpExtensionField::sizePacketAcknowledge,
+                emptyVec, //emtpy vector, not passing any data,just saying eerythign is okay
+                Client::emptyClientId //using empty sesion ID to fit spec
+            );
+            auto newPacket = newPacketClass.getPacket();
+
+            sendNtpPacket(client_addr, sock, newPacket);
+            return; //done, so don't continue
+        }
+        else {
+            std::cout << "[?] Could not find client class: ";
+            printHexVector(clientId);
+        }
         //Add sizse of message to client class, to fromClientBufferSize
 
         //(in dataForTeamserver) continue to append to fromClientBuffer until data == fromClientBufferSize, then send to teamserver.
 
-        //need to fiugre out how to get data back from TS now too. 
-        //maybe a dedicated flag with "any data?" checkin. Both know size, both can calc
-
+        //how to implement:
         //lookign at ICMP code, after we send that, we immediatly read from the teamserver frame, 
         //so maybe it goes
-        //1. Get all data from client, send some sort of "ok" message back. 
-        //2. When all data is retrieved, send to TS
-        //3. Save TS resposne in client class
+        //1. Get all data from client, send some sort of "ok" message back in chunking process. 
+        //2. When all data is retrieved, forward to TS from client class
+        //3. Get resposne from TS, Save TS resposne in client class
         //4. send 1 sizePacket, then dataFromTeamserver packets (chunked) back (client must send a "giveMeTsResponse" packet so it's outbound), with the data from the TS in the response.
             //need to edit chunker on client side for a "send chunked" and "recieve chunked"
             //size packet is so the client knows how big it is inbound.
         //Note, don't have to re-create a chunker here, can use the assumption of one packet per checkin, then just continue to send back by popping off the queue, like
         //we did for payload.
+        //Ex, client sends a giveMeTsResponseSize, which gives size, then giveMeTsResponse until total response = size.
     }
 
 

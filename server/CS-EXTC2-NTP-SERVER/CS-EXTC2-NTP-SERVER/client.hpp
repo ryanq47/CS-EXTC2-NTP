@@ -14,7 +14,8 @@ public:
     std::vector<uint8_t> getForClientBuffer() const;
     void setForClientBuffer(const std::vector<uint8_t>& data); //set forClientbuffer with a vector
     std::vector<uint8_t> getNextChunk(size_t chunkSize);
-
+    void setFromClientBufferSize(uint32_t bufferSize); //sets how big the incoming message is.
+    uint32_t getFromClientBufferSize(); //gets fromClientBufferSize
 
 private:
     std::vector<uint8_t> clientID;
