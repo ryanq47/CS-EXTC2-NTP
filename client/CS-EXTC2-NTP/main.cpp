@@ -205,6 +205,8 @@ std::vector<uint8_t> getId() {
 #define PAYLOAD_MAX_SIZE 512 * 1024
 #define BUFFER_MAX_SIZE 1024 * 1024
 
+//NOTE still need to setup server side and make sure that logic lines up
+
 DWORD read_frame(HANDLE my_handle, char* buffer, DWORD max) {
 	DWORD size = 0, temp = 0, total = 0;
 
