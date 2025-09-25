@@ -92,4 +92,73 @@ Need to add in sleep for eahc packet so it doesn;t spam too hard
 
 Workign on smb read loop & those commsn, see pipeStuff in client.
 
-//Bug where the response packet says its only 48 bytes, so a normap packet I think is getting sent back to the client somewhere
+//Bug where the response packet says its only 48 bytes, so a normap packet I think is getting sent back to the client somewhere 
+
+Fixed
+
+new bug, size is not being received correctly/stored by sizePacket. Client is fine, serer is fucked somehweere
+
+<!-- BUUUUUG: [?] Stored size of message in client class, size: 1005847518, this is the ClientID NOTOTTT the size FUCK -->
+
+<!-- New bug: fromClientBuffer & fromClientBuffersize are bugged out and not being stored in the clietn class corercty -->
+
+Fixed. Continue building. Ack is succsuflly received.
+
+
+
+New bug: MixMatch in size of data coming from clinet, to stored in client class, to teamserver, which only sends part of the data cuz it thinks its all there:
+
+----------------------
+PCKT: sizePacket
+----------------------
+[?] sizePacket recieved
+[?] Looking up client ID: 85e5bfd7
+[DEBUG] setFromClientBufferSize called, value set to 84
+[DEBUG] getFromClientBufferSize called, returning 84
+[?] Stored size of message in client class, size: 132
+[?] Ext Length:         4
+[?] padded Length:      4
+[?] Sending NTP packet
+[?] Sent successfully
+Received 188 bytes from 127.0.0.1:52294
+[?] Parsing packet of size: 188 ## see, it's 188 here. (client also says 188 - which is correct based on counting bits) 188-48 -8 = 132 shuold be size.  (see above, this is correct: [?] Stored size of message in client class, size: 132)
+[?] Struct size:        48
+[?] Extension Type:     2 5
+[?] Extension Length:   88  ## this says 88, odd
+[?] Client Session ID:
+----------------------
+PCKT: dataForTeamserver
+----------------------
+sendDataToTeamserver
+[?] Looking up client ID: 85e5bfd7
+Extension Data for dataForTeamserver:
+[DEBUG] getFromClientBufferSize called, returning 84
+[DEBUG] getFromClientBufferSize called, returning 84
+[+] Data from client complete, sending to teamserver
+[?] Data Size: 84
+[TS] Sending frame to TS        # SO - this is sending too early for some reason, not at 132, but isntead at 84, meaning something is failing somehwere
+[TS] Sending size of frame: 84 # BUT, only 84 is being sent...
+[TS] Sending data of frame.
+[+] Sent to teamserver
+[?] Ext Length:         4
+[?] padded Length:      4
+[?] Sending NTP packet
+[?] Sent successfully
+Received 38 bytes from 127.0.0.1:cc47
+[?] Parsing packet of size: 38
+[?] Struct size:        30
+[?] Extension Type:     3 4
+[?] Extension Length:   4
+[?] Client Session ID:
+
+...84 may be interpreted as hex, cuz 84 in hex = 132 in deciimal
+
+idfk that seems to be fine. im confused at waht is happening. Make sure data is being read from the pipe and actualyl has data? then
+make sure it maeks to to the TS. TS has read length read -1 thign going on still
+
+is pipe being read correctly: YES
+Is server getting exact copy of data correctly: Yes Seems so, the printed buffer for TS is 124 chars (which would make sene with 8 bytes of header? unsure) This may be where a mixmatch is
+Is server STORING exact copy of data correctly: Yes
+is data being passed to TS correctly: ?
+is data being recieved from TS correctly: recv_frame works, I guess the data is bad? Can hook client directly up to TS and see if that worsk too
+

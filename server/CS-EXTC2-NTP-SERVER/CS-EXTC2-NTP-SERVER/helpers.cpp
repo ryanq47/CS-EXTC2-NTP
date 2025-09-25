@@ -143,3 +143,11 @@ void printClientIDs(const std::unordered_map<ClientID, ClientSession>& map) {
         std::cout << it->first << std::endl;  // Requires operator<< for ClientID
     }
 }
+
+
+void printHex(const uint8_t* buffer, size_t length) {
+    for (size_t i = 0; i < length; ++i) {
+        printf("%02X ", buffer[i]);
+    }
+    printf("\n");
+}
