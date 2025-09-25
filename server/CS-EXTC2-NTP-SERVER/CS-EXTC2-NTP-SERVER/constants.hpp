@@ -3,13 +3,13 @@
 #include <string>
 
 //do NOT print data if 1, otherwise do if 0
-#define DONT_PRINT_DATA 1
+#define DONT_PRINT_DATA 0
 
 //Extension Field headers for identifying what extension this is in the packet
 //also why in the world did I do this as an array, but eveerythign esle as a vector.
 namespace NtpExtensionField {
     constexpr std::array<uint8_t, 2> giveMePayload = { 0x00, 0x01 }; //{ 0x4d, 0x5a }; //or { 0x10, 0xad } for load, payload
-    constexpr std::array<uint8_t, 2> getTeamServerData = { 0x00, 0x02 }; //Asking for teamserver data from server
+    constexpr std::array<uint8_t, 2> getDataFromTeamserver = { 0x00, 0x02 }; //Asking for teamserver data from server
     constexpr std::array<uint8_t, 2> dataFromTeamserver = { 0x02, 0x04 }; //NTS Cookie, 43-64 bytes
     constexpr std::array<uint8_t, 2> getDataFromTeamserverSize = { 0x03, 0x04 }; //For getting size of data coming in to client from TS
     constexpr std::array<uint8_t, 2> dataForTeamserver = { 0x02, 0x05 }; //NTS cookie placeholder, sent by client

@@ -29,7 +29,7 @@ also remember - .at/vectors are 0 indexed.
 
 NTPPacketParser::NTPPacketParser(std::vector<uint8_t> ntpPacket) {
     std::cout << "[?] Parsing packet of size: " << ntpPacket.size() << std::endl;
-    std::cout << "[?] Struct size:\t" << sizeof(PacketData) << std::endl;
+    //std::cout << "[?] Struct size:\t" << sizeof(PacketData) << std::endl;
     if (ntpPacket.size() < sizeof(PacketData)) {
         std::cerr << "Packet size is too small!" << std::endl;
         return;

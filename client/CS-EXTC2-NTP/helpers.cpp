@@ -112,6 +112,13 @@ void packetDebugger(std::vector<uint8_t> packetBytes) {
 
     }
 
+    if (ntpPacketExtensionField == NtpExtensionField::getDataFromTeamserver) {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: getDataFromTeamserver " << std::endl;
+        std::cout << "----------------------" << std::endl;
+        printHexVectorPacket(ntpPacket.getRawPacket());
+
+    }
 
     else if (ntpPacketExtensionField == NtpExtensionField::dataForTeamserver) {
         std::cout << "----------------------" << std::endl;

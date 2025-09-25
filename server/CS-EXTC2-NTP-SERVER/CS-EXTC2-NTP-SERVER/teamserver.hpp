@@ -11,7 +11,7 @@ std::vector<uint8_t> recv_frame(SOCKET my_socket);
 /* send a frame via a socket */
 void send_frame(SOCKET my_socket, char* buffer, int length);
 
-std::vector<uint8_t> getx64Payload();
-std::vector<uint8_t> getx86Payload();
+std::vector<uint8_t> getx64Payload(SOCKET socket_extc2);
+std::vector<uint8_t> getx86Payload(SOCKET socket_extc2);
 
-std::vector<uint8_t> forwardToTeamserver(std::vector<uint8_t> dataForTeamserver);
+std::vector<uint8_t> forwardToTeamserver(std::vector<uint8_t> dataForTeamserver, SOCKET socket_extc2);

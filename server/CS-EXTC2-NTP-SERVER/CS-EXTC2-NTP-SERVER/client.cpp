@@ -1,9 +1,12 @@
+#define NOMINMAX //win macros disable
+
 #include <vector>
 #include <random>
 #include <cstdint>
-
+#include <algorithm>
 #include "client.hpp"
 #include <iostream>
+
 ClientSession::ClientSession(const std::vector<uint8_t>& clientId)
     : clientID(clientId)
 {
@@ -11,6 +14,9 @@ ClientSession::ClientSession(const std::vector<uint8_t>& clientId)
     if (clientID.size() != 4) {
         throw std::runtime_error("Session ID must be 4 bytes");
     }
+
+    //Next, init socket for client
+    this->initSocket();
 }
 
 
@@ -77,6 +83,25 @@ std::vector<uint8_t> ClientSession::getForClientBuffer() const {
 
 
 
+SOCKET ClientSession :: getSocket() {
+    return this->_extc2Socket;
+}
+
+int ClientSession::initSocket() {
+    std::cout << "[+] Initializing socket for client" << std::endl;
+    struct sockaddr_in 	sock;
+    sock.sin_family = AF_INET;
+    sock.sin_addr.s_addr = inet_addr(TeamServer::address.c_str());
+    sock.sin_port = htons(TeamServer::port);
+
+    this->_extc2Socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (connect(this->_extc2Socket, (struct sockaddr*)&sock, sizeof(sock))) {
+        printf("Could not connect to %s:%d\n", TeamServer::address.c_str(), TeamServer::port);
+        exit(0);
+        return 1;
+    }
+    return 0;
+}
 
 
 uint32_t generateClientID() {
@@ -86,12 +111,3 @@ uint32_t generateClientID() {
 
     return dist(gen);
 }
-
-
-//ClientSession clientFactory(std::vector<uint8_t> clientId) {
-//    //look up if session ID in list of clients
-//
-//    //if so, reutrn that
-//
-//    //if not, create class for it
-//}
