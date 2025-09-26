@@ -126,22 +126,26 @@
     <ClCompile Include="chunker.cpp" />
     <ClCompile Include="client.cpp" />
     <ClCompile Include="createntp.cpp" />
+    <ClCompile Include="globals.cpp" />
     <ClCompile Include="helpers.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ntphandler.cpp" />
     <ClCompile Include="parsentp.cpp" />
     <ClCompile Include="server.cpp" />
+    <ClCompile Include="teamserver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="chunker.hpp" />
     <ClInclude Include="client.hpp" />
     <ClInclude Include="constants.hpp" />
     <ClInclude Include="createntp.hpp" />
+    <ClInclude Include="globals.hpp" />
     <ClInclude Include="helpers.hpp" />
     <ClInclude Include="ntp.hpp" />
     <ClInclude Include="ntphandler.hpp" />
     <ClInclude Include="parsentp.hpp" />
     <ClInclude Include="server.hpp" />
+    <ClInclude Include="teamserver.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

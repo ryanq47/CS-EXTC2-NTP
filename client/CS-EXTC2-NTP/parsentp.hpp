@@ -10,6 +10,7 @@ public:
     NTPPacketParser(std::vector<uint8_t> ntpPacket);
     std::vector<uint8_t> getExtension();
     std::vector<uint8_t> getExtensionData();
+    std::vector<uint8_t> getExtensionClientId();
     std::array<uint8_t, 2> getExtensionField();
     std::vector<uint8_t> getRawPacket();
 private:
@@ -23,6 +24,7 @@ private:
     std::array<uint8_t, 2> _extensionField;
     uint16_t _extensionLength = 0;
     std::vector<uint8_t> _extensionData;
+    std::vector<uint8_t> _extensionClientID;
     std::vector<uint8_t> _extension; //holds the full extension
     std::vector<uint8_t> _ntpPacket; //raw ntp packet
 };

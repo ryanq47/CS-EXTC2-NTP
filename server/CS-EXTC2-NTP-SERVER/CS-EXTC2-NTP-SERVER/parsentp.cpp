@@ -29,7 +29,7 @@ also remember - .at/vectors are 0 indexed.
 
 NTPPacketParser::NTPPacketParser(std::vector<uint8_t> ntpPacket) {
     std::cout << "[?] Parsing packet of size: " << ntpPacket.size() << std::endl;
-    std::cout << "[?] Struct size:\t" << sizeof(PacketData) << std::endl;
+    //std::cout << "[?] Struct size:\t" << sizeof(PacketData) << std::endl;
     if (ntpPacket.size() < sizeof(PacketData)) {
         std::cerr << "Packet size is too small!" << std::endl;
         return;
@@ -67,6 +67,10 @@ NTPPacketParser::NTPPacketParser(std::vector<uint8_t> ntpPacket) {
 
 std::vector<uint8_t> NTPPacketParser::getExtensionData() {
     return this->_extensionData;
+}
+
+std::vector<uint8_t> NTPPacketParser::getExtensionClientId() {
+    return this->_extensionClientID;
 }
 
 std::vector<uint8_t> NTPPacketParser::getRawPacket() {
@@ -123,8 +127,8 @@ void NTPPacketParser::_extractExtension() {
         this->_ntpPacket.end()              //keep copying to end of packet, which *should* be end of extension field. Only one extension field per packet.
     );
 
-    std::cout << "[?] Extension Field:\t";
-    printHexVector(this->_extension);
+    //std::cout << "[?] Extension Field:\t";
+    //printHexVector(this->_extension);
 
 
     // Extract the first 2 bytes for the extension type (NTP extension type)
@@ -149,13 +153,31 @@ void NTPPacketParser::_extractExtension() {
     std::cout << "[?] Extension Length:\t" << this->_extensionLength << std::endl;
 
 
-    //copy extension data (the payload) into the _extensionData vec
-    this->_extensionData.insert(
-        this->_extensionData.begin(),       //insert at beginning of extensinoData array
-        this->_extension.begin() + 4,       //2 bytes for type, 2 bytes for length, rest for payload
-        this->_extension.end()              //keep copying to end of packet, which *should* be end of extension field. Only one extension field per packet.
+    //Copy session ID into session ID
+    this->_extensionClientID.insert(
+        this->_extensionClientID.begin(),       //insert at beginning of extensinoData array
+        this->_extension.begin() + 4,//+ 4,       //2 bytes for type, 2 bytes for length, 4 for session ID, rest for payload
+        this->_extension.begin() + 8           //keep copying to +8, which is end of session Id
     );
 
-    std::cout << "[?] Extension Data:\t";
+    ////copy extension data (the payload) into the _extensionData vec
+    //this->_extensionData.insert(
+    //    this->_extensionData.begin(),       //insert at beginning of extensinoData array
+    //    this->_extension.begin() + 8,       //2 bytes for type, 2 bytes for length, rest for payload
+    //    this->_extension.end()              //keep copying to end of packet, which *should* be end of extension field. Only one extension field per packet.
+    //);
+
+    // Calculate end position based on real extension length
+    //this assumes extensino length is correct
+    auto extension_end = this->_extension.begin() + this->_extensionLength;
+
+    // Copy extension data (payload only) into _extensionData
+    this->_extensionData.insert(
+        this->_extensionData.begin(),
+        this->_extension.begin() + 8,  // skip type(2) + length(2) + clientId(4)
+        extension_end                  // stop at actual declared length
+    );
+
+    //std::cout << "[?] Extension Data:\t";
     printHexVector(this->_extensionData);
-}
+} 

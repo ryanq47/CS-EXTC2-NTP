@@ -1,11 +1,17 @@
 #pragma once
 #include <array>
 #include <string>
+
+//do NOT print data if 1, otherwise do if 0
+#define DONT_PRINT_DATA 1
+
 //Extension Field headers for identifying what extension this is in the packet
 //also why in the world did I do this as an array, but eveerythign esle as a vector.
 namespace NtpExtensionField {
     constexpr std::array<uint8_t, 2> giveMePayload = { 0x00, 0x01 }; //{ 0x4d, 0x5a }; //or { 0x10, 0xad } for load, payload
+    constexpr std::array<uint8_t, 2> getDataFromTeamserver = { 0x00, 0x02 }; //Asking for teamserver data from server
     constexpr std::array<uint8_t, 2> dataFromTeamserver = { 0x02, 0x04 }; //NTS Cookie, 43-64 bytes
+    constexpr std::array<uint8_t, 2> getDataFromTeamserverSize = { 0x03, 0x04 }; //For getting size of data coming in to client from TS
     constexpr std::array<uint8_t, 2> dataForTeamserver = { 0x02, 0x05 }; //NTS cookie placeholder, sent by client
 
     /*
@@ -28,7 +34,10 @@ namespace NtpExtensionField {
     //left off defining these, and getting teh chunking working/making sure it makes sense. Getting close to actual server being needed now. 
 
     constexpr std::array<uint8_t, 2> idPacket = { 0x1D, 0x1D }; //idPacket, has ID in it for client to use
+    constexpr std::array<uint8_t, 2> getIdPacket = { 0x12, 0x34 }; //Get ID packet
     constexpr std::array<uint8_t, 2> sizePacket = { 0x51, 0x2E }; //size packet, how big the incoming data is
+    constexpr std::array<uint8_t, 2> sizePacketAcknowledge = { 0x50, 0x50 }; //size packet Acknowledge, a nothing burger to confrim data has been received
+
     /*
     sizePacket Extension Field Layout (Total: 8 bytes)
     -----------------------------------------------
@@ -52,9 +61,9 @@ namespace NtpExtensionField {
     */
 
     //ID extension, what the client sees in a response 
-    constexpr std::array<uint8_t, 2> sessionID = { 0x53, 0x55 }; //size packet, how big the incoming data is
+    constexpr std::array<uint8_t, 2> clientID = { 0x53, 0x55 }; //size packet, how big the incoming data is
     /*
-        SessionID Extension Field Layout (Total: 8 bytes)
+        ClientID Extension Field Layout (Total: 8 bytes)
     -----------------------------------------------
     | Bytes | Description                          |
     |-------|--------------------------------------|
@@ -69,13 +78,24 @@ namespace NtpExtensionField {
 
 }
 
-//namespace Chunk {
-//    constexpr int maxChunkSize = 28; //28 for data (plus 4 for headers/size), as the packets must be aligned to 32 bit boundaries. There is logic to handle if they are less, but 28 (for an even 32) seemed easiest. 
-//
-//}
+namespace Chunk {
+    constexpr int maxChunkSize = 1016; //28 for data (plus 4 for headers/size, and 4 for clientid), as the packets must be aligned to 32 bit boundaries. There is logic to handle if they are less, but 28 (for an even 32) seemed easiest. 
+
+}
 //
 //namespace Net {
 //    constexpr uint16_t port = 123;
 //    const std::string serverAddress = "127.0.0.1";
 //}
 
+namespace TeamServer {
+    const std::string address = "10.0.1.22";
+    constexpr int port = 8080;
+
+}
+
+namespace Client {
+    const std::vector<uint8_t> emptyClientId = { 0xFF, 0xFF, 0xFF, 0xFF }; //const cuz this shuold never change
+    //std::vector<uint8_t> clientId = {};       //not a const cuz this will change
+
+}
