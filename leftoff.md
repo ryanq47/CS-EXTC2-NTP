@@ -22,3 +22,9 @@ to be coming *out* of the beacon? it for sure gets sent in.
 
 
 Next: Clean everything up
+
+ - Cleaning up client & putting together nicely
+    >> maybe explore a differnet injection method too
+
+
+Bug: Large commands casuse a crash somehwere. Not quite sure where, but somethign to keep in mind/fix

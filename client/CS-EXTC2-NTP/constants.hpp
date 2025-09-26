@@ -5,7 +5,7 @@
 //Stuff
 
 //do NOT print data if 1, otherwise do if 0
-#define DONT_PRINT_DATA 0
+#define DONT_PRINT_DATA 1
 
 
 //Extension Field headers for identifying what extension this is in the packet
@@ -85,13 +85,21 @@ namespace Chunk {
 
 }
 //
-namespace Net {
+namespace Controller { //for talking to Controller
     constexpr uint16_t port = 123;
     const std::string serverAddress = "127.0.0.1";
 }
 
 namespace Client {
     const std::vector<uint8_t> emptyClientId = { 0xFF, 0xFF, 0xFF, 0xFF }; //const cuz this shuold never change
-    //std::vector<uint8_t> clientId = {};       //not a const cuz this will change
+}
 
+namespace Beacon {
+//#define PAYLOAD_MAX_SIZE 512 * 1024
+//#define BUFFER_MAX_SIZE 1024 * 1024
+
+    //not used 
+    const size_t payloadMaxSize = 512 * 1024;
+    //max size to read from pipe
+    const size_t bufferMaxSize = 1024 * 1024;
 }

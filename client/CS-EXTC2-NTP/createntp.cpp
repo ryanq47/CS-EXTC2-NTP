@@ -2,15 +2,16 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <iomanip>
 #include <iostream>
 #include <vector>
-#include <iomanip>
-#include "ntp.hpp"
-#include "createntp.hpp"
-//for htons
-#include <winsock2.h> 
-#include "helpers.hpp"
+
+#include <winsock2.h> // required for htons/ntohs and WinSock functions
 #pragma comment(lib, "Ws2_32.lib")
+
+#include "createntp.hpp"
+#include "helpers.hpp"
+#include "ntp.hpp"
 
 /*
 * 
