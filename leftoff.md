@@ -13,3 +13,9 @@ That has seemignly been fixed
 The new bug seems to be between the Client and the Controller. The beacon always checks in cuz it's from the controller, but no data seems
 to be coming *out* of the beacon? it for sure gets sent in. 
  - TLDR: Disconnect between beacon & client -> server & teamserver
+
+ 		/* write to our named pipe Beacon */
+		//write_frame(handle_beacon, dataForBeacon, read);
+		write_frame(handle_beacon, dataForBeacon, dataFromTeamserver.size());
+
+        fixed wit that
