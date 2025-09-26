@@ -19,3 +19,6 @@ to be coming *out* of the beacon? it for sure gets sent in.
 		write_frame(handle_beacon, dataForBeacon, dataFromTeamserver.size());
 
         fixed wit that
+
+
+Next: Clean everything up
