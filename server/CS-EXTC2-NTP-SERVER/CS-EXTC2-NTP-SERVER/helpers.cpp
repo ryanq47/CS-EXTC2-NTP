@@ -87,7 +87,7 @@ void sendNormalNtpPacket(sockaddr_in* client_addr, SOCKET sock) {
 }
 
 // Send an arbitrary NTP packet
-void sendNtpPacket(sockaddr_in* client_addr, SOCKET sock, const std::vector<uint8_t>& ntpPacket) {
+void sendNtpPacket(sockaddr_in* client_addr, SOCKET sock, std::vector<uint8_t> ntpPacket) {
     std::cout << "[?] Sending NTP packet" << std::endl;
     printHexVectorPacket(ntpPacket);
 

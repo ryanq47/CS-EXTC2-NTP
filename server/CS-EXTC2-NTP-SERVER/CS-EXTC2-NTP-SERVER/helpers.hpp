@@ -22,5 +22,4 @@ uint32_t vectorToUint32(const std::vector<uint8_t>& vec);
 
 void printClientIDs(const std::unordered_map<ClientID, ClientSession>& map);
 
-
 void printHex(const uint8_t* buffer, size_t length);

