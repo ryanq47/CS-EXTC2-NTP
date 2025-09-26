@@ -11,4 +11,5 @@ My best guess is that it's an issue with padding itself, and the length/data bei
 That has seemignly been fixed
 
 The new bug seems to be between the Client and the Controller. The beacon always checks in cuz it's from the controller, but no data seems
-to be coming *out* of the beacon? it for sure gets sent in
+to be coming *out* of the beacon? it for sure gets sent in. 
+ - TLDR: Disconnect between beacon & client -> server & teamserver
