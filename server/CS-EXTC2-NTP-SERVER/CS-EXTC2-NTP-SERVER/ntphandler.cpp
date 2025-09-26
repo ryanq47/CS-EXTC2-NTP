@@ -439,6 +439,9 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 auto newPacket = newPacketClass.getPacket();
 
                 sendNtpPacket(client_addr, sock, newPacket);
+
+                //clear buffer after we're done with it for next one.
+                it->second.fromClientBuffer.clear();
             }
         }
         else {

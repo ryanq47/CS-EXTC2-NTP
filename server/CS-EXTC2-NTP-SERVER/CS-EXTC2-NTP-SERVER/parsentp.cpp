@@ -160,11 +160,22 @@ void NTPPacketParser::_extractExtension() {
         this->_extension.begin() + 8           //keep copying to +8, which is end of session Id
     );
 
-    //copy extension data (the payload) into the _extensionData vec
+    ////copy extension data (the payload) into the _extensionData vec
+    //this->_extensionData.insert(
+    //    this->_extensionData.begin(),       //insert at beginning of extensinoData array
+    //    this->_extension.begin() + 8,       //2 bytes for type, 2 bytes for length, rest for payload
+    //    this->_extension.end()              //keep copying to end of packet, which *should* be end of extension field. Only one extension field per packet.
+    //);
+
+    // Calculate end position based on real extension length
+    //this assumes extensino length is correct
+    auto extension_end = this->_extension.begin() + this->_extensionLength;
+
+    // Copy extension data (payload only) into _extensionData
     this->_extensionData.insert(
-        this->_extensionData.begin(),       //insert at beginning of extensinoData array
-        this->_extension.begin() + 8,       //2 bytes for type, 2 bytes for length, rest for payload
-        this->_extension.end()              //keep copying to end of packet, which *should* be end of extension field. Only one extension field per packet.
+        this->_extensionData.begin(),
+        this->_extension.begin() + 8,  // skip type(2) + length(2) + clientId(4)
+        extension_end                  // stop at actual declared length
     );
 
     //std::cout << "[?] Extension Data:\t";

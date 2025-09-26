@@ -100,7 +100,7 @@ NTPPacket::NTPPacket(uint8_t li, uint8_t version, uint8_t mode) {
 
 void NTPPacket::addExtensionField(const std::array<uint8_t, 2>& fieldType, const std::vector<uint8_t>& data, const std::vector<uint8_t>& clientId) {
     //first 4 are the size, rest is the vector/rest of extension field
-    size_t extLength = 2 + 2 + data.size(); //2 bytes of field type, 2 of length, size of data
+    size_t extLength = 2 + 2 + clientId.size() + data.size(); //2 bytes of field type, 2 of length, size of data
     /*
 
     RFC 7822 defines NTP ext feilds, which specify 2 bytes of ext type, and 2 of length. To look legit, we should follow that
