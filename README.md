@@ -19,9 +19,9 @@ Go by each item, such as payload (have all fields there, and a diagram of how it
 ... There are two sets/parts of extneino fields:
 
 - Payload Retrieveal: The initial Payload Retirival from the TeamServer
-- The Loop: The continuous comms between Client, Controller, and TeamServer
+- The Beacon Loop: The continuous comms between Client, Controller, and TeamServer
 
-#### Base Packet Format:
+### Base Packet Format:
 
 All Extension Field packets follow this format:
 
@@ -85,7 +85,28 @@ Bytes 8: Architechure (0x86, 0x64, or 0x00) 0x00 = continue sending payload, 0x8
    1. Note: This uses a basic CreateThread injection method. It’s going to be detected — please modify or replace with your preferred technique. (Code is located in `injector.cpp`)
 
 
-...image here...
+...image/graph here...
+
+
+### The Beacon Loop Extension Fields
+
+These Extension Fields facilitate tunneling of beacon communications, routing data between the client and the Controller, and then between the Controller and the Teamserver.
+
+
+#### The Flow:
+
+1. Client reads beacon data from the named pipe. Client sends a packet with a `sizePacket` extension, which contains the size of the data retreived from the beacon.
+2. Controller responds with ...
+3. Client then initiates chunking by iterating over the beacon data size, sending chunks until the entire beacon data has been sent to the Controller
+   1. Controller sends... to signify ok
+4. Once the Controller has all the data, it forwards the data onto the TeamServer. It saves the response of the teamserver.
+5. Client then sends a packet with the `getDataFromTeamserverSize` extension. The Controller responds with the size of the data from the Teamserver, via a packet with a `sizePacket` extension.
+6. Client then initiates chunking by sending a packet with the `getDataFromTeamserver` extension. The Controller responds with a packet with the `dataFromTeamserver` extension. This packet contiains a chunk of data of the TeamServers response.
+7. Once the Client has all the data, it forwards the data onto the beacon, via the named pipe. It then loops to step 1.
+
+
+...image/graph here...
+
 
 
 
@@ -133,5 +154,3 @@ Bytes 8-..: Total Data Size          // Full size of data being transmitted
 ```
 
 ** The Loop / At execution **
-
-### The Loop Extension Fields
