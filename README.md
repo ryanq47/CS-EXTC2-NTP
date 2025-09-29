@@ -49,19 +49,19 @@ Bytes 56-X: (optional) Additional Data (buffered to 4 bit boundary)
 
 There are various extension Fields, I'll break them down based on usecase/how they are used
 
-### Payload Extension Fields
+### Payload Retrieval & Execution Extension Fields
 
 These Extension Fields are used to tunnel the payload to the client, through the Controller, from the Teamserver.
 
 1. getSize
 
-SomeDesc
+This extension field is used to communicate the size of an inbound message. This is crucial for chunk based communication. 
 
 ```
 Bytes 0-1: 0x00,0x00
 Bytes 2-3: Size of Data
 Bytes 4-7: Unique ID
-Bytes 8-.. Size of total data to be sent (explain this is for chunking)
+Bytes 8-.. Size of total data to be sent 
 ```
 
 
@@ -74,7 +74,24 @@ Bytes 4-7: Unique ID (EMPTY)
 Bytes 8: Architechure (0x86, 0x64, or 0x00) 0x00 = continue sending payload, 0x86/0x64 are their own respective arch.
 ```
 
-#### Inboudn Packet  - getSize
+#### The Flow:
+
+1. Client sends a packet with a `giveMePayload` extension.
+   1. The data in this packet will either be `0x86`, or `0x64`, depending on the architecture of the host. This must be manually set in the client, this is not dynamically determined.
+2. In the NTP response, Server returns a packet with a `sizePacket` extension, denoting the size of the payload.
+3. The client initiates chunking by iterating over the inbound payload size, retrieving chunks until the entire payload has been received.
+   1. The data in this packet is `0x00`, which denotes "keep sending me chunks of the payload"
+4. Once the entire payload has been retrieved, it is in injected into a new thread, and run.
+   1. Note: This uses a basic CreateThread injection method. It’s going to be detected — please modify or replace with your preferred technique. (Code is located in `injector.cpp`)
+
+
+...image here...
+
+
+
+####
+
+Inboudn Packet  - getSize
 
 The server responds with a size of the
 
