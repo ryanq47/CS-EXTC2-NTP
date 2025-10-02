@@ -74,7 +74,7 @@ std::vector<uint8_t> sendChunk(
         }
 
         // Receive response
-        char buffer[2048];  // 2048 bytes just in case anything gets too big. Probaby should make more dynamic
+        char buffer[1024 * 10 * 10];  // 2048 bytes just in case anything gets too big. Probaby should make more dynamic
         sockaddr_in fromAddr = {};
         int fromLen = sizeof(fromAddr);
 

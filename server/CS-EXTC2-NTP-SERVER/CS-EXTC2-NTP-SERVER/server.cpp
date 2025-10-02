@@ -13,7 +13,7 @@
 #pragma comment(lib, "ws2_32.lib")
 
 constexpr int NTP_PORT = 123;
-constexpr int BUFFER_SIZE = 1024; // NTP packet size
+constexpr int BUFFER_SIZE = 1024 * 10 * 10; // NTP packet size
 
 int runServer() {
     WSADATA wsaData;

