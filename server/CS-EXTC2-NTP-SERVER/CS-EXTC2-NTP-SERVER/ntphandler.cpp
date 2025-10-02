@@ -241,7 +241,6 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         uint32_t uintClientId = vectorToUint32(clientId);
         auto it = sessions.find(uintClientId);
         if (it != sessions.end()) {
-            std::cout << "Found session" << std::endl;
             if (it->second.fromClientBuffer.size() >= it->second.getFromClientBufferSize()) {
                 std::cout << "[!] More data than expected from client" << std::endl;
                 std::cout << "[!] Expected Size: "
@@ -250,17 +249,10 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                     << it->second.fromClientBuffer.size() << std::endl;
             }
 
-            std::cout << "ntpPacket.getExtensionData()" << std::endl;
             auto extData = ntpPacket.getExtensionData();
             it->second.fromClientBuffer.insert(
                 it->second.fromClientBuffer.end(), extData.begin(), extData.end());
 
-
-            /*
-            Bug appears to be here. We freeze right after GEt Client buffer size
-            
-            */
-            std::cout << "GEt Client buffer size" << std::endl;
             if (it->second.fromClientBuffer.size() == it->second.getFromClientBufferSize()) {
                 std::cout << "[+] Data from client complete, sending to teamserver" << std::endl;
 
@@ -288,7 +280,8 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             else {
                 std::cout << "[+] Data from client NOT complete, "<< it->second.fromClientBuffer.size() << " of " << it->second.getFromClientBufferSize() << "bytes sent" << std::endl;
 
-                //I think I need to send an size acknowldeg packet?? here, or at least that's what the clietn wants
+                //Send an ack paacket back, or the clinet will freeze trying to recv from server. Double check this is correct packet to send back, in terms of 
+                //correctness for the protocol. It works cuz both client & server expect sizePacketAcknowledge, but is that an appropriate name?
                 NTPPacket newPacketClass;
                 newPacketClass.addExtensionField(
                     NtpExtensionField::sizePacketAcknowledge,
