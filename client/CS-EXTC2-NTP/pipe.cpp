@@ -62,7 +62,7 @@ void pipeLoop(std::vector<uint8_t> clientId) {
 	}
 
 	/* setup our buffer */
-	char* buffer = (char*)malloc(Beacon::bufferMaxSize); /* 1MB should do */
+	char* buffer = (char*)malloc(Beacon::bufferMaxSize); 
 
 	/*
 	 * relay frames back and forth

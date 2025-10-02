@@ -28,3 +28,5 @@ Next: Clean everything up
 
 
 Bug: Large commands casuse a crash somehwere. Not quite sure where, but somethign to keep in mind/fix
+
+Seems to be a socket failing somehweer, and teh TS says connection reset. SOmething must be up with teh socket/size, on the server side? Not sure. 

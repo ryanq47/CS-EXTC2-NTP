@@ -53,8 +53,10 @@ std::vector<uint8_t> sendChunk(
         }
 
         // Set timeout (e.g., 5 seconds)
-        DWORD timeout = 5000;
-        setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+        DWORD timeout = Beacon::responseTimeout; //wait 
+        //setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+		DWORD timeout = 0; //0 is infinite
+		setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
 
         // Setup destination address
         sockaddr_in destAddr = {};

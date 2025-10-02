@@ -101,5 +101,6 @@ namespace Beacon {
     //not used 
     const size_t payloadMaxSize = 512 * 1024;
     //max size to read from pipe
-    const size_t bufferMaxSize = 1024 * 1024;
+    const size_t bufferMaxSize = 1024 * 1024 * 10;
+    const DWORD responseTimeout = 60000; //how long socket will wait for response packet. in MS
 }
