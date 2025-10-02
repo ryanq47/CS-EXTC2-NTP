@@ -75,4 +75,4 @@ PCKT: dataForTeamserver
 
 This makes me wonder if the ubffers are still not big enough/some data is not fully being sent over to the TS
 
-Bug Fixed, didn't send the sizeACK back. GO DOUBLE CHECK THE STUPID BUFFER SIZES PLEASE
+Bug Fixed, didn't send the sizeACK back in inbound dataForTeamserver (on server side). GO DOUBLE CHECK THE STUPID BUFFER SIZES PLEASE
