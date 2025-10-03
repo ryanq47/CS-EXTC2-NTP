@@ -41,14 +41,14 @@ TODO:
  - [ ] Go check buffer sizes
 	- Add to constnats where needed
 	- [X] Client
-	- [ ] Server
+	- [X] Server
 
  - [ ] Retest with buffer sizes. 
 	- Add to constnats where needed
 	- [X] Client
-	- [ ] Server
+	- [X] Server
 
- - [ ] Fix/Imleemnt proper sleep
+ - [X] Fix/Imleemnt proper sleep
 
  - [ ] Doublec check if sizeAck is the correct way to do the callback thingy 
 

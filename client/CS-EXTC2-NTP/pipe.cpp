@@ -117,7 +117,7 @@ void pipeLoop(std::vector<uint8_t> clientId) {
 		write_frame(handle_beacon, dataForBeacon, dataFromTeamserver.size());
 
 		//sleep & wait for beacon to do something
-		Sleep(10000);
+		Sleep(Client::beaconSleepTimeMs);
 		//exit after comms
 	}
 }
