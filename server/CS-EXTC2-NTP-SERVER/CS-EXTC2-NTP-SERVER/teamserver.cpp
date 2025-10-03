@@ -41,7 +41,7 @@ void waitForTsToComeOnline() {
 	while (TRUE) {
 		int result = connect(sock, (sockaddr*)&addr, sizeof(addr));
 		if (result == 0) {
-			std::cout << "[+] TS Online, Connected to External CS Listener" << std::endl;
+			std::cout << "[+] TS Online at " << TeamServer::address << ":"  << TeamServer::port << ", Connected to External CS Listener" << std::endl;
 			return;
 		}
 		else {
