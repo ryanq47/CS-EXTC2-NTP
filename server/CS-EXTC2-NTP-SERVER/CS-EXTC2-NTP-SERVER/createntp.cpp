@@ -162,9 +162,9 @@ void NTPPacket::addExtensionField(const std::array<uint8_t, 2>& fieldType, const
 
 
     //Debug Prings
-    std::cout << "[?] Ext Length:\t\t" << extLength << std::endl;
-    std::cout << "[?] padded Length:\t" << paddedLength << std::endl;
-    //std::cout << "[?] :\t" << paddedLength << std::endl;
+    //std::cout << "[?] Ext Length:\t\t" << extLength << std::endl;
+    //std::cout << "[?] padded Length:\t" << paddedLength << std::endl;
+    ////std::cout << "[?] :\t" << paddedLength << std::endl;
 
 }
 

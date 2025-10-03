@@ -68,11 +68,11 @@ void ClientSession::setForClientBuffer(const std::vector<uint8_t>& data) {
 
 void ClientSession::setFromClientBufferSize(uint32_t bufferSize) {
     this->fromClientBufferSize = bufferSize;
-    std::cout << "[DEBUG] setFromClientBufferSize called, value set to " << bufferSize << std::endl;
+    //std::cout << "[DEBUG] setFromClientBufferSize called, value set to " << bufferSize << std::endl;
 }
 
 uint32_t ClientSession::getFromClientBufferSize() const {
-    std::cout << "[DEBUG] getFromClientBufferSize called, returning " << fromClientBufferSize << std::endl;
+    //std::cout << "[DEBUG] getFromClientBufferSize called, returning " << fromClientBufferSize << std::endl;
     return fromClientBufferSize;
 }
 

