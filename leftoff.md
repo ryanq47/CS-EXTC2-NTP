@@ -50,7 +50,12 @@ TODO:
 
  - [X] Fix/Imleemnt proper sleep
 
- - [ ] Doublec check if sizeAck is the correct way to do the callback thingy 
+ - [X] Doublec check if sizeAck is the correct way to do the callback thingy 
 		>>prolly fine
 
- - [ ] Final cleanup
+ - [X] Final cleanup
+
+
+ todo:
+ - [ ] Finish readme
+ - [ ] Blogpost
