@@ -45,7 +45,7 @@ void waitForTsToComeOnline() {
 			return;
 		}
 		else {
-			std::cout << "[!] TS Offline, Could not connect to External CS Listener" << std::endl;
+			std::cout << "[+] TS Offline at " << TeamServer::address << ":" << TeamServer::port << ", Could not connect to External CS Listener" << std::endl;
 		}
 
 		//sleep for X time waiting for TS to come online
