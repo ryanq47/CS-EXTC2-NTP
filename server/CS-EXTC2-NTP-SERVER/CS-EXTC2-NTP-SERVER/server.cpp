@@ -44,7 +44,7 @@ int runServer() {
         return 1;
     }
 
-    std::cout << "NTP UDP server listening on port " << NTP_PORT << std::endl;
+    std::cout << "[+] Started NTP UDP server - listening on port " << NTP_PORT << std::endl;
 
     //BUFFER HERE NEEDS TO BE MAX SIZE THE NTP PACKET CAN BE,as that's waht it's accounting for. currentyly set to 1024. Just something to 
     //keep in mind

