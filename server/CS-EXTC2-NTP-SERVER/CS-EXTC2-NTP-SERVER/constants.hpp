@@ -94,6 +94,11 @@ namespace TeamServer {
 
 }
 
+namespace Controller {
+    constexpr int ntpListenPort = 123;
+
+}
+
 namespace Client {
     const std::vector<uint8_t> emptyClientId = { 0xFF, 0xFF, 0xFF, 0xFF }; //const cuz this shuold never change
     //std::vector<uint8_t> clientId = {};       //not a const cuz this will change

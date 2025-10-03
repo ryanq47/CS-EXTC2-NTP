@@ -51,7 +51,9 @@ Extension Field layout. This comes after the 48 byte NTP packet
 }
 
 namespace Chunk {
-    constexpr int maxChunkSize = 1016; //28 for data (plus 4 for headers/size, and 4 for clientid), as the packets must be aligned to 32 bit boundaries. There is logic to handle if they are less, but 28 (for an even 32) seemed easiest. 
+    //How much data on top of the NTP packet, and it's 8 byte of headers, you want to send. Can be up to 65535 total, otherwise server starts to lose data. 
+    //Smaller = more packets, bigger = less packets. Advised to keep below normal MTU of 1500 (which would be 1500-48-8, or 1452) to prevent ip fragmentation 
+    constexpr int maxChunkSize = 1016;
 
 }
 //
