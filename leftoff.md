@@ -38,12 +38,12 @@ I think 1024 * 1024 max is good, but that causes an overflow in the server code.
 
 
 TODO: 
- - [ ] Go check buffer sizes
+ - [X] Go check buffer sizes
 	- Add to constnats where needed
 	- [X] Client
 	- [X] Server
 
- - [ ] Retest with buffer sizes. 
+ - [X] Retest with buffer sizes. 
 	- Add to constnats where needed
 	- [X] Client
 	- [X] Server
@@ -51,5 +51,6 @@ TODO:
  - [X] Fix/Imleemnt proper sleep
 
  - [ ] Doublec check if sizeAck is the correct way to do the callback thingy 
+		>>prolly fine
 
  - [ ] Final cleanup

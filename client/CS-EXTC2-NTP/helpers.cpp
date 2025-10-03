@@ -23,7 +23,7 @@ void printHexVectorPacket(const std::vector<uint8_t>& vec) {
     return;
 #endif
 
-    std::cout << "Packet ------------------" << std::endl;
+    //std::cout << "Packet ------------------" << std::endl;
     for (size_t i = 0; i < vec.size(); ++i) {
         std::cout << std::setw(2) << std::setfill('0') << std::hex << (int)vec[i] << " ";
         if ((i + 1) % 8 == 0)
@@ -32,7 +32,7 @@ void printHexVectorPacket(const std::vector<uint8_t>& vec) {
     if (vec.size() % 8 != 0)
         std::cout << std::endl; // Final newline if not already printed
     std::cout << std::dec; // Reset back to decimal
-    std::cout << "-------------------------" << std::endl;
+    //std::cout << "-------------------------" << std::endl;
 
 }
 
@@ -40,7 +40,7 @@ void print_packet_hex(char* data, int len) {
 #if DONT_PRINT_DATA:
     return;
 #endif
-    std::cout << "Packet ------------------\n";
+    //std::cout << "Packet ------------------\n";
 
     for (int i = 0; i < len; ++i) {
         // Print each byte as two hex digits
@@ -49,16 +49,16 @@ void print_packet_hex(char* data, int len) {
 
         // Print newline every 8 bytes
         if ((i + 1) % 8 == 0) {
-            std::cout << "\n";
+            //std::cout << "\n";
         }
     }
 
     // If length is not multiple of 8, add newline at the end
     if (len % 8 != 0) {
-        std::cout << "\n";
+        //std::cout << "\n";
     }
 
-    std::cout << "-------------------------\n";
+    //std::cout << "-------------------------\n";
 }
 
 /*
@@ -73,25 +73,25 @@ void packetDebugger(std::vector<uint8_t> packetBytes) {
 
     //3 seperate for different error messages. Could just be the < 52 one as well.
     if (packetBytes.size() < 48) {
-        std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: Malformed Packet" << std::endl;
-        std::cout << "----------------------" << std::endl;        //do actoins
+        //std::cout << "----------------------" << std::endl;
+        //std::cout << "PCKT: Malformed Packet" << std::endl;
+        //std::cout << "----------------------" << std::endl;        //do actoins
         return;
     }
 
     if (packetBytes.size() <= 48) {
-        std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: Normal NTP Packet " << std::endl;
-        std::cout << "----------------------" << std::endl;        //do actoins
+        //std::cout << "----------------------" << std::endl;
+        //std::cout << "PCKT: Normal NTP Packet " << std::endl;
+        //std::cout << "----------------------" << std::endl;        //do actoins
         return;
     }
 
     //each packet needs the 4 byte header, so check if there are bytes there
     if (packetBytes.size() < 52) {
-        std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: Normal NTP Packet " << std::endl;
-        std::cout << "----------------------" << std::endl;
-        std::cout << "Packet does not contain an extension field" << std::endl;
+        //std::cout << "----------------------" << std::endl;
+        //std::cout << "PCKT: Normal NTP Packet " << std::endl;
+        //std::cout << "----------------------" << std::endl;
+        //std::cout << "Packet does not contain an extension field" << std::endl;
 
         return;
     }
@@ -105,38 +105,38 @@ void packetDebugger(std::vector<uint8_t> packetBytes) {
     //2. Do different actions based on what type of packet/extension field is coming in
 
     if (ntpPacketExtensionField == NtpExtensionField::giveMePayload) {
-        std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: Give Me Payload " << std::endl;
-        std::cout << "----------------------" << std::endl;
+        //std::cout << "----------------------" << std::endl;
+        //std::cout << "PCKT: Give Me Payload " << std::endl;
+        //std::cout << "----------------------" << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
 
     }
 
     if (ntpPacketExtensionField == NtpExtensionField::getDataFromTeamserver) {
-        std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: getDataFromTeamserver " << std::endl;
-        std::cout << "----------------------" << std::endl;
+        //std::cout << "----------------------" << std::endl;
+        //std::cout << "PCKT: getDataFromTeamserver " << std::endl;
+        //std::cout << "----------------------" << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
 
     }
 
     else if (ntpPacketExtensionField == NtpExtensionField::dataForTeamserver) {
-        std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: dataForTeamserver " << std::endl;
-        std::cout << "----------------------" << std::endl;
+        //std::cout << "----------------------" << std::endl;
+        //std::cout << "PCKT: dataForTeamserver " << std::endl;
+        //std::cout << "----------------------" << std::endl;
         //this is data meant for teamserver. Need to fogure out chunkinghere too
 
         //identify session here too?
-        //std::cout << "sendDataToTeamserver " << std::endl;
+        ////std::cout << "sendDataToTeamserver " << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
 
     }
 
     else {
-        std::cout << "----------------------" << std::endl;
-        std::cout << "PCKT: Unknown " << std::endl;
-        std::cout << "----------------------" << std::endl;
-        std::cout << "[?] Packet extension did not match any known extensions" << std::endl;
+        //std::cout << "----------------------" << std::endl;
+        //std::cout << "PCKT: Unknown " << std::endl;
+        //std::cout << "----------------------" << std::endl;
+        //std::cout << "[?] Packet extension did not match any known extensions" << std::endl;
         printHexVectorPacket(ntpPacket.getRawPacket());
 
 

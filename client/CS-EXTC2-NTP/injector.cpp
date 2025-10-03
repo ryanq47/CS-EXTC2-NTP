@@ -34,12 +34,12 @@ int injector(std::vector<uint8_t> payload) {
     }
 
     //Waiting for 1 second to let the shellcode run and get established (and create the pipe), and then start reading from pipe stuff.
-    //std::cout << "[!] Waiting one second to let ShellCode do its thing" << std::endl;
+    ////std::cout << "[!] Waiting one second to let ShellCode do its thing" << std::endl;
     WaitForSingleObject(th, 1000);
 
     DWORD exitCode;
     GetExitCodeThread(th, &exitCode);
-    std::cout << "[+] Shellcode thread exit code: " << exitCode << std::endl;
+    //std::cout << "[+] Shellcode thread exit code: " << exitCode << std::endl;
 
     CloseHandle(th);
 

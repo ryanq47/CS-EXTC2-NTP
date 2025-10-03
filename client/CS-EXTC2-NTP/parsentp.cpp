@@ -28,8 +28,8 @@ also remember - .at/vectors are 0 indexed.
 #include "helpers.hpp"
 
 NTPPacketParser::NTPPacketParser(std::vector<uint8_t> ntpPacket) {
-    std::cout << "[?] Parsing packet of size: " << ntpPacket.size() << std::endl;
-    //std::cout << "[?] Struct size:\t" << sizeof(PacketData) << std::endl;
+    //std::cout << "[?] Parsing packet of size: " << ntpPacket.size() << std::endl;
+    ////std::cout << "[?] Struct size:\t" << sizeof(PacketData) << std::endl;
     if (ntpPacket.size() < sizeof(PacketData)) {
         std::cerr << "Packet size is too small!" << std::endl;
         printHexVectorPacket(ntpPacket);
@@ -37,7 +37,7 @@ NTPPacketParser::NTPPacketParser(std::vector<uint8_t> ntpPacket) {
     }
 
     if (ntpPacket.size() <= 48) {
-        std::cout << "[!] Size of packet is less than or equal to 48, no extension: " << ntpPacket.size() << std::endl;
+        //std::cout << "[!] Size of packet is less than or equal to 48, no extension: " << ntpPacket.size() << std::endl;
         //need a way to bubble up properly
         return;
     }
@@ -112,7 +112,7 @@ void NTPPacketParser::_extractExtension() {
         this->_ntpPacket.end()              //keep copying to end of packet, which *should* be end of extension field. Only one extension field per packet.
     );
 
-    std::cout << "[?] Extension Field:\t";
+    //std::cout << "[?] Extension Field:\t";
     printHexVector(this->_extension);
 
 
@@ -123,11 +123,7 @@ void NTPPacketParser::_extractExtension() {
     this->_extensionField[0] = extensionFieldByte0;
     this->_extensionField[1] = extensionFieldByte1;
 
-    std::cout << "[?] Extension Type:\t"
-        << std::hex << static_cast<int>(extensionFieldByte0) << " "
-        << std::hex << static_cast<int>(extensionFieldByte1)
-        << std::endl <<std::dec;
-    //why am I doing that
+    //std::cout << "[?] Extension Type:\t" << std::hex << static_cast<int>(extensionFieldByte0) << " " << std::hex << static_cast<int>(extensionFieldByte1) << std::endl <<std::dec;
 
     //get length
     uint8_t extensionFieldByte2 = this->_extension[2]; // Next 2 bytes are Extension Length
@@ -135,7 +131,7 @@ void NTPPacketParser::_extractExtension() {
 
     //do some byte magic to turn this into a uint16 for size
     this->_extensionLength = (static_cast<uint16_t>(extensionFieldByte2) << 8) | static_cast<uint16_t>(extensionFieldByte3);
-    std::cout << "[?] Extension Length:\t" << this->_extensionLength << std::endl;
+    //std::cout << "[?] Extension Length:\t" << this->_extensionLength << std::endl;
 
     //Copy session ID into session ID
     this->_extensionClientID.insert(
@@ -152,6 +148,6 @@ void NTPPacketParser::_extractExtension() {
         extension_end
     );
 
-    //std::cout << "[?] Extension Data:\t";
+    ////std::cout << "[?] Extension Data:\t";
     printHexVector(this->_extensionData);
 }

