@@ -35,3 +35,14 @@ Seems to be a socket failing somehweer, and teh TS says connection reset. SOmeth
 
 Bug Fixed, didn't send the sizeACK back in inbound dataForTeamserver (on server side). GO DOUBLE CHECK THE STUPID BUFFER SIZES PLEASE.
 I think 1024 * 1024 max is good, but that causes an overflow in the server code. Expirement, and check the example provided by fortra
+
+
+TODO: 
+ - [ ] Go check buffer sizes
+	- Add to constnats where needed
+
+ - [ ] Retest with buffer sizes. 
+
+ - [ ] Doublec check if sizeAck is the correct way to do the callback thingy 
+
+ - [ ] Final cleanup

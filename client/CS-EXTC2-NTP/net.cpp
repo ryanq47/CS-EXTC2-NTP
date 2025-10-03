@@ -74,7 +74,8 @@ std::vector<uint8_t> sendChunk(
         }
 
         // Receive response
-        char buffer[1024 * 10 * 10];  // 2048 bytes just in case anything gets too big. Probaby should make more dynamic
+        //char buffer[1024 * 10 * 10];  // 2048 bytes just in case anything gets too big. Probaby should make more dynamic
+		char buffer[65535]; //using MAX size an NTP is allowed to be, just incase some massive NTP packet is sent. 
         sockaddr_in fromAddr = {};
         int fromLen = sizeof(fromAddr);
 
