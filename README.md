@@ -157,6 +157,7 @@ These Extension Fields facilitate tunneling of beacon communications, routing da
 6. Client then initiates chunking by sending a packet with the `getDataFromTeamserver` extension. The Controller responds with a packet with the `dataFromTeamserver` extension. This packet contiains a chunk of data of the TeamServers response.
 7. Once the Client has all the data, it forwards the data onto the beacon, via the named pipe. It then loops to step 1.
 
+![beacon_loop (1)](https://github.com/user-attachments/assets/943eade2-9bbd-458c-a9a0-96ad4ddc319c)
 
 
 ####
