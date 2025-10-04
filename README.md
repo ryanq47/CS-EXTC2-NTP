@@ -2,6 +2,8 @@
 
 An NTP tunnel for Cobalt Strike beacons using External-C2
 
+
+
 ## Tunnel
 
 The tunnel is fairly simple. Every packet is a normal NTP packet, and all the data hides in extension fields. 
@@ -53,7 +55,7 @@ There are two main jobs the Client and Controller have:
 
 
 
-REMOVE_ME:
+<!-- REMOVE_ME:
 // Payload-related
 [ ] giveMePayload = { 0x00, 0x01 };
 
@@ -69,7 +71,7 @@ REMOVE_ME:
 
 // Size-related
 [X] sizePacket = { 0x51, 0x2E };
-[ ] sizePacketAcknowledge = { 0x50, 0x50 };
+[ ] sizePacketAcknowledge = { 0x50, 0x50 }; -->
 
 ## Extension Fields
 
