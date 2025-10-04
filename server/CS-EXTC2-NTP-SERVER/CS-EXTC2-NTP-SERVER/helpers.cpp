@@ -73,7 +73,7 @@ void sendNormalNtpPacket(sockaddr_in* client_addr, SOCKET sock) {
     NTPPacket defaultPacket;
     std::vector<uint8_t> defaultPacketData = defaultPacket.getPacket();
 
-    std::cout << "[?] Sending normal NTP packet back" << std::endl;
+    //std::cout << "[?] Sending normal NTP packet back" << std::endl;
     printHexVectorPacket(defaultPacketData);
 
     sendto(sock,
@@ -83,12 +83,12 @@ void sendNormalNtpPacket(sockaddr_in* client_addr, SOCKET sock) {
         reinterpret_cast<sockaddr*>(client_addr),
         sizeof(*client_addr));
 
-    std::cout << "[?] Sent successfully" << std::endl;
+    //std::cout << "[?] Sent successfully" << std::endl;
 }
 
 // Send an arbitrary NTP packet
 void sendNtpPacket(sockaddr_in* client_addr, SOCKET sock, std::vector<uint8_t> ntpPacket) {
-    std::cout << "[?] Sending NTP packet" << std::endl;
+    //std::cout << "[?] Sending NTP packet" << std::endl;
     printHexVectorPacket(ntpPacket);
 
     sendto(sock,
@@ -98,7 +98,7 @@ void sendNtpPacket(sockaddr_in* client_addr, SOCKET sock, std::vector<uint8_t> n
         reinterpret_cast<sockaddr*>(client_addr),
         sizeof(*client_addr));
 
-    std::cout << "[?] Sent successfully" << std::endl;
+    //std::cout << "[?] Sent successfully" << std::endl;
 }
 
 // Convert 4-byte vector to uint32_t in host byte order

@@ -12,8 +12,8 @@
 #include "ntphandler.hpp"
 #pragma comment(lib, "ws2_32.lib")
 
-constexpr int NTP_PORT = 123;
-constexpr int BUFFER_SIZE = 1024; // NTP packet size
+//constexpr int NTP_PORT = 123;
+constexpr int BUFFER_SIZE = 65535; //max NTP packet size
 
 int runServer() {
     WSADATA wsaData;
@@ -35,7 +35,7 @@ int runServer() {
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(NTP_PORT);
+    server_addr.sin_port = htons(Controller::ntpListenPort);
 
     if (bind(sock, (sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR) {
         std::cerr << "Bind failed with error: " << WSAGetLastError() << std::endl;
@@ -44,7 +44,7 @@ int runServer() {
         return 1;
     }
 
-    std::cout << "NTP UDP server listening on port " << NTP_PORT << std::endl;
+    std::cout << "[+] Started NTP UDP server - listening on port " << Controller::ntpListenPort << std::endl;
 
     //BUFFER HERE NEEDS TO BE MAX SIZE THE NTP PACKET CAN BE,as that's waht it's accounting for. currentyly set to 1024. Just something to 
     //keep in mind

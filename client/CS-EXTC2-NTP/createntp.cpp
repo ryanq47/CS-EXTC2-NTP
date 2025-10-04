@@ -2,15 +2,16 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <iomanip>
 #include <iostream>
 #include <vector>
-#include <iomanip>
-#include "ntp.hpp"
-#include "createntp.hpp"
-//for htons
-#include <winsock2.h> 
-#include "helpers.hpp"
+
+#include <winsock2.h> // required for htons/ntohs and WinSock functions
 #pragma comment(lib, "Ws2_32.lib")
+
+#include "createntp.hpp"
+#include "helpers.hpp"
+#include "ntp.hpp"
 
 /*
 * 
@@ -59,7 +60,7 @@ std::vector<uint8_t> NTPPacket::getPacket() const {
 }
 
 NTPPacket::NTPPacket(uint8_t li, uint8_t version, uint8_t mode) {
-    //std::cout << "Creating new packet" << std::endl;
+    ////std::cout << "Creating new packet" << std::endl;
     std::memset(&packet_, 0, sizeof(PacketData));
 
     //packet things & bitshift reference
@@ -155,7 +156,7 @@ void NTPPacket::addExtensionField(const std::array<uint8_t, 2>& fieldType, const
 
     //copy ID in (if provided), at +4, 
     if (clientId.size() > 4) {
-        std::cout << "[!] clientID is too long!" << std::endl;
+        //std::cout << "[!] clientID is too long!" << std::endl;
     }
     extension_.insert(extension_.begin() + 4, clientId.begin(), clientId.end());
 
@@ -164,9 +165,9 @@ void NTPPacket::addExtensionField(const std::array<uint8_t, 2>& fieldType, const
 
 
     //Debug Prings
-    //std::cout << "[?] Ext Length:\t\t" << extLength << std::endl;
-    //std::cout << "[?] padded Length:\t" << paddedLength << std::endl;
-    //std::cout << "[?] :\t" << paddedLength << std::endl;
+    ////std::cout << "[?] Ext Length:\t\t" << extLength << std::endl;
+    ////std::cout << "[?] padded Length:\t" << paddedLength << std::endl;
+    ////std::cout << "[?] :\t" << paddedLength << std::endl;
 
 }
 
