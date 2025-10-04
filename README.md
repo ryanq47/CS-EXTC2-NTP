@@ -5,6 +5,7 @@ An NTP tunnel for Cobalt Strike beacons using External-C2
 ## TOC:
 
 - [CS-EXTC2-NTP](#cs-extc2-ntp)
+- [ Video Demo](#video-demonstration)
 - [Tunnel](#tunnel)
 - [How it works](#how-it-works)
   - [Payload Retrieval (initial)](#payload-retrieval-initial)
