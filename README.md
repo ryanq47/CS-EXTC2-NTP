@@ -183,6 +183,8 @@ Why extension fields, and why this exact structure? Two reasons:
 So, if I want these packets to look legit, they need to be structured as such. 
 
 
+### Extension Field Breakdown:
+
 
 #### `sizePacket`
 
