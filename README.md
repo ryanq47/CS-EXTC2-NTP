@@ -48,6 +48,8 @@ namespace TeamServer {
 
 }
 
+
+
 ```
 
 - `CS-EXTC2-NTP`:
@@ -68,6 +70,10 @@ namespace Beacon {
 
 ```
 
+
+3. Open `server/CS-EXTC2-NTP-SERVER.sln`, compile and or run it. 
+4. Open `client/CS-EXTC2-NTP.sln`, compile and or run it. 
+5. Check your CS client for a new beacon.
 
 ## How it works
 
