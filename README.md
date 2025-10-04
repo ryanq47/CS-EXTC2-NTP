@@ -15,7 +15,7 @@ There are two main jobs the Client and Controller have:
 2. The Beacon Loop: The continuous comms between Client, Controller, and TeamServer
 
 ### Payload Retireval:
-
+---
 1. Client sends a `getIdPacket` packet to get a client ID
 2. Controller responds with a `idPacket` packet containing the client ID. Client saves this for all further outbound packets
 3. Client sends a packet with a `giveMePayload` extension.
@@ -33,7 +33,7 @@ There are two main jobs the Client and Controller have:
 
 
 ### Beacon Loop:
-
+---
 1. Client reads beacon data from the named pipe. 
 2. Client sends a packet with a `sizePacket` extension, which contains the size of the data retreived from the beacon.
 3. Controller responds with `sizePacketAcknowledge`
