@@ -106,25 +106,38 @@ Bytes 4-7: ClientID - by default,  0xFF,0xFF,0xFF,0xFF, aka blank client ID
 
 4. idPacket
 
-Used in response from the Controller to give the client an ID.
+Used in response to a `getIdPacket` from the Controller to give the client an ID. This ID is stored in the Data section of the 
+extension field, NOT in the ClientID field (which is blank).
 
 ```
 Bytes 0-1: 0x1D, 0x1D
 Bytes 2-3: Size of Data
-Bytes 4-7: ClientID - No longer 0xFF,0xFF,0xFF,0xFF, Proper client ID here. 
+Bytes 4-7: ClientID - Blank (0xFF,0xFF,0xFF,0xFF)
+Bytes 8-11: ClientID for the client. 
+``` 
+
+5. dataFromTeamserver
+
+Used in response from the Controller to tunnel data back in. Contains data that came from the teamserver.
+
+```
+Bytes 0-1: 0x02, 0x04
+Bytes 2-3: Size of Data
+Bytes 4-7: ClientID - Blank (0xFF,0xFF,0xFF,0xFF)
+Bytes 4-?: Chunked data from teamserver
 ``` 
 
 #### The Flow:
 
-1. Client sends a packet with a `giveMePayload` extension.
+1. Client sends a `getIdPacket` packet to get a client ID
+2. Controller responds with a `idPacket` packet containing the client ID. Client saves this for all further outbound packets
+3. Client sends a packet with a `giveMePayload` extension.
    1. The data in this packet will either be `0x86`, or `0x64`, depending on the architecture of the host. This must be manually set in the client, this is not dynamically determined.
-
-> Missing ID packet steps
-
-2. In the NTP response, Server returns a packet with a `sizePacket` extension, denoting the size of the payload.
-3. The client initiates chunking by iterating over the inbound payload size, retrieving chunks until the entire payload has been received.
+4. In the NTP response, Controller returns a packet with a `sizePacket` extension, denoting the size of the payload.
+5. The client initiates chunking by iterating over the inbound payload size, retrieving chunks until the entire payload has been received.
    1. The data in this packet is `0x00`, which denotes "keep sending me chunks of the payload"
-4. Once the entire payload has been retrieved, it is in injected into a new thread, and run.
+6. The packet back from the Controller is a `dataFromTeamserver` packet, which contains a chunk of payload.
+7. Once the entire payload has been retrieved, it is in injected into a new thread, and run.
    1. Note: This uses a basic CreateThread injection method. It’s going to be detected — please modify or replace with your preferred technique. (Code is located in `injector.cpp`)
 
 ...image/graph here...
