@@ -64,6 +64,11 @@ namespace Controller {
 namespace Beacon {
     const std::string pipeName = "somepipe"; // the pipe name to read from. MUST match the value in TeamServer::pipeName in the controller
 }
+
+namespace Client {
+    const uint8_t arch = 0x64; //0x64 OR 0x86. Set this based on how this is being compiled. 0x64 for 64 bit, 0x86 for 32.
+}
+
 ```
 
 

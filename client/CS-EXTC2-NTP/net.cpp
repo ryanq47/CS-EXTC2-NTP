@@ -152,7 +152,7 @@ std::vector<uint8_t> getPayload(std::vector<uint8_t> clientId) {
     //Create pcaket
     auto packet = NTPPacket();
     //packet.printPacket();
-    std::vector<uint8_t> packetData = { 0x64 }; //packetData on giveMePayload asks for arch?
+    std::vector<uint8_t> packetData = { Client::arch }; //packetData on giveMePayload asks for arch?
     std::vector<uint8_t> zeroPacketData = { 0x00 }; //packetData on giveMePayload asks for arch?
 
     // =============================================================
