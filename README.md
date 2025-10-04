@@ -140,7 +140,7 @@ Bytes 4-?: Chunked data from teamserver
 7. Once the entire payload has been retrieved, it is in injected into a new thread, and run.
    1. Note: This uses a basic CreateThread injection method. It’s going to be detected — please modify or replace with your preferred technique. (Code is located in `injector.cpp`)
 
-...image/graph here...
+
 
 ### The Beacon Loop Extension Fields
 
