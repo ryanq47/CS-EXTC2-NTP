@@ -55,6 +55,7 @@ namespace Chunk {
 namespace TeamServer {
     const std::string address = "10.0.1.24";
     constexpr int port = 8080;
+    const std::string pipeName = "somepipe";
 
 }
 

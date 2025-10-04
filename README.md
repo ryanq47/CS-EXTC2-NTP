@@ -4,13 +4,69 @@ An NTP tunnel for Cobalt Strike beacons using External-C2
 
 ## TOC:
 
-
+- [CS-EXTC2-NTP](#cs-extc2-ntp)
+  - [Demo video](#demo-video)
+  - [How it works](#how-it-works)
+    - [Payload Retrieval](#payload-retrieval)
+    - [Beacon Loop](#beacon-loop)
+  - [Extension Fields](#extension-fields)
+    - [Base Packet Format](#base-packet-format)
+    - [Rationale](#rationale)
+    - [`sizePacket`](#sizepacket)
+    - [`sizePacketAcknowledge`](#sizepacketacknowledge)
+    - [`giveMePayload`](#givemepayload)
+    - [`getIdPacket`](#getidpacket)
+    - [`idPacket`](#idpacket)
+    - [`dataFromTeamserver`](#datafromteamserver)
+    - [`getDataFromTeamserver`](#getdatafromteamserver)
+    - [`getDataFromTeamserverSize`](#getdatafromteamserversize)
+    - [`dataForTeamserver`](#dataforteamserver)
 
 ### Demo video:
 ---
 (Sorry for the quality, GitHub limits to 10 MB, a full quality version is in the repo at `misc/CS-EXTC2-NTP_Proof.mp4`)
 
 https://github.com/user-attachments/assets/17e7db18-4e81-42e9-93b6-88df9935ab41
+
+## Setup:
+
+1. Install Visual Studio
+2. Start an External C2 beacon in Cobalt Strike
+3. Edit the `constants.hpp`:
+
+Note: There are other config options in these namespaces, each labeled/has a description, including sleep times, packet sizes, etc etc. 
+
+The following are the ones that *need* to be configured correctly though. 
+
+- `CS-EXTC2-NTP-SERVER`:
+
+```
+namespace TeamServer {
+    const std::string address = "10.0.0.100";      //The address of the teamserver to talk to
+    constexpr int port = 2222;                     //What port the ExtC2 listener is on. CS by default chooses port 2222
+    const std::string pipeName = "somepipe";       //the pipe that the beacon will create & talk on. 
+
+}
+
+```
+
+- `CS-EXTC2-NTP`:
+
+```
+namespace Controller { 
+    //!! This is NOT the teamserver address. This is for pointing our packets at the NTP server (of which talks to the teamserver)
+
+    //What port the controller is listening on with it's NTP service
+    constexpr uint16_t port = 123;                    //replace with the port the controller is listening on
+    //Address of the controller. 
+    const std::string serverAddress = "127.0.0.1";    //replace with the address the controller is at
+}
+
+namespace Beacon {
+    const std::string pipeName = "somepipe"; // the pipe name to read from. MUST match the value in TeamServer::pipeName in the controller
+}
+
+```
 
 
 ## How it works

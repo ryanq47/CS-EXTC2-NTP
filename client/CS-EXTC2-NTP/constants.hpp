@@ -87,4 +87,6 @@ namespace Beacon {
     const size_t bufferMaxSize = 1024 * 1024;
     //How long to wait for server response, in MS. 0=unlimited. Default=60 seconds
     const int responseTimeout = 60000;
+    const std::string pipeName = "somepipe";
+
 }
