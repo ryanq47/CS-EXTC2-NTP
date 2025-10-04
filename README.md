@@ -149,9 +149,9 @@ These Extension Fields facilitate tunneling of beacon communications, routing da
 #### The Flow:
 
 1. Client reads beacon data from the named pipe. Client sends a packet with a `sizePacket` extension, which contains the size of the data retreived from the beacon.
-2. Controller responds with ...
+2. Controller responds with `sizePacketAcknowledge`
 3. Client then initiates chunking by iterating over the beacon data size, sending chunks until the entire beacon data has been sent to the Controller
-   1. Controller sends... to signify ok
+   1. Controller sends `sizePacketAcknowledge` each packet to signify ok.
 4. Once the Controller has all the data, it forwards the data onto the TeamServer. It saves the response of the teamserver.
 5. Client then sends a packet with the `getDataFromTeamserverSize` extension. The Controller responds with the size of the data from the Teamserver, via a packet with a `sizePacket` extension.
 6. Client then initiates chunking by sending a packet with the `getDataFromTeamserver` extension. The Controller responds with a packet with the `dataFromTeamserver` extension. This packet contiains a chunk of data of the TeamServers response.
