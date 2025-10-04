@@ -1,6 +1,11 @@
 # CS-EXTC2-NTP
 
-An NTP tunnel for Cobalt Strike beacons using External-C2
+An NTP tunnel for Cobalt Strike beacons using External-C2.
+
+Supports:
+ - Beaconing over NTP
+ - Tunneling of multiple clients
+ - Various config options
 
 ## TOC:
 
