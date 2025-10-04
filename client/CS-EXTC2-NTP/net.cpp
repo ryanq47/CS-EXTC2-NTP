@@ -50,11 +50,11 @@
 //
 //		}
 //		catch (const std::exception& ex) {
-//			std::cerr << "[!] Socket or packet exception: " << ex.what()
+//			//std::cerr << "[!] Socket or packet exception: " << ex.what()
 //				<< " — retrying in 5s..." << std::endl;
 //		}
 //		catch (...) {
-//			std::cerr << "[!] Unknown exception while checking controller — retrying in 5s..."
+//			//std::cerr << "[!] Unknown exception while checking controller — retrying in 5s..."
 //				<< std::endl;
 //		}
 //
