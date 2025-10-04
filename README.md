@@ -5,8 +5,7 @@ An NTP tunnel for Cobalt Strike beacons using External-C2
 ## TOC:
 
 - [CS-EXTC2-NTP](#cs-extc2-ntp)
-- [Tunnel](#tunnel)
-- [Video Demo](#video-demonstration)
+- [Video Demo](#demo-video)
 - [How it works](#how-it-works)
   - [Payload Retrieval (initial)](#payload-retrieval-initial)
     - [Step-by-step flow diagram](#payload-retrieval-flow)
@@ -19,24 +18,20 @@ An NTP tunnel for Cobalt Strike beacons using External-C2
   - [The Beacon Loop Extension Fields](#the-beacon-loop-extension-fields)
 
 
-## Tunnel
-
-The tunnel is fairly simple. Every packet is a normal NTP packet, and all the data hides in extension fields. 
 
 
-### Video demonstration:
+### Demo video:
 ---
 (Sorry for the quality, github limits to 10 MB, a full quality version is in the repo at `misc/CS-EXTC2-NTP_Proof.mp4`)
 
 https://github.com/user-attachments/assets/17e7db18-4e81-42e9-93b6-88df9935ab41
 
 
-
-
-
 ## How it works
 
-There are two main jobs the Client and Controller have:
+The tunnel itself is fairly simple. Every packet is a normal NTP packet, and all the data hides in extension fields. 
+
+Additionally, There are two main jobs the Client and Controller have:
 
 1. Payload Retrieveal: The initial Payload Retirival from the TeamServer
 2. The Beacon Loop: The continuous comms between Client, Controller, and TeamServer
