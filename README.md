@@ -133,11 +133,13 @@ Bytes 4-?: Chunked data from teamserver
 2. Controller responds with a `idPacket` packet containing the client ID. Client saves this for all further outbound packets
 3. Client sends a packet with a `giveMePayload` extension.
    1. The data in this packet will either be `0x86`, or `0x64`, depending on the architecture of the host. This must be manually set in the client, this is not dynamically determined.
-4. In the NTP response, Controller returns a packet with a `sizePacket` extension, denoting the size of the payload.
-5. The client initiates chunking by iterating over the inbound payload size, retrieving chunks until the entire payload has been received.
+4. Controller reaches out to TeamServer to get the payload. 
+5. In the NTP response (to step 3), Controller returns a packet with a `sizePacket` extension, denoting the size of the payload.
+6. The client initiates chunking by iterating over the inbound payload size, retrieving chunks until the entire payload has been received.
    1. The data in this packet is `0x00`, which denotes "keep sending me chunks of the payload"
-6. The packet back from the Controller is a `dataFromTeamserver` packet, which contains a chunk of payload.
-7. Once the entire payload has been retrieved, it is in injected into a new thread, and run.
+7. The packet back from the Controller is a `dataFromTeamserver` packet, which contains a chunk of payload.
+
+8. (not shown below) Once the entire payload has been retrieved, it is in injected into a new thread, and run.
    1. Note: This uses a basic CreateThread injection method. It’s going to be detected — please modify or replace with your preferred technique. (Code is located in `injector.cpp`)
 
 ![payload_ret](https://github.com/user-attachments/assets/15a0cbd0-585d-412c-b8f3-42a663f08bbf)
