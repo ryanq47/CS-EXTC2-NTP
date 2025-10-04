@@ -4,25 +4,11 @@ An NTP tunnel for Cobalt Strike beacons using External-C2
 
 ## TOC:
 
-- [CS-EXTC2-NTP](#cs-extc2-ntp)
-- [Video Demo](#demo-video)
-- [How it works](#how-it-works)
-  - [Payload Retrieval (initial)](#payload-retrieval-initial)
-    - [Step-by-step flow diagram](#payload-retrieval-flow)
-  - [Beacon Loop](#beacon-loop)
-    - [Beacon loop flow diagram](#beacon-loop-flow)
-- [Extension Fields](#extension-fields)
-  - [Base Packet Format](#base-packet-format)
-  - [Rationale](#rationale)
-  - [Payload Retrieval & Execution Extension Fields](#payload-retrieval-and-execution-extension-fields)
-  - [The Beacon Loop Extension Fields](#the-beacon-loop-extension-fields)
-
-
 
 
 ### Demo video:
 ---
-(Sorry for the quality, github limits to 10 MB, a full quality version is in the repo at `misc/CS-EXTC2-NTP_Proof.mp4`)
+(Sorry for the quality, GitHub limits to 10 MB, a full quality version is in the repo at `misc/CS-EXTC2-NTP_Proof.mp4`)
 
 https://github.com/user-attachments/assets/17e7db18-4e81-42e9-93b6-88df9935ab41
 
@@ -33,10 +19,10 @@ The tunnel itself is fairly simple. Every packet is a normal NTP packet, and all
 
 Additionally, There are two main jobs the Client and Controller have:
 
-1. Payload Retrieveal: The initial Payload Retirival from the TeamServer
+1. Payload Retrieval: The initial Payload Retrieval from the TeamServer
 2. The Beacon Loop: The continuous comms between Client, Controller, and TeamServer
 
-### Payload Retireval:
+### Payload Retrieval:
 ---
 1. Client sends a `getIdPacket` packet to get a client ID
 2. Controller responds with a `idPacket` packet containing the client ID. Client saves this for all further outbound packets
@@ -57,7 +43,7 @@ Additionally, There are two main jobs the Client and Controller have:
 ### Beacon Loop:
 ---
 1. Client reads beacon data from the named pipe. 
-2. Client sends a packet with a `sizePacket` extension, which contains the size of the data retreived from the beacon.
+2. Client sends a packet with a `sizePacket` extension, which contains the size of the data retrieved from the beacon.
 3. Controller responds with `sizePacketAcknowledge`
 4. Client then initiates chunking by iterating over the beacon data size, sending chunks with `dataForTeamserver` extensions until the entire beacon data has been sent to the Controller
 5. Controller sends `sizePacketAcknowledge` each chunked packet to signify it made it.
@@ -149,7 +135,7 @@ Bytes 8-11 Size of total data to be sent
 ---
 #### `sizePacketAcknowledge`
 
-An acknowledge packet that is used to say the Controller recieved your message. Should probaly have been named "packetAcknowledge" instead of sizePacketAcknowledge", but it was first used for acknowledging size packets, and I haven't updated it yet. Either way, if/when it gets changed, the header of `0x51, 0x2E` will stay the same. 
+An acknowledge packet that is used to say the Controller received your message. Should probably have been named "packetAcknowledge" instead of sizePacketAcknowledge", but it was first used for acknowledging size packets, and I haven't updated it yet. Either way, if/when it gets changed, the header of `0x51, 0x2E` will stay the same. 
 
 ```
 Bytes 0-1: 0x51, 0x2E
