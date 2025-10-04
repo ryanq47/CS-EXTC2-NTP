@@ -2,33 +2,25 @@
 
 An NTP tunnel for Cobalt Strike beacons using External-C2
 
-
-
-
 ## Tunnel
 
-...
-Operates on extension fields, quick overview
+The tunnel is fairly simple. Every packet is a normal NTP packet, and all the data hides in extension fields. 
 
-First 48 bytes, normal NTP. Next X bytes, Extension Field
 
 ## Extension Fields
 
-Go by each item, such as payload (have all fields there, and a diagram of how it works), and tunnel.
+There are two main jobs the client and controller have, and each has its own sets of extension fields.
 
-... There are two sets/parts of extneino fields:
-
-- Payload Retrieveal: The initial Payload Retirival from the TeamServer
-- The Beacon Loop: The continuous comms between Client, Controller, and TeamServer
+1. Payload Retrieveal: The initial Payload Retirival from the TeamServer
+2. The Beacon Loop: The continuous comms between Client, Controller, and TeamServer
 
 ### Base Packet Format:
 
+Before exploring the individual extension fields, it's important to understand their underlying structure.
+
 All Extension Field packets follow this format:
 
-Rationale:
 
-- RFC Wahtever for NTP extension fields (link and name RFC here)
-- Shows up as NTP in wireshark (other structs can throw a malformed packet error)
 
 ```
 Bytes 0-1: Extension Field ID
@@ -47,7 +39,36 @@ Bytes 52-55:  Session ID for NTP packet
 Bytes 56-X: (optional) Additional Data (buffered to 4 bit boundary)
 ```
 
-There are various extension Fields, I'll break them down based on usecase/how they are used
+#### Rationale:
+
+Why extension fields, and why this exact structure? Two reasons:
+
+1. RFC 5905 defines the structure of NTP extension fields
+   - [RFC 5905 Section 7.5](https://datatracker.ietf.org/doc/html/rfc5905#section-7.5)
+
+2. The packets show up as NTP in wireshark (other structs that I tried can throw a malformed packet error)
+
+So, if I want these packets to look legit, they need to be structured as such. 
+
+
+REMOVE_ME:
+// Payload-related
+[ ] giveMePayload = { 0x00, 0x01 };
+
+// Teamserver requests/responses
+[ ] getDataFromTeamserver = { 0x00, 0x02 };
+[ ] dataFromTeamserver = { 0x02, 0x04 };
+[ ] getDataFromTeamserverSize = { 0x03, 0x04 };
+[ ] dataForTeamserver = { 0x02, 0x05 };
+
+// Identification / ID
+[X] getIdPacket = { 0x12, 0x34 };
+[X] idPacket = { 0x1D, 0x1D };
+
+// Size-related
+[X] sizePacket = { 0x51, 0x2E };
+[ ] sizePacketAcknowledge = { 0x50, 0x50 };
+
 
 ### Payload Retrieval & Execution Extension Fields
 
@@ -55,43 +76,62 @@ These Extension Fields are used to tunnel the payload to the client, through the
 
 1. getSize
 
-This extension field is used to communicate the size of an inbound message. This is crucial for chunk based communication. 
+This extension field is used to communicate the size of an inbound message. This is crucial for chunk based communication.
 
 ```
-Bytes 0-1: 0x00,0x00
+Bytes 0-1: 0x51, 0x2E
 Bytes 2-3: Size of Data
 Bytes 4-7: Unique ID
-Bytes 8-.. Size of total data to be sent 
+Bytes 8-11 Size of total data to be sent 
 ```
 
-
-SomeDesc
+2. giveMePayload
 
 ```
-Bytes 0-1: 0x00,0x00
+Bytes 0-1:  0x00, 0x01
 Bytes 2-3: Size of Data
-Bytes 4-7: Unique ID (EMPTY)
+Bytes 4-7: ClientID
 Bytes 8: Architechure (0x86, 0x64, or 0x00) 0x00 = continue sending payload, 0x86/0x64 are their own respective arch.
+``` 
+
+3. getIdPacket
+
+Used by the client to get an ID from the Controller.
+
 ```
+Bytes 0-1:  0x12, 0x34
+Bytes 2-3: Size of Data
+Bytes 4-7: ClientID - by default,  0xFF,0xFF,0xFF,0xFF, aka blank client ID
+``` 
+
+4. idPacket
+
+Used in response from the Controller to give the client an ID.
+
+```
+Bytes 0-1: 0x1D, 0x1D
+Bytes 2-3: Size of Data
+Bytes 4-7: ClientID - No longer 0xFF,0xFF,0xFF,0xFF, Proper client ID here. 
+``` 
 
 #### The Flow:
 
 1. Client sends a packet with a `giveMePayload` extension.
    1. The data in this packet will either be `0x86`, or `0x64`, depending on the architecture of the host. This must be manually set in the client, this is not dynamically determined.
+
+> Missing ID packet steps
+
 2. In the NTP response, Server returns a packet with a `sizePacket` extension, denoting the size of the payload.
 3. The client initiates chunking by iterating over the inbound payload size, retrieving chunks until the entire payload has been received.
    1. The data in this packet is `0x00`, which denotes "keep sending me chunks of the payload"
 4. Once the entire payload has been retrieved, it is in injected into a new thread, and run.
    1. Note: This uses a basic CreateThread injection method. It’s going to be detected — please modify or replace with your preferred technique. (Code is located in `injector.cpp`)
 
-
 ...image/graph here...
-
 
 ### The Beacon Loop Extension Fields
 
 These Extension Fields facilitate tunneling of beacon communications, routing data between the client and the Controller, and then between the Controller and the Teamserver.
-
 
 #### The Flow:
 
@@ -104,24 +144,27 @@ These Extension Fields facilitate tunneling of beacon communications, routing da
 6. Client then initiates chunking by sending a packet with the `getDataFromTeamserver` extension. The Controller responds with a packet with the `dataFromTeamserver` extension. This packet contiains a chunk of data of the TeamServers response.
 7. Once the Client has all the data, it forwards the data onto the beacon, via the named pipe. It then loops to step 1.
 
-
 ...image/graph here...
-
-
-
 
 ####
 
-Inboudn Packet  - getSize
+1. getSize
 
-The server responds with a size of the
+This extension field is used to communicate the size of an inbound message. This is crucial for chunk based communication.
 
 ```
-Bytes 0-1: 0x00,0x00
+Bytes 0-1: 0x51, 0x2E
 Bytes 2-3: Size of Data
 Bytes 4-7: Unique ID
-Bytes 8-.. Size of total data to be sent (explain this is for chunking)
+Bytes 8-11 Size of total data to be sent 
 ```
+
+2. 
+
+
+
+
+
 
 **TeamServer Communications**
 

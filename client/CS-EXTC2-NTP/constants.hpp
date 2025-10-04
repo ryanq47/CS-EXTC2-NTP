@@ -41,7 +41,7 @@ Extension Field layout. This comes after the 48 byte NTP packet
     // Identification / ID
     constexpr std::array<uint8_t, 2> getIdPacket = { 0x12, 0x34 };
     constexpr std::array<uint8_t, 2> idPacket = { 0x1D, 0x1D };
-    constexpr std::array<uint8_t, 2> clientID = { 0x53, 0x55 };
+
 
     // Size-related
     constexpr std::array<uint8_t, 2> sizePacket = { 0x51, 0x2E };
