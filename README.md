@@ -80,8 +80,8 @@ Additionally, There are two main jobs the Client and Controller have:
 [ ] giveMePayload = { 0x00, 0x01 };
 
 // Teamserver requests/responses
-[ ] getDataFromTeamserver = { 0x00, 0x02 };
-[ ] dataFromTeamserver = { 0x02, 0x04 };
+[X] getDataFromTeamserver = { 0x00, 0x02 };
+[X] dataFromTeamserver = { 0x02, 0x04 };
 [ ] getDataFromTeamserverSize = { 0x03, 0x04 };
 [ ] dataForTeamserver = { 0x02, 0x05 };
 
@@ -193,10 +193,55 @@ Used in response from the Controller to tunnel data back in. Contains data that 
 Bytes 0-1: 0x02, 0x04
 Bytes 2-3: Size of Data
 Bytes 4-7: ClientID - Blank (0xFF,0xFF,0xFF,0xFF)
-Bytes 4-?: Chunked data from teamserver
+Bytes 4-end of packet: Chunked data from teamserver
 ``` 
 ---
 
 ### The Beacon Loop Extension Fields
 
 These Extension Fields facilitate tunneling of beacon communications, routing data between the client and the Controller, and then between the Controller and the Teamserver.
+
+
+1. #### `getDataFromTeamserver`
+
+This extension field is used to requset TeamServer data that is stored on the controller. Used in chunking
+
+```
+Bytes 0-1: 0x00, 0x02
+Bytes 2-3: Size of Data
+Bytes 4-7: Unique ID
+```
+
+2. #### `dataFromTeamserver`
+
+The response from the Controller, with data from the teamserver, meant for the client. Used in Chunking
+
+```
+Bytes 0-1: 0x02, 0x04
+Bytes 2-3: Size of Data
+Bytes 4-7: Unique ID
+Bytes 8-end of packet: Chunked data from the teamserver for the client
+```
+
+
+3. #### `getDataFromTeamserverSize`
+
+A size packet that is specifically for getting the size of the teamserver data, for the client.
+
+```
+Bytes 0-1: 0x03, 0x04
+Bytes 2-3: Size of Data
+Bytes 4-7: Unique ID
+Bytes 8-11: Size of Teamserver Data for client
+```
+
+4. #### `dataForTeamserver`
+
+Data meant for the teamserver, from the client. Used in chunking
+
+```
+Bytes 0-1: 0x02, 0x05
+Bytes 2-3: Size of Data
+Bytes 4-7: Unique ID
+Bytes 8-end of packet: Chunked data from the client for the teamserver
+```
