@@ -2,6 +2,11 @@
 
 An NTP tunnel for Cobalt Strike beacons using External-C2
 
+Video demonstration:
+(Sorry for the quality, github limits to 10 MB, a full quality version is in the repo at `misc/CS-EXTC2-NTP_Proof.mp4`)
+
+https://github.com/user-attachments/assets/17e7db18-4e81-42e9-93b6-88df9935ab41
+
 
 
 ## Tunnel
