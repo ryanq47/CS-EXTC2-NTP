@@ -2,6 +2,27 @@
 
 An NTP tunnel for Cobalt Strike beacons using External-C2
 
+## TOC:
+
+- [CS-EXTC2-NTP](#cs-extc2-ntp)
+- [Tunnel](#tunnel)
+- [How it works](#how-it-works)
+  - [Payload Retrieval (initial)](#payload-retrieval-initial)
+    - [Step-by-step flow diagram](#payload-retrieval-flow)
+  - [Beacon Loop](#beacon-loop)
+    - [Beacon loop flow diagram](#beacon-loop-flow)
+- [Extension Fields](#extension-fields)
+  - [Base Packet Format](#base-packet-format)
+  - [Rationale](#rationale)
+  - [Payload Retrieval & Execution Extension Fields](#payload-retrieval-and-execution-extension-fields)
+    - [getSize](#getsize)
+    - [giveMePayload](#givemepayload)
+    - [getIdPacket](#getidpacket)
+    - [idPacket](#idpacket)
+    - [dataFromTeamserver](#datafromteamserver)
+  - [The Beacon Loop Extension Fields](#the-beacon-loop-extension-fields)
+
+
 ## Video demonstration:
 
 (Sorry for the quality, github limits to 10 MB, a full quality version is in the repo at `misc/CS-EXTC2-NTP_Proof.mp4`)
