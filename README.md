@@ -47,9 +47,6 @@ namespace TeamServer {
     const std::string pipeName = "somepipe";       //the pipe that the beacon will create & talk on. 
 
 }
-
-
-
 ```
 
 - `CS-EXTC2-NTP`:
@@ -67,7 +64,6 @@ namespace Controller {
 namespace Beacon {
     const std::string pipeName = "somepipe"; // the pipe name to read from. MUST match the value in TeamServer::pipeName in the controller
 }
-
 ```
 
 
