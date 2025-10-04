@@ -82,8 +82,8 @@ Additionally, There are two main jobs the Client and Controller have:
 // Teamserver requests/responses
 [X] getDataFromTeamserver = { 0x00, 0x02 };
 [X] dataFromTeamserver = { 0x02, 0x04 };
-[ ] getDataFromTeamserverSize = { 0x03, 0x04 };
-[ ] dataForTeamserver = { 0x02, 0x05 };
+[X] getDataFromTeamserverSize = { 0x03, 0x04 };
+[X] dataForTeamserver = { 0x02, 0x05 };
 
 // Identification / ID
 [X] getIdPacket = { 0x12, 0x34 };
@@ -95,7 +95,8 @@ Additionally, There are two main jobs the Client and Controller have:
 
 ## Extension Fields
 
-Both the Payload Retrieveal, and the Beacon Loop have their own set of extension fields
+All the extension fields used in the project.
+
 
 ### Base Packet Format:
 
@@ -134,12 +135,8 @@ Why extension fields, and why this exact structure? Two reasons:
 So, if I want these packets to look legit, they need to be structured as such. 
 
 
-### Payload Retrieval & Execution Extension Fields
 
-These Extension Fields are used to tunnel the payload to the client, through the Controller, from the Teamserver.
-
-
-1. #### `getSize`
+#### `sizePacket`
 
 This extension field is used to communicate the size of an inbound message. This is crucial for chunk based communication.
 
@@ -150,8 +147,18 @@ Bytes 4-7: Unique ID
 Bytes 8-11 Size of total data to be sent 
 ```
 ---
+#### `sizePacketAcknowledge`
 
-2. #### `giveMePayload`
+An acknowledge packet that is used to say the Controller recieved your message. Should probaly have been named "packetAcknowledge" instead of sizePacketAcknowledge", but it was first used for acknowledging size packets, and I haven't updated it yet. Either way, if/when it gets changed, the header of `0x51, 0x2E` will stay the same. 
+
+```
+Bytes 0-1: 0x51, 0x2E
+Bytes 2-3: Size of Data
+Bytes 4-7: Blank (0xFF,0xFF,0xFF,0xFF)
+```
+---
+
+#### `giveMePayload`
 
 ```
 Bytes 0-1:  0x00, 0x01
@@ -161,18 +168,18 @@ Bytes 8: Architechure (0x86, 0x64, or 0x00) 0x00 = continue sending payload, 0x8
 ``` 
 ---
 
-3. #### `getIdPacket`
+#### `getIdPacket`
 
 Used by the client to get an ID from the Controller.
 
 ```
 Bytes 0-1:  0x12, 0x34
 Bytes 2-3: Size of Data
-Bytes 4-7: ClientID - by default,  0xFF,0xFF,0xFF,0xFF, aka blank client ID
+Bytes 4-7: ClientID - Blank (0xFF,0xFF,0xFF,0xFF)
 ``` 
 ---
 
-4. #### `idPacket`
+#### `idPacket`
 
 Used in response to a `getIdPacket` from the Controller to give the client an ID. This ID is stored in the Data section of the 
 extension field, NOT in the ClientID field (which is blank).
@@ -185,7 +192,7 @@ Bytes 8-11: ClientID for the client.
 ``` 
 ---
 
-5. #### `dataFromTeamserver`
+#### `dataFromTeamserver`
 
 Used in response from the Controller to tunnel data back in. Contains data that came from the teamserver.
 
@@ -197,12 +204,9 @@ Bytes 4-end of packet: Chunked data from teamserver
 ``` 
 ---
 
-### The Beacon Loop Extension Fields
-
-These Extension Fields facilitate tunneling of beacon communications, routing data between the client and the Controller, and then between the Controller and the Teamserver.
 
 
-1. #### `getDataFromTeamserver`
+#### `getDataFromTeamserver`
 
 This extension field is used to requset TeamServer data that is stored on the controller. Used in chunking
 
@@ -212,7 +216,7 @@ Bytes 2-3: Size of Data
 Bytes 4-7: Unique ID
 ```
 
-2. #### `dataFromTeamserver`
+#### `dataFromTeamserver`
 
 The response from the Controller, with data from the teamserver, meant for the client. Used in Chunking
 
@@ -224,7 +228,7 @@ Bytes 8-end of packet: Chunked data from the teamserver for the client
 ```
 
 
-3. #### `getDataFromTeamserverSize`
+#### `getDataFromTeamserverSize`
 
 A size packet that is specifically for getting the size of the teamserver data, for the client.
 
@@ -235,7 +239,7 @@ Bytes 4-7: Unique ID
 Bytes 8-11: Size of Teamserver Data for client
 ```
 
-4. #### `dataForTeamserver`
+#### `dataForTeamserver`
 
 Data meant for the teamserver, from the client. Used in chunking
 
@@ -245,3 +249,4 @@ Bytes 2-3: Size of Data
 Bytes 4-7: Unique ID
 Bytes 8-end of packet: Chunked data from the client for the teamserver
 ```
+
