@@ -184,7 +184,7 @@ So, if I want these packets to look legit, they need to be structured as such.
 
 
 ### Extension Field Breakdown:
-
+---
 
 #### `sizePacket`
 
