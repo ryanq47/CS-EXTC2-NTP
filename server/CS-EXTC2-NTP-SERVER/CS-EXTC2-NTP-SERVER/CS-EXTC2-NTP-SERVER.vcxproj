@@ -123,7 +123,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="chunker.cpp" />
     <ClCompile Include="client.cpp" />
     <ClCompile Include="createntp.cpp" />
     <ClCompile Include="globals.cpp" />
@@ -135,7 +134,6 @@
     <ClCompile Include="teamserver.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="chunker.hpp" />
     <ClInclude Include="client.hpp" />
     <ClInclude Include="constants.hpp" />
     <ClInclude Include="createntp.hpp" />
