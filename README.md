@@ -148,14 +148,18 @@ These Extension Fields facilitate tunneling of beacon communications, routing da
 
 #### The Flow:
 
-1. Client reads beacon data from the named pipe. Client sends a packet with a `sizePacket` extension, which contains the size of the data retreived from the beacon.
-2. Controller responds with `sizePacketAcknowledge`
-3. Client then initiates chunking by iterating over the beacon data size, sending chunks until the entire beacon data has been sent to the Controller
-   1. Controller sends `sizePacketAcknowledge` each packet to signify ok.
-4. Once the Controller has all the data, it forwards the data onto the TeamServer. It saves the response of the teamserver.
-5. Client then sends a packet with the `getDataFromTeamserverSize` extension. The Controller responds with the size of the data from the Teamserver, via a packet with a `sizePacket` extension.
-6. Client then initiates chunking by sending a packet with the `getDataFromTeamserver` extension. The Controller responds with a packet with the `dataFromTeamserver` extension. This packet contiains a chunk of data of the TeamServers response.
-7. Once the Client has all the data, it forwards the data onto the beacon, via the named pipe. It then loops to step 1.
+1. Client reads beacon data from the named pipe. 
+2. Client sends a packet with a `sizePacket` extension, which contains the size of the data retreived from the beacon.
+3. Controller responds with `sizePacketAcknowledge`
+4. Client then initiates chunking by iterating over the beacon data size, sending chunks with `dataForTeamserver` extensions until the entire beacon data has been sent to the Controller
+5. Controller sends `sizePacketAcknowledge` each chunked packet to signify it made it.
+6. Once the Controller has all the data, it forwards the data onto the TeamServer. 
+7. The controller then gets the response of the teamserver.
+8. Client then sends a packet with the `getDataFromTeamserverSize` extension. 
+9. The Controller responds with the size of the data from the Teamserver, via a packet with a `sizePacket` extension.
+10. Client then initiates chunking by sending a packet with the `getDataFromTeamserver` extension. 
+11. The Controller responds with a packet with the `dataFromTeamserver` extension. This packet contiains a chunk of data of the TeamServers response.
+12. Once the Client has all the data, it forwards the data onto the beacon, via the named pipe. It then loops to step 1.
 
 ![beacon_loop (1)](https://github.com/user-attachments/assets/943eade2-9bbd-458c-a9a0-96ad4ddc319c)
 
