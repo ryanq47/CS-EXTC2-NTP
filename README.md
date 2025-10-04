@@ -184,7 +184,67 @@ Bytes 8-11 Size of total data to be sent
 
 
 
+### Payload Retrieval & Execution Extension Fields
 
+These Extension Fields are used to tunnel the payload to the client, through the Controller, from the Teamserver.
+
+1. ## `getSize`
+
+This extension field is used to communicate the size of an inbound message. This is crucial for chunk based communication.
+
+```
+Bytes 0-1: 0x51, 0x2E
+Bytes 2-3: Size of Data
+Bytes 4-7: Unique ID
+Bytes 8-11 Size of total data to be sent 
+```
+---
+
+2. ## `giveMePayload`
+
+```
+Bytes 0-1:  0x00, 0x01
+Bytes 2-3: Size of Data
+Bytes 4-7: ClientID
+Bytes 8: Architechure (0x86, 0x64, or 0x00) 0x00 = continue sending payload, 0x86/0x64 are their own respective arch.
+``` 
+---
+
+3. ## `getIdPacket`
+
+Used by the client to get an ID from the Controller.
+
+```
+Bytes 0-1:  0x12, 0x34
+Bytes 2-3: Size of Data
+Bytes 4-7: ClientID - by default,  0xFF,0xFF,0xFF,0xFF, aka blank client ID
+``` 
+---
+
+4. ## `idPacket`
+
+Used in response to a `getIdPacket` from the Controller to give the client an ID. This ID is stored in the Data section of the 
+extension field, NOT in the ClientID field (which is blank).
+
+```
+Bytes 0-1: 0x1D, 0x1D
+Bytes 2-3: Size of Data
+Bytes 4-7: ClientID - Blank (0xFF,0xFF,0xFF,0xFF)
+Bytes 8-11: ClientID for the client. 
+``` 
+---
+
+5. ## `dataFromTeamserver`
+
+Used in response from the Controller to tunnel data back in. Contains data that came from the teamserver.
+
+```
+Bytes 0-1: 0x02, 0x04
+Bytes 2-3: Size of Data
+Bytes 4-7: ClientID - Blank (0xFF,0xFF,0xFF,0xFF)
+Bytes 4-?: Chunked data from teamserver
+``` 
+---
 
 **TeamServer Communications**
 
